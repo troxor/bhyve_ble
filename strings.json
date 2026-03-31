@@ -1,0 +1,35 @@
+{
+  "title": "Orbit B-hyve",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Network key",
+        "description": "Set the shared BLE network key used for all timers. Leave empty to generate a random key, or paste an existing key consisting of 32 hex characters."
+      }
+    },
+    "error": {
+      "invalid_key": "Invalid key. Use 32 hex characters.",
+      "cannot_connect": "Could not connect or provision the timer. Put it in pairing mode and try again.",
+      "verify_failed": "Handshake worked but the timer did not return device information. Try again."
+    },
+    "abort": {
+      "device_added": "Hose Watering Timer added successfully."
+    }
+  },
+  "options": {
+    "step": {
+      "add_device": {
+        "title": "Add timer",
+        "description": "Put the timer in pairing mode. The address field lists connectable Bluetooth devices Home Assistant sees. The integration provisions with your saved network key and confirms pairing."
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect or provision the timer. Put it in pairing mode and try again.",
+      "verify_failed": "Handshake worked but the timer did not return device information. Try again.",
+      "already_configured": "This address is already added."
+    },
+    "abort": {
+      "device_added": "Hose Watering Timer added successfully."
+    }
+  }
+}

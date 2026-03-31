@@ -1,0 +1,3337 @@
+// Regenerate Python stubs after replacing this file:
+//   protoc --python_out=. orbit_pb_api.proto
+
+syntax = "proto2";
+
+package orbit_pb_api;
+
+enum BhyveAgApi_ChannelWidth {
+  BhyveAgApi_ChannelWidth_channelWidth_20 = 0;
+  BhyveAgApi_ChannelWidth_channelWidth_40 = 2;
+}
+
+enum BhyveAgApi_DeviceType {
+  BhyveAgApi_DeviceType_cpbGlinet = 0;
+  BhyveAgApi_DeviceType_cpb5ac12016 = 1;
+  BhyveAgApi_DeviceType_cpcGlinet = 2;
+  BhyveAgApi_DeviceType_cpc5acGen2 = 3;
+  BhyveAgApi_DeviceType_cpa = 4;
+  BhyveAgApi_DeviceType_murataLora = 5;
+  BhyveAgApi_DeviceType_cpc = 6;
+}
+
+enum BhyveAgApi_PressureSensorType {
+  BhyveAgApi_PressureSensorType_disabled = 1;
+  BhyveAgApi_PressureSensorType_pressureSwitch = 2;
+  BhyveAgApi_PressureSensorType_transducer = 3;
+}
+
+enum BhyveAgApi_RadioPurpose {
+  BhyveAgApi_RadioPurpose_radioPurpose_baseStationClient = 0;
+  BhyveAgApi_RadioPurpose_radioPurpose_baseStationAp = 1;
+  BhyveAgApi_RadioPurpose_radioPurpose_repeaterClient = 2;
+  BhyveAgApi_RadioPurpose_radioPurpose_repeaterAp = 3;
+  BhyveAgApi_RadioPurpose_radioPurpose_repeaterRouter = 4;
+  BhyveAgApi_RadioPurpose_radioPurpose_cpcClient = 5;
+  BhyveAgApi_RadioPurpose_radioPurpose_cpcRouter = 6;
+  BhyveAgApi_RadioPurpose_radioPurpose_baseStationRouter = 7;
+}
+
+enum BhyveAgApi_Region {
+  BhyveAgApi_Region_EU863_870 = 0;
+  BhyveAgApi_Region_RU864_870 = 1;
+  BhyveAgApi_Region_IN865_867 = 2;
+  BhyveAgApi_Region_AU915_928 = 3;
+  BhyveAgApi_Region_US902_928 = 4;
+  BhyveAgApi_Region_EU433 = 5;
+  BhyveAgApi_Region_CN779_787 = 6;
+  BhyveAgApi_Region_CN470_510 = 7;
+}
+
+enum BhyveAgApi_SecType {
+  BhyveAgApi_SecType__open = 0;
+  BhyveAgApi_SecType__wpa1 = 1;
+  BhyveAgApi_SecType__wpa2 = 2;
+  BhyveAgApi_SecType__wep = 3;
+  BhyveAgApi_SecType__wpaMixed = 4;
+  BhyveAgApi_SecType__unknown = 5;
+}
+
+enum OrbitPbApi_BleDeviceId {
+  OrbitPbApi_BleDeviceId_id_reserved = 0;
+  OrbitPbApi_BleDeviceId_id_wt25 = 1;
+  OrbitPbApi_BleDeviceId_id_wt25H = 2;
+  OrbitPbApi_BleDeviceId_id_wt25G2 = 3;
+  OrbitPbApi_BleDeviceId_id_wt25G2H = 4;
+  OrbitPbApi_BleDeviceId_id_bh1 = 5;
+  OrbitPbApi_BleDeviceId_id_ht25 = 6;
+  OrbitPbApi_BleDeviceId_id_bh1H = 7;
+  OrbitPbApi_BleDeviceId_id_hrc500 = 8;
+  OrbitPbApi_BleDeviceId_id_wt24 = 9;
+  OrbitPbApi_BleDeviceId_id_fs1 = 10;
+  OrbitPbApi_BleDeviceId_id_cc2_5 = 11;
+  OrbitPbApi_BleDeviceId_id_wt24H = 12;
+  OrbitPbApi_BleDeviceId_id_cms = 13;
+  OrbitPbApi_BleDeviceId_id_bh1G2 = 14;
+  OrbitPbApi_BleDeviceId_id_ag_cpb = 15;
+  OrbitPbApi_BleDeviceId_id_ag_cpc = 16;
+  OrbitPbApi_BleDeviceId_id_ag_cpa = 17;
+  OrbitPbApi_BleDeviceId_id_wt26 = 18;
+  OrbitPbApi_BleDeviceId_id_wt26H = 19;
+  OrbitPbApi_BleDeviceId_id_wt26I = 20;
+  OrbitPbApi_BleDeviceId_id_ht31 = 21;
+  OrbitPbApi_BleDeviceId_id_ht32 = 22;
+  OrbitPbApi_BleDeviceId_id_ht34 = 23;
+  OrbitPbApi_BleDeviceId_id_ht25G2 = 24;
+  OrbitPbApi_BleDeviceId_id_hsc = 25;
+  OrbitPbApi_BleDeviceId_id_wt25E = 26;
+  OrbitPbApi_BleDeviceId_id_wt25EH = 27;
+  OrbitPbApi_BleDeviceId_id_wt24E = 28;
+  OrbitPbApi_BleDeviceId_id_wt24EH = 29;
+  OrbitPbApi_BleDeviceId_id_wt25F = 30;
+  OrbitPbApi_BleDeviceId_id_wt25FH = 31;
+  OrbitPbApi_BleDeviceId_id_gc1 = 32;
+  OrbitPbApi_BleDeviceId_id_bh1S = 33;
+  OrbitPbApi_BleDeviceId_id_wt25S = 34;
+  OrbitPbApi_BleDeviceId_id_wt25SH = 35;
+  OrbitPbApi_BleDeviceId_id_wt24S = 36;
+  OrbitPbApi_BleDeviceId_id_wt24SH = 37;
+  OrbitPbApi_BleDeviceId_id_ht31A = 38;
+  OrbitPbApi_BleDeviceId_id_ht32A = 39;
+  OrbitPbApi_BleDeviceId_id_ht34A = 40;
+  OrbitPbApi_BleDeviceId_id_ht25A = 41;
+}
+
+enum OrbitPbApi_BlePhyInterface {
+  OrbitPbApi_BlePhyInterface_le_unknown = 0;
+  OrbitPbApi_BlePhyInterface_le_1Mbps = 1;
+  OrbitPbApi_BlePhyInterface_le_2Mbps = 3;
+  OrbitPbApi_BlePhyInterface_le_codedS8_125 = 4;
+  OrbitPbApi_BlePhyInterface_le_codedS2_500 = 5;
+}
+
+enum OrbitPbApi_DeviceStatus {
+  OrbitPbApi_DeviceStatus_deviceOff = 0;
+  OrbitPbApi_DeviceStatus_deviceIdle = 1;
+  OrbitPbApi_DeviceStatus_lowBattery = 2;
+  OrbitPbApi_DeviceStatus_rainDelayEnabled = 3;
+  OrbitPbApi_DeviceStatus_wateringInProgress = 4;
+  OrbitPbApi_DeviceStatus_meshDeviceOffline = 5;
+}
+
+enum OrbitPbApi_InterfaceId {
+  OrbitPbApi_InterfaceId_localInterface = 0;
+  OrbitPbApi_InterfaceId_bleInterface = 1;
+  OrbitPbApi_InterfaceId_wifiInterface = 2;
+  OrbitPbApi_InterfaceId_cellularInterface = 3;
+  OrbitPbApi_InterfaceId_ethernetInterface = 4;
+  OrbitPbApi_InterfaceId_lorawanInterface = 5;
+}
+
+enum OrbitPbApi_LogId {
+  OrbitPbApi_LogId_waterEventLog = 0;
+}
+
+enum OrbitPbApi_MfrTest_GC_Dio {
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_com_io0 = 0;
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_com_io1 = 1;
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_com_irq = 2;
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_com_spi_cs = 3;
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_com_spi_clk = 4;
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_com_spi_mosi = 5;
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_com_spi_miso = 6;
+  OrbitPbApi_MfrTest_GC_Dio_gc_dioTest_poeEn = 7;
+}
+
+enum OrbitPbApi_MfrTest_Hsc_Dio {
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_mod_staRst = 0;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_mod_ledRst = 1;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_mod_irq = 2;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_mod_sda = 3;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_mod_scl = 4;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_com_io0 = 5;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_com_io1 = 6;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_com_irq = 7;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_com_spi_cs = 8;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_com_spi_clk = 9;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_com_spi_mosi = 10;
+  OrbitPbApi_MfrTest_Hsc_Dio_hsc_dioTest_com_spi_miso = 11;
+}
+
+enum OrbitPbApi_OtaImageId {
+  OrbitPbApi_OtaImageId_otaImageId_fs1 = 61462;
+}
+
+enum OrbitPbApi_ProgramDelayType {
+  OrbitPbApi_ProgramDelayType_programDelayType_none = 0;
+  OrbitPbApi_ProgramDelayType_programDelayType_user = 1;
+  OrbitPbApi_ProgramDelayType_programDelayType_rain = 2;
+  OrbitPbApi_ProgramDelayType_programDelayType_wind = 3;
+  OrbitPbApi_ProgramDelayType_programDelayType_freeze = 4;
+}
+
+enum OrbitPbApi_ProgramId {
+  OrbitPbApi_ProgramId_manual = 0;
+  OrbitPbApi_ProgramId_a = 1;
+  OrbitPbApi_ProgramId_b = 2;
+  OrbitPbApi_ProgramId_c = 3;
+  OrbitPbApi_ProgramId_d = 4;
+  OrbitPbApi_ProgramId_e = 5;
+  OrbitPbApi_ProgramId_f = 6;
+}
+
+enum OrbitPbApi_ProgramTypes {
+  OrbitPbApi_ProgramTypes_dayOfWeek = 0;
+  OrbitPbApi_ProgramTypes_interval = 1;
+  OrbitPbApi_ProgramTypes_even = 2;
+  OrbitPbApi_ProgramTypes_odd = 3;
+  OrbitPbApi_ProgramTypes_runOnce = 4;
+}
+
+enum OrbitPbApi_SecType {
+  OrbitPbApi_SecType_open = 0;
+  OrbitPbApi_SecType_wpa1 = 1;
+  OrbitPbApi_SecType_wpa2 = 2;
+  OrbitPbApi_SecType_wep = 3;
+  OrbitPbApi_SecType_wpaMixed = 4;
+  OrbitPbApi_SecType_unknown = 5;
+  OrbitPbApi_SecType_wpa3 = 6;
+  OrbitPbApi_SecType_wpa2Wpa3Mixed = 7;
+}
+
+enum OrbitPbApi_SensorType {
+  OrbitPbApi_SensorType_sensorType_unknown = 0;
+  OrbitPbApi_SensorType_sensorType_rain = 1;
+}
+
+enum OrbitPbApi_SmartAccessoryType {
+  OrbitPbApi_SmartAccessoryType_flowMeterValve = 1;
+}
+
+enum OrbitPbApi_StationId {
+  OrbitPbApi_StationId_delayStationId = 999;
+}
+
+enum OrbitPbApi_TestMode {
+  OrbitPbApi_TestMode_none = 0;
+  OrbitPbApi_TestMode_fastTimerTick = 1;
+  OrbitPbApi_TestMode_testModeManual = 2;
+  OrbitPbApi_TestMode_testModeAuto = 3;
+  OrbitPbApi_TestMode_testModeMfr = 4;
+  OrbitPbApi_TestMode_testModeRadioRf = 5;
+}
+
+enum OrbitPbApi_Version {
+  OrbitPbApi_Version_version = 1;
+}
+
+enum OrbitPbApi_WifiBand {
+  OrbitPbApi_WifiBand_wifiBand_2_4_gHz = 0;
+  OrbitPbApi_WifiBand_wifiBand_5_gHz = 1;
+}
+
+message BhyveAgApi_AgDeviceInfo {
+  optional BhyveAgApi_DeviceType deviceType = 1;
+  optional string hwVersion = 2;
+  optional string fwVersion = 3;
+}
+
+message BhyveAgApi_Ag_GetApList {
+  optional BhyveAgApi_DeviceType deviceType = 1;
+  optional BhyveAgApi_RadioPurpose radioPurpose = 2;
+  optional uint32 radioNumber = 3;
+}
+
+message BhyveAgApi_AuxMode {
+  enum Mode {
+    BhyveAgApi_AuxMode_Mode_mode_off = 0;
+    BhyveAgApi_AuxMode_Mode_mode_on = 1;
+    BhyveAgApi_AuxMode_Mode_mode_program = 2;
+    BhyveAgApi_AuxMode_Mode_mode_onUntilBarrier = 3;
+  }
+
+  enum Status {
+    BhyveAgApi_AuxMode_Status_off = 0;
+    BhyveAgApi_AuxMode_Status_on = 1;
+    BhyveAgApi_AuxMode_Status_off_waitingOnGps = 2;
+    BhyveAgApi_AuxMode_Status_off_waitingOnPressure = 3;
+    BhyveAgApi_AuxMode_Status_off_waitingOnPump = 4;
+    BhyveAgApi_AuxMode_Status_onUntilBarrier = 5;
+    BhyveAgApi_AuxMode_Status_unknown = 6;
+  }
+
+  optional Status status = 1;
+  optional Mode mode = 2;
+}
+
+message BhyveAgApi_CPA {
+  optional bytes macAddress = 1;
+  optional bool onboarded = 2;
+  optional bool gps = 3;
+  optional bool hasRepeater = 4;
+  optional bytes repeaterMacAddress = 5;
+  optional BhyveAgApi_thresholdShutoff pressureAutoRestart = 15;
+  optional BhyveAgApi_PressureSensorType pressureSensorType = 16;
+  optional BhyveAgApi_transducerParams transducer = 17;
+  optional BhyveAgApi_thresholdShutoff lowPressureShutoff = 18;
+  optional BhyveAgApi_thresholdShutoff highPressureShutoff = 19;
+  optional BhyveAgApi_thresholdShutoff pressureStartupDelay = 20;
+  optional BhyveAgApi_thresholdShutoff disconnectShutoff = 21;
+}
+
+message BhyveAgApi_CPAStatus {
+  enum ControlMode {
+    BhyveAgApi_CPAStatus_ControlMode_panel = 0;
+    BhyveAgApi_CPAStatus_ControlMode_remote = 1;
+  }
+
+  enum Mode {
+    BhyveAgApi_CPAStatus_Mode_off = 0;
+    BhyveAgApi_CPAStatus_Mode_on = 1;
+    BhyveAgApi_CPAStatus_Mode_program = 2;
+  }
+
+  enum Role {
+    BhyveAgApi_CPAStatus_Role_endGun = 0;
+    BhyveAgApi_CPAStatus_Role_gps = 1;
+  }
+
+  enum Status {
+    BhyveAgApi_CPAStatus_Status_state_idle = 0;
+    BhyveAgApi_CPAStatus_Status_state_channelSelect = 1;
+    BhyveAgApi_CPAStatus_Status_state_checkStatus = 2;
+    BhyveAgApi_CPAStatus_Status_state_unknown = 3;
+  }
+
+  optional bytes macAddress = 1;
+  repeated Role roles = 2;
+  optional bool linkConnected = 3;
+  optional bool moduleConnected = 4;
+  optional int32 channel = 5;
+  optional uint32 spreadingFactor = 6;
+  optional uint32 powerOutput = 7;
+  optional uint32 bandWidth = 8;
+  optional BhyveAgApi_Region region = 9;
+  optional uint32 firstChannel = 10;
+  optional int32 rssi = 11;
+  optional int32 snr = 12;
+  repeated bool highVoltageOutput = 13;
+  optional ControlMode controlMode = 14;
+  optional BhyveAgApi_Location location = 15;
+  optional BhyveAgApi_Location centerLocation = 16;
+  optional bytes fwVersion = 17;
+  optional bytes hwVersion = 18;
+  optional Status status = 19;
+  optional uint32 secSinceLastMsg = 20;
+  optional bytes gatewayMacAddress = 21;
+  optional bool factoryDefaults = 22;
+  optional float position = 23;
+  optional uint32 adc = 24;
+  optional bytes murataFwVersion = 25;
+  optional uint32 gallons = 26;
+  optional BhyveAgApi_flowMeterParams flowMeterParams = 27;
+  optional bool onboarded = 28;
+  optional Mode mode = 29;
+}
+
+message BhyveAgApi_CPA_ControlStatus {
+  enum ControlMode {
+    BhyveAgApi_CPA_ControlStatus_ControlMode_panel = 0;
+    BhyveAgApi_CPA_ControlStatus_ControlMode_remote = 1;
+  }
+
+  enum Mode {
+    BhyveAgApi_CPA_ControlStatus_Mode_off = 0;
+    BhyveAgApi_CPA_ControlStatus_Mode_on = 1;
+    BhyveAgApi_CPA_ControlStatus_Mode_program = 2;
+    BhyveAgApi_CPA_ControlStatus_Mode_onWhenWet = 3;
+  }
+
+  optional bytes macAddress = 1;
+  optional bool linkConnected = 2;
+  optional int32 rssi = 3;
+  optional int32 snr = 4;
+  optional uint32 secSinceLastMsg = 5;
+  optional string fwVersion = 6;
+  optional string hwVersion = 7;
+  optional string murataFwVersion = 8;
+  optional bool onboarded = 9;
+  optional ControlMode controlMode = 10;
+  repeated bool highVoltageOutput = 11;
+  optional Mode mode = 12;
+  repeated float analogInput = 13;
+  optional bool moduleConnected = 14;
+  optional BhyveAgApi_Region region = 15;
+  optional int32 channel = 16;
+  optional uint32 firstChannel = 17;
+  optional uint32 spreadingFactor = 18;
+  optional uint32 powerOutput = 19;
+  optional uint32 bandWidth = 20;
+  optional BhyveAgApi_Location location = 21;
+  optional BhyveAgApi_Location centerLocation = 22;
+  optional bytes gatewayMacAddress = 23;
+  optional bool factoryDefaults = 24;
+  optional float position = 25;
+}
+
+message BhyveAgApi_CPA_Settings {
+  enum Purpose {
+    BhyveAgApi_CPA_Settings_Purpose_endGun = 0;
+    BhyveAgApi_CPA_Settings_Purpose_remoteCpa = 1;
+  }
+
+  optional bytes macAddress = 1;
+  optional Purpose purpose = 2;
+  optional bool gps = 3;
+  optional bool onboarded = 4;
+  optional bool hasRepeater = 5;
+  optional bytes repeaterMacAddress = 6;
+  optional BhyveAgApi_thresholdShutoff pressureAutoRestart = 7;
+  optional BhyveAgApi_PressureSensorType pressureSensorType = 8;
+  optional BhyveAgApi_transducerParams transducer = 9;
+  optional BhyveAgApi_thresholdShutoff lowPressureShutoff = 10;
+  optional BhyveAgApi_thresholdShutoff highPressureShutoff = 11;
+  optional BhyveAgApi_thresholdShutoff pressureStartupDelay = 12;
+  optional BhyveAgApi_thresholdShutoff disconnectShutoff = 13;
+  optional BhyveAgApi_FlowSensorParamEntry flowSensorParams = 14;
+  optional BhyveAgApi_loraSettings loraSettings = 15;
+  optional BhyveAgApi_Location centerLocation = 16;
+  optional bytes gatewayMacAddress = 17;
+  optional bool factoryDefaults = 18;
+}
+
+message BhyveAgApi_CPA_StepProgramMode {
+  enum Mode {
+    BhyveAgApi_CPA_StepProgramMode_Mode_off = 0;
+    BhyveAgApi_CPA_StepProgramMode_Mode_on = 1;
+    BhyveAgApi_CPA_StepProgramMode_Mode_program = 2;
+    BhyveAgApi_CPA_StepProgramMode_Mode_onWhenWet = 3;
+  }
+
+  optional bytes macAddress = 1;
+  repeated Mode mode = 2;
+}
+
+message BhyveAgApi_CPCRadioStatus {
+  enum RadioAction {
+    BhyveAgApi_CPCRadioStatus_RadioAction_radioAction_unknown = 0;
+    BhyveAgApi_CPCRadioStatus_RadioAction_radioAction_ubntApScan = 1;
+    BhyveAgApi_CPCRadioStatus_RadioAction_radioAction_ubntConfig = 2;
+    BhyveAgApi_CPCRadioStatus_RadioAction_radioAction_ubntFindIpAddress = 3;
+    BhyveAgApi_CPCRadioStatus_RadioAction_radioAction_glinetConfig = 4;
+    BhyveAgApi_CPCRadioStatus_RadioAction_radioAction_cpaConfig = 5;
+    BhyveAgApi_CPCRadioStatus_RadioAction_radioAction_antennaAlign = 6;
+  }
+
+  enum RadioState {
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_idle = 0;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_wifiWait = 1;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_findIp = 2;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_setStatic = 3;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_pingWait = 4;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_sshInit = 5;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_action = 6;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_setDhcp = 7;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_confirmation = 8;
+    BhyveAgApi_CPCRadioStatus_RadioState_radioState_unknown = 9;
+  }
+
+  enum RadioStatus {
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_ok = 0;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_wifiTimout = 1;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_pingTimout = 2;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_sshFailed = 3;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_sshAuthenticateFailed = 4;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_actionFailed = 5;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_confirmationFailed = 6;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_unknown = 7;
+    BhyveAgApi_CPCRadioStatus_RadioStatus_radioStatus_error_outOfMemory = 8;
+  }
+
+  optional BhyveAgApi_DeviceType deviceType = 1;
+  optional RadioState radioState = 2;
+  optional RadioStatus radioStatus = 3;
+  optional RadioAction radioAction = 4;
+  optional bytes error = 5;
+  optional bool fieldRadioConfigured = 10;
+  optional bool glinetRadioConfigured = 11;
+  optional bool apScanComplete = 12;
+  optional bool pingedBaseStationRouter = 13;
+  optional bool pingedConfirmationHostname = 14;
+  optional bool glinetCustomNetworkConfigured = 15;
+}
+
+message BhyveAgApi_CP_ControlStatus {
+  enum Action {
+    BhyveAgApi_CP_ControlStatus_Action_faultStop = 0;
+    BhyveAgApi_CP_ControlStatus_Action_physicalAutoReverse = 1;
+    BhyveAgApi_CP_ControlStatus_Action_physicalAutoStop = 2;
+    BhyveAgApi_CP_ControlStatus_Action_virtualAutoReverse = 3;
+    BhyveAgApi_CP_ControlStatus_Action_virutalAutoStop = 4;
+    BhyveAgApi_CP_ControlStatus_Action_location_Stop = 5;
+    BhyveAgApi_CP_ControlStatus_Action_panelControl = 6;
+    BhyveAgApi_CP_ControlStatus_Action_serverControl = 7;
+    BhyveAgApi_CP_ControlStatus_Action_bleControl = 8;
+    BhyveAgApi_CP_ControlStatus_Action_programControl = 9;
+    BhyveAgApi_CP_ControlStatus_Action_panelModeSwitch = 10;
+  }
+
+  enum BarrierMode {
+    BhyveAgApi_CP_ControlStatus_BarrierMode_mode_disabled = 1;
+    BhyveAgApi_CP_ControlStatus_BarrierMode_mode_stop = 2;
+    BhyveAgApi_CP_ControlStatus_BarrierMode_mode_reverse = 3;
+  }
+
+  enum ControlMode {
+    BhyveAgApi_CP_ControlStatus_ControlMode_panel = 0;
+    BhyveAgApi_CP_ControlStatus_ControlMode_pendingPanel = 1;
+    BhyveAgApi_CP_ControlStatus_ControlMode_remote = 2;
+  }
+
+  enum Drive {
+    BhyveAgApi_CP_ControlStatus_Drive_stopped = 0;
+    BhyveAgApi_CP_ControlStatus_Drive_forward = 1;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse = 2;
+    BhyveAgApi_CP_ControlStatus_Drive_forward_idle = 3;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse_idle = 4;
+    BhyveAgApi_CP_ControlStatus_Drive_forward_waitingOnGps = 5;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse_waitingOnGps = 6;
+    BhyveAgApi_CP_ControlStatus_Drive_forward_waitingOnPressure = 7;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse_waitingOnPressure = 8;
+    BhyveAgApi_CP_ControlStatus_Drive_forward_waitingAtBarrier = 9;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse_waitingAtBarrier = 10;
+    BhyveAgApi_CP_ControlStatus_Drive_forward_checkingInducedVoltage = 11;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse_checkingInducedVoltage = 12;
+    BhyveAgApi_CP_ControlStatus_Drive_forward_waitingOnPump = 13;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse_waitingOnPump = 14;
+    BhyveAgApi_CP_ControlStatus_Drive_pendingPanelInputs = 15;
+    BhyveAgApi_CP_ControlStatus_Drive_drive_unknown = 16;
+    BhyveAgApi_CP_ControlStatus_Drive_forward_backToWaitingOnPressure = 17;
+    BhyveAgApi_CP_ControlStatus_Drive_reverse_backToWaitingOnPressure = 18;
+  }
+
+  enum PrevPump {
+    BhyveAgApi_CP_ControlStatus_PrevPump_dry = 1;
+    BhyveAgApi_CP_ControlStatus_PrevPump_wet = 2;
+  }
+
+  enum StepProgramMode {
+    BhyveAgApi_CP_ControlStatus_StepProgramMode_mode_on = 1;
+    BhyveAgApi_CP_ControlStatus_StepProgramMode_mode_off = 2;
+  }
+
+  optional uint32 sequenceNumber = 1;
+  optional ControlMode controlMode = 2;
+  optional Drive drive = 3;
+  optional BhyveAgApi_PumpMode pump = 4;
+  repeated BhyveAgApi_AuxMode auxiliaries = 5;
+  optional BhyveAgApi_SpeedMode speed = 6;
+  optional BarrierMode physicalBarrierMode = 7;
+  optional BarrierMode virtualBarrierMode = 8;
+  optional BhyveAgApi_LocationStop locationStop = 9;
+  repeated BhyveAgApi_CPA_ControlStatus cpas = 10;
+  optional float degree = 11;
+  repeated float analogInput = 12;
+  optional Action action = 13;
+  optional BhyveAgApi_Fault fault = 14;
+  optional BhyveAgApi_Lora_ControlStatus lora = 15;
+  optional uint32 tsmValue = 16;
+  optional Drive prevDrive = 17;
+  optional PrevPump prevPump = 18;
+  optional uint32 pivotRunTime = 19;
+  optional uint32 pumpRunTime = 20;
+  optional StepProgramMode stepProgramMode = 21;
+  optional uint32 stepProgramIndex = 22;
+  optional bool deadReckoning = 23;
+}
+
+message BhyveAgApi_CP_ControlStatusDebug {
+  optional uint32 pressure = 1;
+  optional bool verboseCpa = 2;
+}
+
+message BhyveAgApi_CP_MfrTest {
+  enum OperatingMode {
+    BhyveAgApi_CP_MfrTest_OperatingMode_normal = 0;
+    BhyveAgApi_CP_MfrTest_OperatingMode_testing = 1;
+  }
+
+  enum Test {
+    BhyveAgApi_CP_MfrTest_Test_ble = 0;
+    BhyveAgApi_CP_MfrTest_Test_continuity = 1;
+    BhyveAgApi_CP_MfrTest_Test_relays = 3;
+    BhyveAgApi_CP_MfrTest_Test_inputs = 4;
+    BhyveAgApi_CP_MfrTest_Test_lora = 5;
+    BhyveAgApi_CP_MfrTest_Test_pressure = 6;
+    BhyveAgApi_CP_MfrTest_Test_voltages = 7;
+    BhyveAgApi_CP_MfrTest_Test_leds = 8;
+    BhyveAgApi_CP_MfrTest_Test_buttons = 9;
+    BhyveAgApi_CP_MfrTest_Test_router = 10;
+    BhyveAgApi_CP_MfrTest_Test_opMode = 11;
+    BhyveAgApi_CP_MfrTest_Test_complete = 12;
+    BhyveAgApi_CP_MfrTest_Test_error = 13;
+  }
+
+  enum TestStatus {
+    BhyveAgApi_CP_MfrTest_TestStatus_notStarted = 0;
+    BhyveAgApi_CP_MfrTest_TestStatus_inProgress = 1;
+    BhyveAgApi_CP_MfrTest_TestStatus_passed = 2;
+    BhyveAgApi_CP_MfrTest_TestStatus_failed = 3;
+  }
+
+  optional Test test = 1;
+  optional Test operatingMode = 2;
+  repeated bool relayState = 3;
+  repeated bool inputState = 4;
+  repeated float analogInput = 5;
+  optional TestStatus relaySelfTest = 6;
+}
+
+message BhyveAgApi_CP_Program {
+  optional bytes programId = 1;
+  optional uint32 lastUpdatedTime = 2;
+  repeated BhyveAgApi_ProgramSector sectors = 3;
+}
+
+message BhyveAgApi_CP_Settings {
+  optional BhyveAgApi_Coordinate centerLocation = 1;
+  optional BhyveAgApi_shape shape = 2;
+  optional uint32 rotationMinutes = 3;
+  optional uint32 maxPivotSpeed = 4;
+  optional BhyveAgApi_timeShutoff pumpRestartDelay = 5;
+  optional uint32 safetyTimeout = 6;
+  optional BhyveAgApi_loraSettings loraSettings = 7;
+  optional BhyveAgApi_timeShutoff virtualOverwateringTimer = 8;
+  optional BhyveAgApi_timeShutoff gpsWaitMode = 9;
+  optional BhyveAgApi_timeShutoff gpsShutoff = 10;
+  optional uint32 barrierDelay = 11;
+  optional bool powerAutoRestart = 12;
+  optional BhyveAgApi_thresholdShutoff pressureAutoRestart = 13;
+  optional BhyveAgApi_PressureSensorType pressureSensorType = 14;
+  optional BhyveAgApi_transducerParams centerTransducer = 15;
+  optional BhyveAgApi_thresholdShutoff lowPressureShutoff = 16;
+  optional BhyveAgApi_thresholdShutoff highPressureShutoff = 17;
+  optional BhyveAgApi_thresholdShutoff pressureStartupDelay = 18;
+  optional BhyveAgApi_thresholdShutoff lowTemperatureShutoff = 19;
+  optional bool tsmEnabled = 20;
+  optional bool bumpCpaWhenDisconnected = 21;
+  optional bool vriProgramModeWhenDry = 22;
+  optional bool endGunModeWhenDry = 23;
+  optional bool auxProgramModeWhenDry = 24;
+  optional bool stoppedSafetyOutOn = 25;
+  repeated BhyveAgApi_CPA_Settings cpas = 26;
+  optional uint32 statusPeriod = 27;
+  optional uint32 keepAlivePeriod = 28;
+  optional uint32 reconnectBackoffTime = 29;
+  repeated float notificationsDegrees = 30;
+  optional BhyveAgApi_PN_SecDevSettings pumpNetwork = 31;
+  optional bool contactorsOnInIdle = 32;
+  optional bool allStopIdle = 33;
+}
+
+message BhyveAgApi_CP_StepProgram {
+  optional bytes programId = 1;
+  optional uint32 lastUpdatedTime = 2;
+  repeated BhyveAgApi_CP_StepProgramStep steps = 3;
+  optional bool loop = 4;
+}
+
+message BhyveAgApi_CP_StepProgramStep {
+  enum CPA_Mode {
+    BhyveAgApi_CP_StepProgramStep_CPA_Mode_off = 0;
+    BhyveAgApi_CP_StepProgramStep_CPA_Mode_on = 1;
+    BhyveAgApi_CP_StepProgramStep_CPA_Mode_program = 2;
+    BhyveAgApi_CP_StepProgramStep_CPA_Mode_onWhenWet = 3;
+  }
+
+  enum Drive {
+    BhyveAgApi_CP_StepProgramStep_Drive_stopped = 0;
+    BhyveAgApi_CP_StepProgramStep_Drive_forward = 1;
+    BhyveAgApi_CP_StepProgramStep_Drive_reverse = 2;
+  }
+
+  optional float startPosition = 1;
+  optional float endPosition = 2;
+  optional uint32 delaySec = 3;
+  optional Drive drive = 4;
+  optional BhyveAgApi_PumpMode pump = 5;
+  repeated BhyveAgApi_AuxMode auxiliaries = 6;
+  optional BhyveAgApi_SpeedMode speed = 7;
+  repeated BhyveAgApi_CPA_StepProgramMode cpas = 8;
+}
+
+message BhyveAgApi_ClearFaults {
+  optional uint32 pumpId = 1;
+}
+
+message BhyveAgApi_Coordinate {
+  optional float latitude = 1;
+  optional float longitude = 2;
+}
+
+message BhyveAgApi_Cpa_GetStatus {
+  optional bool coordinates = 1;
+  optional bool numberOfSatellites = 2;
+  optional bool fixQuality = 3;
+  optional bool utcTime = 4;
+  optional bool position = 5;
+  optional bool adc = 6;
+  optional bool gpsFrequency = 7;
+  optional bool highVoltageOutputs = 8;
+  optional bool firmwareVersion = 9;
+  optional bool hardwareVersion = 10;
+  optional bool connected = 11;
+  optional bool region = 12;
+  optional bool channel = 13;
+  optional bool spreadingFactor = 14;
+  optional bool state = 15;
+  optional bool remoteMode = 17;
+  optional bool murataFirmwareVersion = 18;
+  optional bool centerLongitude = 20;
+  optional bool centerLatitude = 21;
+  optional bool onboardingDenied = 22;
+  optional uint32 setChannel = 30;
+}
+
+message BhyveAgApi_Cpa_HighVoltageOutput {
+  optional bool mode = 1;
+}
+
+message BhyveAgApi_Cpa_MfrTest {
+}
+
+message BhyveAgApi_Cpa_Onboard {
+  optional float centerLongitude = 1;
+  optional float centerLatitude = 2;
+  optional uint32 setChannel = 3;
+}
+
+message BhyveAgApi_Cpa_SetSettings {
+  optional uint32 gpsFrequency = 1;
+  optional bool remoteMode = 2;
+  repeated BhyveAgApi_Cpa_HighVoltageOutput highVoltageOutputs = 3;
+  optional float centerLongitude = 4;
+  optional float centerLatitude = 5;
+  optional bytes factoryResetCode = 6;
+  optional uint32 channel = 7;
+}
+
+message BhyveAgApi_Cpa_Status {
+  enum State {
+    BhyveAgApi_Cpa_Status_State_state_idle = 0;
+    BhyveAgApi_Cpa_Status_State_state_channelSelect = 1;
+    BhyveAgApi_Cpa_Status_State_state_checkStatus = 2;
+    BhyveAgApi_Cpa_Status_State_state_unknown = 3;
+  }
+
+  optional float longitude = 1;
+  optional float latitude = 2;
+  optional uint32 numberOfSatellites = 3;
+  optional uint32 fixQuality = 4;
+  optional uint32 utcTime = 5;
+  optional float position = 6;
+  repeated float analogInput = 7;
+  optional uint32 gpsFrequency = 8;
+  repeated BhyveAgApi_Cpa_HighVoltageOutput highVoltageOutputs = 9;
+  optional uint32 firmwareVersion = 10;
+  optional uint32 hardwareVersion = 11;
+  optional bool connected = 12;
+  optional State state = 13;
+  optional uint32 channel = 14;
+  optional uint32 spreadingFactor = 15;
+  optional BhyveAgApi_Region region = 16;
+  optional bool remoteMode = 17;
+  optional uint32 murataFirmwareVersion = 18;
+  optional float centerLongitude = 20;
+  optional float centerLatitude = 21;
+  optional bool onboardingDenied = 22;
+  optional uint32 betaFirmwareVersion = 23;
+}
+
+message BhyveAgApi_EndGun {
+  optional bytes macAddress = 1;
+  optional uint32 relayIndex = 2;
+}
+
+message BhyveAgApi_Fault {
+  enum Type {
+    BhyveAgApi_Fault_Type_none = 0;
+    BhyveAgApi_Fault_Type_safety = 1;
+    BhyveAgApi_Fault_Type_lowPressure = 2;
+    BhyveAgApi_Fault_Type_highPressure = 3;
+    BhyveAgApi_Fault_Type_centerPressureNeverReached = 4;
+    BhyveAgApi_Fault_Type_lowTemperature = 5;
+    BhyveAgApi_Fault_Type_lowVoltage = 6;
+    BhyveAgApi_Fault_Type_gps = 7;
+    BhyveAgApi_Fault_Type_endGun = 8;
+    BhyveAgApi_Fault_Type_outOfBounds = 9;
+    BhyveAgApi_Fault_Type_stuckOnBarrier = 10;
+    BhyveAgApi_Fault_Type_misAlignedTower = 11;
+    BhyveAgApi_Fault_Type_cpaDisconnected = 12;
+    BhyveAgApi_Fault_Type_cpaPressureNeverReached = 13;
+    BhyveAgApi_Fault_Type_noCpaSetAsGps = 14;
+    BhyveAgApi_Fault_Type_gpsCpaDisconnected = 15;
+    BhyveAgApi_Fault_Type_gpsTooFewSatellites = 16;
+    BhyveAgApi_Fault_Type_cpaLowPressure = 17;
+    BhyveAgApi_Fault_Type_cpaHighPressure = 18;
+    BhyveAgApi_Fault_Type_virtualOverwateringTimer = 19;
+  }
+
+  optional Type type = 1;
+  optional float threshold = 2;
+  optional uint32 timeout = 3;
+}
+
+message BhyveAgApi_FaultType_BrownOut {
+}
+
+message BhyveAgApi_FaultType_FlushLoop {
+}
+
+message BhyveAgApi_FaultType_HighFlow {
+  optional uint32 flowGpm = 1;
+}
+
+message BhyveAgApi_FaultType_HighGridVoltage {
+  optional float temperatureC = 1;
+}
+
+message BhyveAgApi_FaultType_HighPressure {
+  optional uint32 transducerId = 1;
+  optional float pressurePa = 2;
+}
+
+message BhyveAgApi_FaultType_HighTemperature {
+  optional float temperatureC = 1;
+}
+
+message BhyveAgApi_FaultType_LowFlow {
+  optional uint32 flowGpm = 1;
+}
+
+message BhyveAgApi_FaultType_LowGridVoltage {
+  optional float temperatureC = 1;
+}
+
+message BhyveAgApi_FaultType_LowPressure {
+  optional uint32 transducerId = 1;
+  optional float pressurePa = 2;
+}
+
+message BhyveAgApi_FaultType_LowTemperature {
+  optional float temperatureC = 1;
+}
+
+message BhyveAgApi_FaultType_NoFlow {
+}
+
+message BhyveAgApi_FaultType_NoResponse {
+}
+
+message BhyveAgApi_FaultType_NoSolenoid {
+  optional uint32 flowGpm = 1;
+}
+
+message BhyveAgApi_FaultType_Unavailable {
+}
+
+message BhyveAgApi_FaultType_UnscheduledFlow {
+  optional uint32 flowGpm = 1;
+}
+
+message BhyveAgApi_FlowMeterCfg {
+  optional float highFlowAlertThresholdGpm = 1;
+  optional float lowFlowAlertThresholdGpm = 2;
+  optional float highFlowFaultThresholdGpm = 3;
+  optional float lowFlowFaultThresholdGpm = 4;
+  optional uint32 pipeFillTimeSec = 5;
+  optional float flowAlertThresholdPercent = 6;
+  optional float flowFaultThresholdPercent = 7;
+}
+
+message BhyveAgApi_FlowSensorLog {
+  optional uint32 timestamp = 1;
+  optional uint32 dailyTotalGal = 2;
+}
+
+message BhyveAgApi_FlowSensorLogs {
+  repeated BhyveAgApi_FlowSensorLog log = 1;
+}
+
+message BhyveAgApi_FlowSensorParamEntry {
+  optional float kValue = 1;
+  optional float offset = 2;
+  optional uint32 flowSensorId = 3;
+  optional float leakGallons = 4;
+  optional uint32 leakSeconds = 5;
+}
+
+message BhyveAgApi_FlowSensorParams {
+  repeated BhyveAgApi_FlowSensorParamEntry entries = 1;
+}
+
+message BhyveAgApi_Flush {
+  enum Cmd {
+    BhyveAgApi_Flush_Cmd_start = 0;
+    BhyveAgApi_Flush_Cmd_stop = 1;
+  }
+
+  optional Cmd command = 1;
+}
+
+message BhyveAgApi_FlushStatus {
+  enum Reason {
+    BhyveAgApi_FlushStatus_Reason_manual_btn = 0;
+    BhyveAgApi_FlushStatus_Reason_manual_ble = 1;
+    BhyveAgApi_FlushStatus_Reason_manual_server = 2;
+    BhyveAgApi_FlushStatus_Reason_pressure = 3;
+    BhyveAgApi_FlushStatus_Reason_time = 4;
+  }
+
+  enum Status {
+    BhyveAgApi_FlushStatus_Status_idle = 0;
+    BhyveAgApi_FlushStatus_Status_flushing = 1;
+    BhyveAgApi_FlushStatus_Status_recharging = 2;
+    BhyveAgApi_FlushStatus_Status_sustainingValve = 3;
+    BhyveAgApi_FlushStatus_Status_pendingFlush = 4;
+  }
+
+  optional Status status = 1;
+  optional Reason reason = 2;
+  optional uint32 filterNum = 3;
+  optional float differentialPressure = 4;
+  optional uint32 secToNextFlush = 5;
+  optional uint32 remainingTimeSec = 6;
+}
+
+message BhyveAgApi_Flush_Settings {
+  optional bool enabled = 1;
+  repeated uint32 stationIds = 2;
+  optional float minPressurePa = 3;
+  optional uint32 sustainingValvePredwellSec = 4;
+  optional uint32 sustainingValveStationId = 5;
+  optional bool timeIntervalEnable = 6;
+  optional uint32 timeIntervalPeriodSec = 7;
+  optional uint32 flushTimeSec = 8;
+  optional uint32 rechargeTimeSec = 9;
+  optional bool differentialEnable = 10;
+  optional uint32 differentialPressurePa = 11;
+  optional bool rotateFirstFilter = 12;
+  optional uint32 flushLoopCyclesMax = 13;
+  optional uint32 betweenFlushLoopCyclesSec = 14;
+}
+
+message BhyveAgApi_GC_Control {
+  repeated BhyveAgApi_PN_PumpNetworkSettings pumpNetwork = 1;
+}
+
+message BhyveAgApi_GC_FaultStatus {
+  repeated BhyveAgApi_PumpFault pumpFaults = 1;
+  repeated BhyveAgApi_StationFault stationFaults = 2;
+  optional BhyveAgApi_FaultType_FlushLoop flushLoop = 3;
+  optional BhyveAgApi_FaultType_BrownOut brownOut = 4;
+}
+
+message BhyveAgApi_GC_GetStatus {
+}
+
+message BhyveAgApi_GC_Settings {
+  repeated BhyveAgApi_PumpCfgEntry pumps = 1;
+  repeated BhyveAgApi_TransducerParamsEntry transducers = 2;
+  repeated BhyveAgApi_FlowSensorParamEntry flowMeters = 3;
+  optional BhyveAgApi_Flush_Settings flushing = 4;
+}
+
+message BhyveAgApi_GC_Status {
+  enum PumpStatus {
+    BhyveAgApi_GC_Status_PumpStatus_off = 0;
+    BhyveAgApi_GC_Status_PumpStatus_on = 1;
+    BhyveAgApi_GC_Status_PumpStatus_off_restartDelay = 2;
+    BhyveAgApi_GC_Status_PumpStatus_off_waitingOnPressure = 3;
+    BhyveAgApi_GC_Status_PumpStatus_off_faulted = 4;
+  }
+
+  optional float temperatureC = 1;
+  optional float gridVoltage = 2;
+  repeated bool highVoltageInput = 3;
+  repeated float flowMeterTotalsGal = 4;
+  repeated float flowRateGpm = 5;
+  repeated float analogInput = 6;
+  optional BhyveAgApi_FlushStatus flushStatus = 7;
+  optional BhyveAgApi_GC_FaultStatus faultStatus = 8;
+  repeated PumpStatus pumpStatus = 9;
+  repeated BhyveAgApi_PN_SecDevStatus secDeviceStatus = 10;
+}
+
+message BhyveAgApi_GetFlowSensorLogs {
+  optional uint32 startTimestamp = 1;
+  optional uint32 endTimestamp = 2;
+}
+
+message BhyveAgApi_GetIpRadioData {
+  optional BhyveAgApi_RadioPurpose radioPurpose = 1;
+  optional uint32 radioNumber = 2;
+  optional bytes macAddress = 3;
+}
+
+message BhyveAgApi_GetLog {
+  enum BhyveAgApi_LogId {
+    BhyveAgApi_GetLog_BhyveAgApi_LogId_statusLog = 0;
+    BhyveAgApi_GetLog_BhyveAgApi_LogId_waterTotalLog = 1;
+  }
+
+  optional BhyveAgApi_LogId logId = 1;
+  optional uint32 lastLogTimeSecEpochUTC = 2;
+  optional uint32 lastLogIndex = 3;
+}
+
+message BhyveAgApi_GetRadioConfigStatus {
+}
+
+message BhyveAgApi_GetTSMValue {
+}
+
+message BhyveAgApi_HTTP_RequestResponse {
+  enum Error {
+    BhyveAgApi_HTTP_RequestResponse_Error_failedOpeningSocket = 0;
+  }
+
+  optional uint32 ipv4AddressRev = 1;
+  optional uint32 port = 2;
+  optional bool https = 3;
+  optional string data = 4;
+  optional bool moreData = 5;
+  repeated string subString = 6;
+  optional uint32 receiveTimeoutMs = 7;
+  optional bool ack = 8;
+  optional Error error = 9;
+}
+
+message BhyveAgApi_IpRadioAccessPointData {
+  optional BhyveAgApi_IpRadioData data = 1;
+  optional bytes ssid = 2;
+  optional bytes passphrase = 3;
+  optional BhyveAgApi_ChannelWidth channelWidth = 4;
+  optional uint32 centerFrequency = 5;
+  repeated BhyveAgApi_IpRadioData clients = 10;
+  optional uint32 clientCount = 11;
+}
+
+message BhyveAgApi_IpRadioData {
+  optional bytes macAddress = 1;
+  optional bytes ipAddress = 2;
+  optional int32 signalRx = 3;
+  optional int32 signalTx = 4;
+  optional int32 noisefloor = 5;
+  optional int32 uptime = 6;
+  optional bytes fwVersion = 7;
+  optional int32 downLinkCapacity = 8;
+  optional int32 upLinkCapacity = 9;
+  optional int32 cableLen = 10;
+  optional int32 connectionTime = 11;
+  optional int32 txPower = 12;
+  optional int32 countryCode = 13;
+}
+
+message BhyveAgApi_LineVoltageCfg {
+  optional uint32 lowLineVoltageFaultThreshVac = 1;
+  optional uint32 highLineVoltageFaultThreshVac = 2;
+  optional uint32 lineVoltageFaultHoldTimeSec = 3;
+}
+
+message BhyveAgApi_Location {
+  optional float latitude = 1;
+  optional float longitude = 2;
+  optional uint32 numberOfSatellites = 3;
+  optional uint32 fixQuality = 4;
+}
+
+message BhyveAgApi_LocationStop {
+  optional bool enabled = 1;
+  optional float endPosition = 2;
+  optional uint32 numOfPasses = 3;
+  optional bytes preset = 4;
+}
+
+message BhyveAgApi_Log {
+  repeated BhyveAgApi_LogEntry logEntry = 1;
+}
+
+message BhyveAgApi_LogEntry {
+  optional uint32 logTimeSecEpochUTC = 1;
+  optional uint32 logIndex = 2;
+  oneof message {
+    BhyveAgApi_GC_Status statusLogEntry = 3;
+    BhyveAgApi_WaterTotals waterTotalsLogEntry = 4;
+  }
+}
+
+message BhyveAgApi_Lora_ControlStatus {
+  enum Status {
+    BhyveAgApi_Lora_ControlStatus_Status_state_idle = 0;
+    BhyveAgApi_Lora_ControlStatus_Status_state_channelSelect = 1;
+    BhyveAgApi_Lora_ControlStatus_Status_state_checkStatus = 2;
+    BhyveAgApi_Lora_ControlStatus_Status_state_unknown = 3;
+  }
+
+  optional bool moduleConnected = 1;
+  optional uint32 channel = 2;
+  optional string fwVersion = 3;
+  optional string hwVersion = 4;
+  optional Status status = 5;
+  optional uint32 startChannel = 6;
+  optional uint32 spreadingFactor = 7;
+  optional uint32 powerOutput = 8;
+}
+
+message BhyveAgApi_PN_Pivot {
+  optional bytes macAddress = 1;
+  optional bool hasValve = 2;
+  repeated uint32 boosterPumpIds = 3;
+}
+
+message BhyveAgApi_PN_Pump {
+  enum Mode {
+    BhyveAgApi_PN_Pump_Mode_alwaysOn = 0;
+    BhyveAgApi_PN_Pump_Mode_alwaysOff = 1;
+    BhyveAgApi_PN_Pump_Mode_program = 2;
+  }
+
+  enum Type {
+    BhyveAgApi_PN_Pump_Type_primary = 0;
+    BhyveAgApi_PN_Pump_Type_booster = 1;
+  }
+
+  optional uint32 pumpId = 1;
+  optional bytes macAddress = 2;
+  optional Mode mode = 3;
+  optional uint32 ipAddress = 4;
+  optional Type type = 5;
+  optional float pumpOnPressureThresholdPa = 6;
+}
+
+message BhyveAgApi_PN_PumpNetworkSettings {
+  optional bytes programId = 1;
+  repeated BhyveAgApi_PN_Pump pumps = 2;
+  repeated BhyveAgApi_PN_Pivot pivots = 3;
+  optional bytes mainDeviceMacAddress = 4;
+  optional uint32 mainDeviceIpAddress = 5;
+  optional BhyveAgApi_timeShutoff noResponseTimeout = 6;
+}
+
+message BhyveAgApi_PN_SecDevControl {
+  optional uint32 pumpId = 1;
+  optional bool pumpEnable = 2;
+}
+
+message BhyveAgApi_PN_SecDevSettings {
+  optional bytes mainDeviceMacAddress = 1;
+  optional uint32 mainDeviceIpAddress = 2;
+}
+
+message BhyveAgApi_PN_SecDevStatus {
+  enum Status {
+    BhyveAgApi_PN_SecDevStatus_Status_off = 0;
+    BhyveAgApi_PN_SecDevStatus_Status_on = 1;
+    BhyveAgApi_PN_SecDevStatus_Status_off_waitingOnPressure = 2;
+    BhyveAgApi_PN_SecDevStatus_Status_off_restartDelay = 3;
+    BhyveAgApi_PN_SecDevStatus_Status_off_faulted = 4;
+    BhyveAgApi_PN_SecDevStatus_Status_on_twoMinuteTransition = 5;
+    BhyveAgApi_PN_SecDevStatus_Status_unknown = 6;
+  }
+
+  optional bool pumpEnabled = 1;
+  optional float pressurePa = 2;
+  optional bytes macAddress = 3;
+  optional uint32 lastCheckTimestamp = 4;
+  optional bool noResponseFault = 5;
+  optional Status pumpStatus = 6;
+  optional uint32 pumpId = 7;
+}
+
+message BhyveAgApi_PingNetwork {
+  repeated bytes hostname = 1;
+  optional bool factoryDefaultCheck = 2;
+}
+
+message BhyveAgApi_PingResultEntry {
+  optional bytes hostname = 1;
+  optional bool success = 2;
+}
+
+message BhyveAgApi_PingResults {
+  repeated BhyveAgApi_PingResultEntry results = 1;
+}
+
+message BhyveAgApi_PressureCfgEntry {
+  optional uint32 transducerId = 1;
+  optional float highPressureFaultThresholdPa = 2;
+  optional float highPressureAlertThresholdPa = 3;
+  optional float lowPressureAlertThresholdPa = 4;
+  optional float lowPressureFaultThresholdPa = 5;
+}
+
+message BhyveAgApi_ProgramSector {
+  enum TravelDirection {
+    BhyveAgApi_ProgramSector_TravelDirection_forward = 0;
+    BhyveAgApi_ProgramSector_TravelDirection_reverse = 1;
+    BhyveAgApi_ProgramSector_TravelDirection_both = 2;
+  }
+
+  optional float startDegree = 1;
+  optional float endDegree = 2;
+  optional TravelDirection direction = 3;
+  optional float speedPercent = 4;
+  repeated BhyveAgApi_EndGun endGuns = 5;
+  repeated bool auxiliary = 6;
+}
+
+message BhyveAgApi_PumpCfgEntry {
+  optional uint32 pumpId = 1;
+  optional uint32 pressureBuildTimeSec = 2;
+  optional BhyveAgApi_timeShutoff restartDelay = 3;
+  repeated BhyveAgApi_PressureCfgEntry pressureCfgEntries = 4;
+  optional bool powerAutoRestart = 5;
+  optional BhyveAgApi_FlowMeterCfg flowMeterCfg = 6;
+  optional BhyveAgApi_TemperatureCfg temperatureCfg = 7;
+  optional BhyveAgApi_LineVoltageCfg lineVoltageCfg = 8;
+  optional bool noVoltageInputDetectAlertEnable = 9;
+}
+
+message BhyveAgApi_PumpControl {
+  enum Pump_Cmd {
+    BhyveAgApi_PumpControl_Pump_Cmd_off = 0;
+    BhyveAgApi_PumpControl_Pump_Cmd_on = 1;
+    BhyveAgApi_PumpControl_Pump_Cmd_timed = 2;
+  }
+
+  repeated uint32 pumpId = 1;
+  optional Pump_Cmd command = 2;
+  optional uint32 timeSec = 3;
+}
+
+message BhyveAgApi_PumpFault {
+  optional uint32 pumpId = 1;
+  optional uint32 timestampSecEpochUtc = 2;
+  optional BhyveAgApi_FaultType_Unavailable unavailable = 3;
+  optional BhyveAgApi_FaultType_HighFlow highFlow = 4;
+  optional BhyveAgApi_FaultType_LowFlow lowFlow = 5;
+  optional BhyveAgApi_FaultType_HighFlow highFlowAlarm = 6;
+  optional BhyveAgApi_FaultType_LowFlow lowFlowAlarm = 7;
+  repeated BhyveAgApi_FaultType_HighPressure highPressure = 8;
+  repeated BhyveAgApi_FaultType_LowPressure lowPressure = 9;
+  repeated BhyveAgApi_FaultType_HighPressure highPressureAlarm = 10;
+  repeated BhyveAgApi_FaultType_LowPressure lowPressureAlarm = 11;
+  optional BhyveAgApi_FaultType_LowTemperature lowTemperature = 12;
+  optional BhyveAgApi_FaultType_HighTemperature highTemperature = 13;
+  optional BhyveAgApi_FaultType_LowGridVoltage lowGridVoltage = 14;
+  optional BhyveAgApi_FaultType_HighGridVoltage highGridVoltage = 15;
+  optional BhyveAgApi_FaultType_NoResponse noResponse = 16;
+}
+
+message BhyveAgApi_PumpMode {
+  enum Mode {
+    BhyveAgApi_PumpMode_Mode_mode_off = 0;
+    BhyveAgApi_PumpMode_Mode_mode_on = 1;
+    BhyveAgApi_PumpMode_Mode_mode_program = 2;
+    BhyveAgApi_PumpMode_Mode_mode_unknown = 3;
+  }
+
+  enum Status {
+    BhyveAgApi_PumpMode_Status_off = 0;
+    BhyveAgApi_PumpMode_Status_on = 1;
+    BhyveAgApi_PumpMode_Status_off_waitingForGps = 2;
+    BhyveAgApi_PumpMode_Status_off_restartDelay = 3;
+    BhyveAgApi_PumpMode_Status_on_twoMinuteTransition = 4;
+    BhyveAgApi_PumpMode_Status_unknown = 5;
+  }
+
+  optional Status status = 1;
+  optional Mode mode = 2;
+}
+
+message BhyveAgApi_RadioConfigStatus {
+  enum State {
+    BhyveAgApi_RadioConfigStatus_State_state_unknown = 0;
+    BhyveAgApi_RadioConfigStatus_State_state_idle = 1;
+    BhyveAgApi_RadioConfigStatus_State_state_error = 2;
+    BhyveAgApi_RadioConfigStatus_State_state_connecting = 3;
+    BhyveAgApi_RadioConfigStatus_State_state_changeSshPassword = 4;
+    BhyveAgApi_RadioConfigStatus_State_state_configWiFi = 5;
+    BhyveAgApi_RadioConfigStatus_State_state_writeRadioConfig = 6;
+    BhyveAgApi_RadioConfigStatus_State_state_configSsid = 7;
+    BhyveAgApi_RadioConfigStatus_State_state_configPassphrase = 8;
+    BhyveAgApi_RadioConfigStatus_State_state_reConnect = 9;
+    BhyveAgApi_RadioConfigStatus_State_state_waitingForWiFiConnect = 10;
+    BhyveAgApi_RadioConfigStatus_State_state_scanningForBaseStations = 11;
+    BhyveAgApi_RadioConfigStatus_State_state_gettingRadioData = 12;
+  }
+
+  enum Status {
+    BhyveAgApi_RadioConfigStatus_Status_status_unknown = 0;
+    BhyveAgApi_RadioConfigStatus_Status_status_idle = 1;
+    BhyveAgApi_RadioConfigStatus_Status_status_cmdInProgress = 2;
+    BhyveAgApi_RadioConfigStatus_Status_status_cmdSuccess = 3;
+    BhyveAgApi_RadioConfigStatus_Status_status_error_sshLibInitFailed = 4;
+    BhyveAgApi_RadioConfigStatus_Status_status_error_sshConnectFail_hostNotFound = 5;
+    BhyveAgApi_RadioConfigStatus_Status_status_error_sshConnectFail_handshakeFailed = 6;
+    BhyveAgApi_RadioConfigStatus_Status_status_error_sshConnectFail_incorrectAuth = 7;
+    BhyveAgApi_RadioConfigStatus_Status_status_error_cmdFailed = 8;
+    BhyveAgApi_RadioConfigStatus_Status_status_error_unknown = 9;
+  }
+
+  optional BhyveAgApi_DeviceType deviceType = 1;
+  optional State radioConfigState = 2;
+  optional Status radioConfigStatus = 3;
+  optional BhyveAgApi_RadioPurpose radioPurpose = 4;
+  optional bool radioConfigured = 5;
+  optional bool pingedConfirmationHostname = 6;
+}
+
+message BhyveAgApi_RadioConfigure {
+  optional BhyveAgApi_DeviceType deviceType = 1;
+  optional bytes hostname = 2;
+  optional bytes sshPassword = 3;
+  optional bytes ssid = 4;
+  optional bytes wifiPassword = 5;
+  optional BhyveAgApi_SecType secType = 6;
+  optional bool useDhcp = 7;
+  optional uint32 ipv4Address = 8;
+  optional uint32 ipv4SubnetMask = 9;
+  optional uint32 ipv4Gateway = 10;
+  optional uint32 ipv4PrimaryDns = 11;
+  optional uint32 ipv4SecondaryDns = 12;
+  optional bytes baseUsername = 13;
+  optional bytes basePassword = 14;
+  optional bytes cpaMacAddress = 15;
+  optional bytes cpaKey = 16;
+  optional BhyveAgApi_Region region = 17;
+  optional BhyveAgApi_RadioPurpose radioPurpose = 18;
+  optional uint32 radioNumber = 19;
+  optional BhyveAgApi_ChannelWidth channelWidth = 20;
+  optional uint32 centerFrequency = 21;
+  optional int32 txPower = 22;
+  optional uint32 countryCode = 23;
+  optional bytes confirmationHostname = 25;
+  optional bytes deviceName = 26;
+  optional bool useWifi = 27;
+}
+
+message BhyveAgApi_RepeaterConfig {
+  optional bytes repeaterDestinationId = 1;
+  optional uint32 timesRepeated = 2;
+  optional int32 rssi = 3;
+  optional int32 snr = 4;
+}
+
+message BhyveAgApi_ResetRadioConfigure {
+}
+
+message BhyveAgApi_RestartDevice {
+  optional BhyveAgApi_RadioPurpose radioPurpose = 1;
+  optional uint32 radioNumber = 2;
+  optional bool bootInSshMode = 3;
+}
+
+message BhyveAgApi_SetIpRadioData {
+  optional BhyveAgApi_RadioPurpose radioPurpose = 1;
+  optional uint32 radioNumber = 2;
+  optional BhyveAgApi_IpRadioData clientRadio = 3;
+  optional BhyveAgApi_IpRadioAccessPointData accessPointRadio = 4;
+}
+
+message BhyveAgApi_SetMac {
+  optional bytes macAddress = 1;
+}
+
+message BhyveAgApi_SpeedMode {
+  enum Mode {
+    BhyveAgApi_SpeedMode_Mode_mode_manual = 0;
+    BhyveAgApi_SpeedMode_Mode_mode_vriSectorprogram = 1;
+    BhyveAgApi_SpeedMode_Mode_mode_timedRotation = 2;
+    BhyveAgApi_SpeedMode_Mode_mode_ratchetMode = 3;
+  }
+
+  optional float currentSpeed = 1;
+  optional Mode mode = 2;
+  optional float manualSpeed = 3;
+  optional BhyveAgApi_timedRotation timedRotation = 4;
+  optional BhyveAgApi_ratchetMode ratchetMode = 5;
+}
+
+message BhyveAgApi_StartAntennaAlignnment {
+}
+
+message BhyveAgApi_StationFault {
+  optional uint32 stationId = 1;
+  optional uint32 timestampSecEpochUtc = 2;
+  optional BhyveAgApi_FaultType_Unavailable unavailable = 3;
+  optional BhyveAgApi_FaultType_NoSolenoid noSolenoid = 4;
+  optional BhyveAgApi_FaultType_NoFlow noFlow = 5;
+  optional BhyveAgApi_FaultType_HighFlow highFlow = 6;
+  optional BhyveAgApi_FaultType_LowFlow lowFlow = 7;
+  optional BhyveAgApi_FaultType_UnscheduledFlow unscheduledFlow = 8;
+}
+
+message BhyveAgApi_StopAntennaAlignnment {
+}
+
+message BhyveAgApi_TemperatureCfg {
+  optional int32 lowTemperatureFaultThreshC = 1;
+  optional int32 temperaturePumpRestartThreshC = 2;
+  optional uint32 temperatureFaultHoldTimeSec = 3;
+}
+
+message BhyveAgApi_TransducerParamsEntry {
+  enum InputType {
+    BhyveAgApi_TransducerParamsEntry_InputType_current = 1;
+    BhyveAgApi_TransducerParamsEntry_InputType_voltage = 2;
+  }
+
+  optional float lowVoltage = 1;
+  optional float highVoltage = 2;
+  optional uint32 lowPressure = 3;
+  optional uint32 highPressure = 4;
+  optional InputType inputType = 5;
+  optional uint32 transducerId = 6;
+}
+
+message BhyveAgApi_VRIZone {
+  enum Mode {
+    BhyveAgApi_VRIZone_Mode_off = 0;
+    BhyveAgApi_VRIZone_Mode_on = 1;
+    BhyveAgApi_VRIZone_Mode_pulse = 2;
+  }
+
+  optional Mode mode = 1;
+  optional uint32 relayIndex = 2;
+  optional uint32 pulseOnSec = 3;
+  optional uint32 pulseOffSec = 4;
+}
+
+message BhyveAgApi_WaterTotals {
+  repeated uint64 dailyTotalGallons = 1;
+  repeated uint64 lifetimeTotalThousandGals = 2;
+}
+
+message BhyveAgApi_flowMeterParams {
+  optional float kValue = 1;
+  optional float offset = 2;
+}
+
+message BhyveAgApi_loraSettings {
+  optional BhyveAgApi_Region region = 1;
+  optional uint32 channel = 2;
+  optional uint32 spreadingFactor = 3;
+  optional uint32 powerOutput = 4;
+  optional uint32 firstChannel = 5;
+}
+
+message BhyveAgApi_ratchetMode {
+  optional uint32 forwardTravelDegrees = 1;
+  optional float forwardTravelSpeed = 2;
+}
+
+message BhyveAgApi_shape {
+  optional float length = 1;
+  optional float forwardBarrier = 2;
+  optional float reverseBarrier = 3;
+}
+
+message BhyveAgApi_thresholdShutoff {
+  optional bool enabled = 1;
+  optional uint32 threshold = 2;
+  optional uint32 timeout = 3;
+}
+
+message BhyveAgApi_timeShutoff {
+  optional bool enabled = 1;
+  optional uint32 timeout = 2;
+}
+
+message BhyveAgApi_timedRotation {
+  optional uint32 endTime = 1;
+  optional float endPosition = 2;
+}
+
+message BhyveAgApi_transducerParams {
+  enum InputType {
+    BhyveAgApi_transducerParams_InputType_current = 1;
+    BhyveAgApi_transducerParams_InputType_voltage = 2;
+  }
+
+  optional float lowVoltage = 1;
+  optional float highVoltage = 2;
+  optional uint32 lowPressure = 3;
+  optional uint32 highPressure = 4;
+  optional InputType inputType = 5;
+}
+
+message OrbitApApi_ConcurrentPrograms {
+  repeated OrbitPbApi_ProgramId programs = 1;
+}
+
+message OrbitPbAPi_BleBridgeGetStatus {
+  optional bool includeFwVersion = 1;
+}
+
+message OrbitPbAPi_BleBridgeStatus {
+  optional uint32 bootloaderFwVersion = 1;
+  optional uint32 radioFwVersion = 2;
+  optional uint32 appFwVersion = 3;
+  optional bool isProvisioned = 4;
+  optional bool nvmSettingsReceived = 5;
+  optional bool gattClientConnected = 6;
+  optional bytes gattClientAddress = 7;
+  optional bool isAdvertising = 8;
+  optional uint32 bleSettingsHash = 9;
+  optional OrbitPbApi_BleBridgedDeviceStatus bleBridgeDeviceStatus = 10;
+}
+
+message OrbitPbApi_Ack {
+}
+
+message OrbitPbApi_ActivePrograms {
+  required uint32 activeProgramFlags = 1;
+  optional uint32 lastChangeDateSecEpochUtc = 2;
+  optional OrbitPbApi_InterfaceId lastChangeId = 3;
+}
+
+message OrbitPbApi_ApList {
+  repeated OrbitPbApi_ApListEntry entries = 1;
+  optional BhyveAgApi_DeviceType deviceType = 2;
+  optional bytes macAddress = 3;
+}
+
+message OrbitPbApi_ApListEntry {
+  required bytes ssid = 1;
+  required OrbitPbApi_SecType secType = 2;
+  optional string name = 3;
+  optional bytes macAddress = 4;
+  optional uint32 channelNumber = 5;
+  optional sint32 rssi = 6;
+  optional OrbitPbApi_WifiBand wifiBand = 7;
+}
+
+message OrbitPbApi_BatteryStatus {
+  enum BatteryState {
+    OrbitPbApi_BatteryStatus_BatteryState_charging = 0;
+  }
+
+  optional BatteryState state = 1;
+  optional uint32 batteryLevelPercent = 2;
+  optional uint32 batteryLevelMV = 3;
+  optional bool externallyPowered = 4;
+}
+
+message OrbitPbApi_BleBridgedCmd {
+  optional OrbitPbApi_BlePhyInterface phyInterface = 1;
+  optional OrbitPbApi_BleDeviceId deviceId = 2;
+  optional uint32 deviceSn = 3;
+  oneof message {
+    OrbitPbApi_BleBridgedCmd_Disconnect bleBridgedCmdDisconnect = 10;
+    OrbitPbApi_BleBridgedCmd_UpdateFw bleBridgedCmdUpdateFw = 11;
+    OrbitPbApi_BleBridgedCmd_Identify bleBridgedCmdIdentify = 12;
+    OrbitPbApi_BleBridgedCmd_OtaUpdateStart bleBridgedCmdOtaUpdateStart = 13;
+    OrbitPbApi_BleBridgedCmd_OtaUpdateBlockReq bleBridgedCmdOtaUpdateBlockReq = 14;
+    OrbitPbApi_BleBridgedCmd_OtaUpdateBlockResp bleBridgedCmdOtaUpdateBlockResp = 15;
+    OrbitPbApi_BleBridgedCmd_OtaUpdateChunk bleBridgedCmdOtaUpdateChunk = 16;
+    OrbitPbApi_BleBridgedCmd_OnboardingComplete bleBridgedCmdOnboardingComplete = 17;
+    OrbitPbApi_BleBridgedCmd_AckAlarm bleBridgedCmdAckAlarm = 40;
+    OrbitPbApi_BleBridgedCmd_SetTempLimits bleBridgedCmdSetTempLimits = 41;
+  }
+}
+
+message OrbitPbApi_BleBridgedCmd_AckAlarm {
+}
+
+message OrbitPbApi_BleBridgedCmd_Disconnect {
+}
+
+message OrbitPbApi_BleBridgedCmd_Identify {
+  optional uint32 identifyTimeMs = 1;
+}
+
+message OrbitPbApi_BleBridgedCmd_OnboardingComplete {
+  optional bool onboardingComplete = 1;
+}
+
+message OrbitPbApi_BleBridgedCmd_OtaUpdateBlockReq {
+  optional OrbitPbApi_OtaImageId imageId = 1;
+  optional uint32 imageVersion = 2;
+  optional uint32 addressOffset = 3;
+  optional uint32 maxBlockSize = 4;
+  optional uint32 imageSize = 5;
+  optional uint32 hwVersion = 6;
+}
+
+message OrbitPbApi_BleBridgedCmd_OtaUpdateBlockResp {
+  optional OrbitPbApi_OtaImageId imageId = 1;
+  optional uint32 imageVersion = 2;
+  optional uint32 addressOffset = 3;
+  optional uint32 blockSize = 4;
+  optional uint32 blockCrc = 5;
+}
+
+message OrbitPbApi_BleBridgedCmd_OtaUpdateChunk {
+  optional bytes data = 1;
+}
+
+message OrbitPbApi_BleBridgedCmd_OtaUpdateStart {
+  optional OrbitPbApi_OtaImageId imageId = 1;
+  optional uint32 imageVersion = 2;
+  optional uint32 imageSize = 3;
+  optional uint32 imageCrc = 4;
+}
+
+message OrbitPbApi_BleBridgedCmd_SetTempLimits {
+  optional int32 highTempLimitDegC = 1;
+  optional int32 lowTempLimitDegC = 2;
+}
+
+message OrbitPbApi_BleBridgedCmd_UpdateFw {
+  optional uint32 version = 1;
+}
+
+message OrbitPbApi_BleBridgedDeviceEntry {
+  optional uint32 deviceSn = 1;
+  optional bool allowProvision = 2;
+  optional OrbitPbApi_BleDeviceId deviceId = 3;
+}
+
+message OrbitPbApi_BleBridgedDeviceStatus {
+  repeated OrbitPbApi_BleBridgedDeviceStatusEntry deviceStatusEntries = 1;
+}
+
+message OrbitPbApi_BleBridgedDeviceStatusEntry {
+  optional OrbitPbApi_BlePhyInterface phyInterface = 1;
+  optional uint32 deviceSn = 2;
+  optional bool connected = 3;
+  optional OrbitPbApi_UpdateProgress updateProgress = 4;
+  optional uint32 maxWriteSize = 5;
+}
+
+message OrbitPbApi_BleBridgedDevices {
+  optional bytes networkEncryptionKey = 1;
+  repeated OrbitPbApi_BleBridgedDeviceEntry bleBridgedDevEntry = 2;
+}
+
+message OrbitPbApi_BleBridgedMessages {
+  repeated OrbitPbApi_BleBridgedMsg msgEntries = 1;
+}
+
+message OrbitPbApi_BleBridgedMessagesInt {
+  repeated OrbitPbApi_BleBridgedMsgInt msgEntries = 1;
+}
+
+message OrbitPbApi_BleBridgedMsg {
+  optional uint32 msgTimestamp = 1;
+  optional OrbitPbApi_BlePhyInterface phyInterface = 2;
+  optional uint32 channel = 3;
+  optional int32 rssi = 4;
+  optional bool connectable = 5;
+  optional OrbitPbApi_BleDeviceId deviceId = 6;
+  optional uint32 deviceSn = 7;
+  optional bool bootloaderMode = 8;
+  optional OrbitPbApi_TestMode mfrTestMode = 9;
+  optional bool provisioned = 10;
+  optional uint32 msgSeqNum = 11;
+  optional uint32 firmwareVersion = 12;
+  optional uint32 cfgHash = 13;
+  optional uint32 deviceFlags = 14;
+  optional bool onboardComplete = 15;
+  optional bool identifyEnabled = 16;
+  oneof devSpecific {
+    OrbitPbApi_BleDevSpec_RawData bleDevSpecRawData = 19;
+    OrbitPbApi_BleDevSpec_FloodSensor bleDevSpecFloodSensor = 20;
+    OrbitPbApi_BleDevSpec_IrrigationTimer bleDevSpecIrrigationTimer = 21;
+  }
+}
+
+message OrbitPbApi_BleBridgedMsgInt {
+  optional uint32 msgTimestamp = 1;
+  optional OrbitPbApi_BlePhyInterface phyInterface = 2;
+  optional uint32 channel = 3;
+  optional int32 rssi = 4;
+  optional bool connectable = 5;
+  optional OrbitPbApi_BleDeviceId deviceId = 6;
+  optional uint32 deviceSn = 7;
+  optional bool bootloaderMode = 8;
+  optional OrbitPbApi_TestMode mfrTestMode = 9;
+  optional bool provisioned = 10;
+  optional uint32 msgSeqNum = 11;
+  optional uint32 firmwareVersion = 12;
+  optional uint32 cfgHash = 13;
+  optional uint32 deviceFlags = 14;
+  optional bool onboardComplete = 15;
+  optional bool identifyEnabled = 16;
+  oneof devSpecific {
+    OrbitPbApi_BleDevSpec_RawData bleDevSpecRawData = 19;
+  }
+}
+
+message OrbitPbApi_BleBridgedPendMsgEntry {
+  optional uint32 deviceSn = 1;
+  optional bool disableAutoDisconnect = 2;
+}
+
+message OrbitPbApi_BleBridgedPendMsgQueue {
+  repeated OrbitPbApi_BleBridgedPendMsgEntry pendMsgEntries = 1;
+}
+
+message OrbitPbApi_BleDevSpec_FloodSensor {
+  optional bool passedMfrSelfTest = 1;
+  optional bool alarmActive = 2;
+  optional bool leakDetected = 3;
+  optional bool tempHigh = 4;
+  optional bool tempLow = 5;
+  optional int32 currentTemperatureDegC = 6;
+  optional uint32 batteryLevelMV = 7;
+}
+
+message OrbitPbApi_BleDevSpec_IrrigationTimer {
+  optional uint32 currentTimeSecEpochLocal = 1;
+  optional uint32 batteryLevelMV = 2;
+  optional OrbitPbApi_WateringStatus wateringStatus = 4;
+  optional OrbitPbApi_SetRainDelay rainDelay = 5;
+  optional OrbitPbApi_DeviceStatus deviceStatus = 6;
+  optional uint32 nextStartProgramFlags = 7;
+  optional uint32 nextStartTimeSecEpochUTC = 8;
+}
+
+message OrbitPbApi_BleDevSpec_RawData {
+  optional bytes rawData = 1;
+}
+
+message OrbitPbApi_BleEvent {
+  enum BleEventId {
+    OrbitPbApi_BleEvent_BleEventId_bleEventId_resetConnection = 0;
+    OrbitPbApi_BleEvent_BleEventId_bleEventId_dataBlock_rx = 1;
+    OrbitPbApi_BleEvent_BleEventId_bleEventId_dataBlock_tx = 2;
+    OrbitPbApi_BleEvent_BleEventId_bleEventId_txResponse = 3;
+  }
+
+  optional BleEventId eventId = 1;
+  optional uint32 srcId = 2;
+  optional uint32 destId = 3;
+  oneof eventData {
+    OrbitPbApi_BleEventData_DataBlock dataBlock = 10;
+    bool txResponse = 11;
+  }
+}
+
+message OrbitPbApi_BleEventData_DataBlock {
+  optional uint32 msgType = 1;
+  optional bool encrypt = 2;
+  optional bytes data = 3;
+}
+
+message OrbitPbApi_BleInitMsg {
+  optional bytes bdAddress = 1;
+  optional bytes networkKey = 2;
+  optional uint32 advertType = 3;
+  optional uint32 deviceSn = 4;
+  optional bool networkProvisioned = 5;
+  optional OrbitPbApi_TestMode testMode = 6;
+}
+
+message OrbitPbApi_BleRadioTest {
+  enum Cmd {
+    OrbitPbApi_BleRadioTest_Cmd_cancel = 0;
+    OrbitPbApi_BleRadioTest_Cmd_startTxCW = 1;
+    OrbitPbApi_BleRadioTest_Cmd_startTxModCW = 2;
+    OrbitPbApi_BleRadioTest_Cmd_startTxModCW_DC = 3;
+    OrbitPbApi_BleRadioTest_Cmd_startTxSweep = 4;
+    OrbitPbApi_BleRadioTest_Cmd_startRx = 5;
+    OrbitPbApi_BleRadioTest_Cmd_startRxSweep = 6;
+  }
+
+  enum DataRate {
+    OrbitPbApi_BleRadioTest_DataRate_nRf_1Mbit = 0;
+    OrbitPbApi_BleRadioTest_DataRate_nRf_2Mbit = 1;
+    OrbitPbApi_BleRadioTest_DataRate_ble_1Mbit = 2;
+    OrbitPbApi_BleRadioTest_DataRate_ble_2Mbit = 3;
+    OrbitPbApi_BleRadioTest_DataRate_ble_lr125Kbit = 4;
+    OrbitPbApi_BleRadioTest_DataRate_ble_lr500Kbit = 5;
+    OrbitPbApi_BleRadioTest_DataRate_ieee802154_250Kbit = 6;
+  }
+
+  enum TxPattern {
+    OrbitPbApi_BleRadioTest_TxPattern_random = 0;
+    OrbitPbApi_BleRadioTest_TxPattern_F0 = 1;
+    OrbitPbApi_BleRadioTest_TxPattern_CC = 2;
+  }
+
+  optional Cmd cmd = 1;
+  optional int32 txPowerDBm = 2;
+  optional DataRate dataRate = 3;
+  optional uint32 startFrequency_Hz = 4;
+  optional uint32 stopFrequency_Hz = 5;
+  optional TxPattern txPattern = 6;
+  optional uint32 delayTimeMs = 7;
+  optional uint32 dutyCyclePercent = 8;
+}
+
+message OrbitPbApi_CellularRadioTest {
+  enum Band {
+    OrbitPbApi_CellularRadioTest_Band_band_gsm_850 = 0;
+    OrbitPbApi_CellularRadioTest_Band_band_e_gsm_900 = 1;
+    OrbitPbApi_CellularRadioTest_Band_band_dsc_1900 = 2;
+    OrbitPbApi_CellularRadioTest_Band_band_psc_1900 = 3;
+  }
+
+  enum Bandwidth {
+    OrbitPbApi_CellularRadioTest_Bandwidth_bw_1_4_Mhz = 0;
+    OrbitPbApi_CellularRadioTest_Bandwidth_bw_3_Mhz = 1;
+    OrbitPbApi_CellularRadioTest_Bandwidth_bw_4_Mhz = 2;
+  }
+
+  enum Cmd {
+    OrbitPbApi_CellularRadioTest_Cmd_cancel = 0;
+    OrbitPbApi_CellularRadioTest_Cmd_startTx = 1;
+    OrbitPbApi_CellularRadioTest_Cmd_startRx = 2;
+  }
+
+  enum Network {
+    OrbitPbApi_CellularRadioTest_Network_network_2g = 0;
+    OrbitPbApi_CellularRadioTest_Network_network_4g = 1;
+  }
+
+  optional Cmd cmd = 1;
+  optional Network network = 2;
+  optional Bandwidth bandwidth = 3;
+  optional Band band = 4;
+  optional uint32 channel = 5;
+  optional int32 txPowerTenthsDBm = 6;
+}
+
+message OrbitPbApi_CellularSettings {
+  enum Region {
+    OrbitPbApi_CellularSettings_Region_none = 0;
+    OrbitPbApi_CellularSettings_Region_northAmerica = 1;
+    OrbitPbApi_CellularSettings_Region_europe = 2;
+    OrbitPbApi_CellularSettings_Region_australia = 3;
+  }
+
+  optional bool enabled = 1;
+  optional bool tlsSocket = 2;
+  optional uint32 activePeriodSecs = 3;
+  optional uint32 activeLatencyMs = 4;
+  optional uint32 pagingWindowMs = 5;
+  optional uint32 activeTimeOfDayMinsFromMidnight = 6;
+  optional Region region = 7;
+  repeated OrbitPbApi_CellularSimSetingsEntry simSettings = 8;
+}
+
+message OrbitPbApi_CellularSimSetingsEntry {
+  optional string iccidPrefix = 1;
+  optional string apn = 2;
+}
+
+message OrbitPbApi_CellularSleep {
+  optional uint32 timeStampToSleep = 1;
+  optional uint32 timeStampToWake = 2;
+}
+
+message OrbitPbApi_CellularSleepAbort {
+}
+
+message OrbitPbApi_CellularSleepSettings {
+  repeated OrbitPbApi_CellularSleepSettingsEntry entries = 1;
+}
+
+message OrbitPbApi_CellularSleepSettingsEntry {
+  optional uint32 timeToSleepMinsFromMidnight = 1;
+  optional uint32 timeToWakeMinsFromMidnight = 2;
+}
+
+message OrbitPbApi_CellularStatus {
+  enum NetworkType {
+    OrbitPbApi_CellularStatus_NetworkType_net2G = 1;
+    OrbitPbApi_CellularStatus_NetworkType_net3G = 2;
+    OrbitPbApi_CellularStatus_NetworkType_CATM1 = 3;
+    OrbitPbApi_CellularStatus_NetworkType_NBIOT = 4;
+    OrbitPbApi_CellularStatus_NetworkType_Unknown = 5;
+  }
+
+  optional int32 rssi = 5;
+  optional int32 rsrq = 6;
+  optional uint64 imei = 7;
+  optional uint64 imsi = 8;
+  optional float bitRateError = 9;
+  optional bool isAsleep = 10;
+  optional string ipAddress = 11;
+  optional string networkOperator = 12;
+  optional NetworkType networkType = 13;
+  optional uint32 timeToConnect = 14;
+  optional uint32 numSocketDisconnects = 15;
+  optional uint32 numNetworkDisconnects = 16;
+}
+
+message OrbitPbApi_CheckIn {
+  optional OrbitPbApi_DeviceInfo deviceInfo = 1;
+  optional OrbitPbApi_DeviceStatusInfo deviceStatus = 2;
+  optional uint32 firmwareVersion = 3;
+  optional int32 signalStrength = 4;
+  optional uint32 configHash = 5;
+  optional bool pullLogFiles = 6;
+}
+
+message OrbitPbApi_CloseConnection {
+  optional uint32 reconnectTimeSec = 1;
+  optional bool resetTestMode = 2;
+}
+
+message OrbitPbApi_ConfigureDevice {
+  optional uint32 meshDeviceId = 1;
+  optional bytes meshNetworkKey = 2;
+}
+
+message OrbitPbApi_CrcCheckFailed {
+}
+
+message OrbitPbApi_CurrentFlowSensorDataEntry {
+  optional uint32 flowRateFrequency_Hz = 1;
+  optional uint32 cycleRunTimeSec = 2;
+  optional uint32 cycleVolumeTicks = 3;
+  optional float flowRateGpm = 4;
+  optional float cycleVolumeGal = 5;
+  optional uint32 flowSensorId = 6;
+}
+
+message OrbitPbApi_DeviceControl {
+  enum ControlCommand {
+    OrbitPbApi_DeviceControl_ControlCommand_stopWatering = 0;
+    OrbitPbApi_DeviceControl_ControlCommand_skipCurrentStation = 1;
+    OrbitPbApi_DeviceControl_ControlCommand_runProgramsManually = 2;
+    OrbitPbApi_DeviceControl_ControlCommand_runAllStationsManually = 3;
+  }
+
+}
+
+message OrbitPbApi_DeviceInfo {
+  enum BleStatus {
+    OrbitPbApi_DeviceInfo_BleStatus_bleUninitialized = 0;
+    OrbitPbApi_DeviceInfo_BleStatus_bleUpdating = 1;
+    OrbitPbApi_DeviceInfo_BleStatus_bleInitialized = 2;
+    OrbitPbApi_DeviceInfo_BleStatus_bleError = 3;
+  }
+
+  enum DeviceType {
+    OrbitPbApi_DeviceInfo_DeviceType_hosetapTimer = 0;
+    OrbitPbApi_DeviceInfo_DeviceType_undergroundTimer = 1;
+    OrbitPbApi_DeviceInfo_DeviceType_rainSensor = 2;
+    OrbitPbApi_DeviceInfo_DeviceType_moistureSensor = 3;
+  }
+
+  enum PowerBoardId {
+    OrbitPbApi_DeviceInfo_PowerBoardId_orbit6Station = 0;
+    OrbitPbApi_DeviceInfo_PowerBoardId_orbit12Station = 1;
+    OrbitPbApi_DeviceInfo_PowerBoardId_pro8Station = 2;
+    OrbitPbApi_DeviceInfo_PowerBoardId_pro16Station = 3;
+    OrbitPbApi_DeviceInfo_PowerBoardId_international6Station = 4;
+    OrbitPbApi_DeviceInfo_PowerBoardId_international12Station = 5;
+    OrbitPbApi_DeviceInfo_PowerBoardId_unknown = 6;
+  }
+
+  optional int32 numStations = 1;
+  optional string hwVersion = 2;
+  optional string fwVersion = 3;
+  optional uint32 wifiVersion = 4;
+  optional PowerBoardId powerBoardId = 5;
+  optional uint32 testState = 6;
+  optional bool pumpEnabled = 7;
+  optional uint32 stationsEnabledFlags_0_31 = 8;
+  optional uint32 stationsEnabledFlags_32_63 = 9;
+  optional DeviceType deviceType = 10;
+  optional uint32 bootloaderVersion = 11;
+  optional bool hasMfiSetupCode = 12;
+  optional BleStatus bleStatus = 13;
+  optional uint32 bleBootloaderVersion = 14;
+  optional uint32 bleAppVersion = 15;
+  optional uint32 bleSdkVersion = 16;
+  optional uint32 rl78Version = 17;
+  optional OrbitPbApi_MfrTest_DutTestStatus mfrTestStatus = 18;
+  optional uint32 pumpEnabledFlags = 19;
+}
+
+message OrbitPbApi_DeviceStatusInfo {
+  required OrbitPbApi_DeviceStatus deviceStatus = 1;
+  optional OrbitPbApi_TimerMode timerMode = 2;
+  // deprecated: batteryLevelPercent
+  optional uint32 batteryLevelPercent = 3;
+  // deprecated: nextStartTime
+  optional OrbitPbApi_NextStartTime nextStartTime = 4;
+  // deprecated: rainDelayTimeRemainingMins
+  optional uint32 rainDelayTimeRemainingMins = 5;
+  // deprecated: wateringStatus
+  optional OrbitPbApi_WateringStatus wateringStatus = 6;
+  optional OrbitPbApi_FaultStatus faultStatus = 7;
+  optional bool wacModeEnabled = 8;
+  optional uint32 nextStartProgramFlags = 9;
+  optional uint32 nextStartTimeSecEpochUTC = 10;
+  // deprecated: batteryLevelMV
+  optional uint32 batteryLevelMV = 11;
+  // deprecated: programDelayType
+  optional OrbitPbApi_ProgramDelayType programDelayType = 12;
+  optional OrbitPbApi_SetRainDelay rainDelay = 13;
+  optional OrbitPbApi_BatteryStatus batteryStatus = 14;
+  optional OrbitPbApi_LogEntry lastLogEntryTime = 15;
+  optional bytes deviceSettingsHash = 16;
+  optional OrbitPbApi_Sensor sensors = 17;
+  optional OrbitPbApi_WateringStatusSummary wateringStatusSummary = 18;
+}
+
+message OrbitPbApi_EnableFlowSensorData {
+  required uint32 sendDataIntervalMilliSec = 1;
+  required uint32 sendDataDurationSec = 2;
+}
+
+message OrbitPbApi_EventLog {
+  optional bool noMoreEntries = 1;
+  repeated OrbitPbApi_LogEntry waterEventLogEntries = 2;
+}
+
+message OrbitPbApi_FaultStatus {
+  optional bool pumpFault = 1;
+  optional uint32 stationFaultFlags_0_31 = 2;
+  optional uint32 stationFaultFlags_32_63 = 3;
+  optional bool voltageBoostCircuitFail = 4;
+  optional bool valveOffFlowDetected = 5;
+  optional bool valveOnNoFlowDetected = 6;
+  optional bool valveLowFlowDetected = 7;
+  optional bool valveHighFlowDetected = 8;
+  optional uint32 smartAccessoryFaultFlags = 9;
+  optional bool batteryFault = 10;
+  repeated OrbitPbApi_PumpFault pumpFaults = 15;
+  repeated OrbitPbApi_StationFault stationFaults = 16;
+  repeated OrbitPbApi_MainlineFault mainlineFaults = 17;
+}
+
+message OrbitPbApi_FaultType_HighFlow {
+  optional float flowGpm = 1;
+}
+
+message OrbitPbApi_FaultType_LowFlow {
+  optional float flowGpm = 1;
+}
+
+message OrbitPbApi_FaultType_NoFlow {
+}
+
+message OrbitPbApi_FaultType_Overcurrent {
+  optional uint32 currentMA = 1;
+}
+
+message OrbitPbApi_FaultType_ShortCircuit {
+}
+
+message OrbitPbApi_FaultType_Unavailable {
+}
+
+message OrbitPbApi_FaultType_Undercurrent {
+  optional uint32 currentMA = 1;
+}
+
+message OrbitPbApi_FaultType_Undervoltage {
+  optional uint32 voltageMV = 1;
+}
+
+message OrbitPbApi_FaultType_UnscheduledFlow {
+  optional float flowGpm = 1;
+}
+
+message OrbitPbApi_FlowSensorData {
+  optional uint32 currentFlowRateFrequency_Hz = 1;
+  optional uint32 currentCycleRunTimeSec = 2;
+  optional uint32 currentCycleVolumeTicks = 3;
+  optional float currentFlowRateGpm = 4;
+  optional float currentCycleVolumeGal = 5;
+  repeated OrbitPbApi_CurrentFlowSensorDataEntry flowSensorDataEntries = 6;
+}
+
+message OrbitPbApi_FlowSensorParamEntry {
+  optional float kValue = 1;
+  optional float offset = 2;
+  optional uint32 flowSensorId = 3;
+  optional float unscheduledFlowThresholdGpm = 4;
+}
+
+message OrbitPbApi_FlowSensorParams {
+  repeated OrbitPbApi_FlowSensorParamEntry entries = 1;
+}
+
+message OrbitPbApi_GetActivePrograms {
+}
+
+message OrbitPbApi_GetApList {
+  optional BhyveAgApi_DeviceType deviceType = 1;
+}
+
+message OrbitPbApi_GetBatteryStatus {
+}
+
+message OrbitPbApi_GetCellularSettings {
+}
+
+message OrbitPbApi_GetConcurrentProgramGroups {
+}
+
+message OrbitPbApi_GetDeviceInfo {
+}
+
+message OrbitPbApi_GetDeviceStatusInfo {
+}
+
+message OrbitPbApi_GetEventLog {
+  optional OrbitPbApi_LogId logId = 1;
+  optional uint32 lastLogTimeSecEpochUTC = 2;
+  optional uint32 lastLogIndex = 3;
+}
+
+message OrbitPbApi_GetFlowSensorData {
+}
+
+message OrbitPbApi_GetFlowSensorParams {
+}
+
+message OrbitPbApi_GetHomeKitParams {
+}
+
+message OrbitPbApi_GetManualPresetRunTime {
+}
+
+message OrbitPbApi_GetMfiSaltVerifier {
+}
+
+message OrbitPbApi_GetNetworkStatus {
+  optional OrbitPbApi_InterfaceId networkInterface = 1;
+}
+
+message OrbitPbApi_GetNextStartTime {
+}
+
+message OrbitPbApi_GetProgramSchedule {
+  required OrbitPbApi_ProgramId programId = 1;
+}
+
+message OrbitPbApi_GetPumpCfg {
+}
+
+message OrbitPbApi_GetScheduledMode {
+}
+
+message OrbitPbApi_GetSettings {
+}
+
+message OrbitPbApi_GetSettingsHash {
+}
+
+message OrbitPbApi_GetSmartAccessories {
+}
+
+message OrbitPbApi_GetSmartAccessoryOtaStatus {
+}
+
+message OrbitPbApi_GetStationCfg {
+}
+
+message OrbitPbApi_GetStationValveStatus {
+  optional uint32 stationId = 1;
+}
+
+message OrbitPbApi_GetWaterEventLog {
+  required string logTimestampIso8601 = 1;
+  optional uint32 lastLogIndex = 2;
+  optional uint32 lastLogTimeSecEpochUTC = 3;
+}
+
+message OrbitPbApi_GetWateringStatus {
+}
+
+message OrbitPbApi_HomeKitParams {
+  optional bool wacEnabled = 1;
+  optional bool homeKitProvisioned = 2;
+}
+
+message OrbitPbApi_IdentifyDevice {
+  message Sequence {
+    enum Color {
+      Sequence_Color_red = 0;
+      Sequence_Color_green = 1;
+      Sequence_Color_blue = 2;
+    }
+
+    optional uint32 colorFlags = 1;
+    optional uint32 durationMs = 2;
+  }
+
+  required uint32 identifyTimeSec = 1;
+  optional uint32 identifyPeriodMs = 2;
+  repeated Sequence identifySequence = 3;
+}
+
+message OrbitPbApi_IpcMsg {
+  oneof ipcMsg {
+    OrbitPbApi_BleInitMsg bleInitMsg = 1;
+    bool enterBootloader = 2;
+    OrbitPbApi_BleBridgedDevices bleBridgedDevices = 3;
+    OrbitPbApi_BleBridgedMessagesInt bleBridgedMsgs = 4;
+    OrbitPbAPi_BleBridgeGetStatus bleBridgeGetStatus = 5;
+    OrbitPbAPi_BleBridgeStatus bleBridgeStatus = 6;
+    OrbitPbApi_BleEvent bleEvent = 7;
+    OrbitPbApi_BleBridgedPendMsgQueue blePendMsgQueue = 8;
+    OrbitPbApi_BleRadioTest bleRadioTest = 9;
+  }
+}
+
+message OrbitPbApi_KeepAlive {
+}
+
+message OrbitPbApi_LoRaRadioTest {
+  enum BandWidth {
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_7 = 0;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_10 = 1;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_15 = 2;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_20 = 3;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_31 = 4;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_41 = 5;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_62 = 6;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_125 = 7;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_250 = 8;
+    OrbitPbApi_LoRaRadioTest_BandWidth_bw_500 = 9;
+  }
+
+  enum Cmd {
+    OrbitPbApi_LoRaRadioTest_Cmd_cancel = 0;
+    OrbitPbApi_LoRaRadioTest_Cmd_startTxCW = 1;
+    OrbitPbApi_LoRaRadioTest_Cmd_startTxModCW = 2;
+    OrbitPbApi_LoRaRadioTest_Cmd_startRx = 3;
+    OrbitPbApi_LoRaRadioTest_Cmd_startTxSweep = 4;
+    OrbitPbApi_LoRaRadioTest_Cmd_startTxFreqHopping = 5;
+  }
+
+  enum CodingRate {
+    OrbitPbApi_LoRaRadioTest_CodingRate_cr_4_5 = 0;
+    OrbitPbApi_LoRaRadioTest_CodingRate_cr_4_6 = 1;
+    OrbitPbApi_LoRaRadioTest_CodingRate_cr_4_7 = 2;
+    OrbitPbApi_LoRaRadioTest_CodingRate_cr_4_8 = 3;
+  }
+
+  enum SpreadingFactor {
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_5 = 0;
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_6 = 1;
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_7 = 2;
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_8 = 3;
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_9 = 4;
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_10 = 5;
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_11 = 6;
+    OrbitPbApi_LoRaRadioTest_SpreadingFactor_sf_12 = 7;
+  }
+
+  optional Cmd cmd = 1;
+  optional SpreadingFactor spreadingFactor = 2;
+  optional BandWidth bandWidth = 3;
+  optional CodingRate codingRate = 4;
+  optional uint32 freq_Hz = 5;
+  optional int32 txPowerDBm = 6;
+  optional uint32 stopFreq_Hz = 7;
+  optional uint32 stepFreq_Hz = 8;
+  optional uint32 txPeriodMs = 9;
+}
+
+message OrbitPbApi_LogEntry {
+  optional uint32 logTimeSecEpochUTC = 1;
+  optional uint32 logIndex = 2;
+  oneof message {
+    OrbitPbApi_LogEntry_WaterEvent waterEventLogEntry = 10;
+  }
+}
+
+message OrbitPbApi_LogEntry_WaterEvent {
+  enum WaterEventStatus {
+    OrbitPbApi_LogEntry_WaterEvent_WaterEventStatus_stationCompleted = 0;
+    OrbitPbApi_LogEntry_WaterEvent_WaterEventStatus_stationSkipped = 1;
+    OrbitPbApi_LogEntry_WaterEvent_WaterEventStatus_stationFault = 2;
+    OrbitPbApi_LogEntry_WaterEvent_WaterEventStatus_unknown = 3;
+    OrbitPbApi_LogEntry_WaterEvent_WaterEventStatus_unresponsive = 4;
+  }
+
+  optional OrbitPbApi_ProgramId programId = 3;
+  optional uint32 stationId = 4;
+  optional uint32 stationRunTimeSec = 5;
+  optional WaterEventStatus eventStatus = 6;
+  optional uint32 waterVolumeGallons = 7;
+  optional uint32 meshDeviceId = 8;
+  optional uint32 databaseId = 9;
+}
+
+message OrbitPbApi_LorawanSettings {
+  enum Region {
+    OrbitPbApi_LorawanSettings_Region_none = 0;
+    OrbitPbApi_LorawanSettings_Region_northAmerica = 1;
+    OrbitPbApi_LorawanSettings_Region_europe = 2;
+    OrbitPbApi_LorawanSettings_Region_australia = 3;
+  }
+
+  optional bool enabled = 1;
+  optional Region region = 2;
+}
+
+message OrbitPbApi_LorawanStatus {
+  enum LorawanInterfaceState {
+    OrbitPbApi_LorawanStatus_LorawanInterfaceState_lorawanInterfaceState_waitingForInit = 0;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceState_lorawanInterfaceState_notConfigured = 1;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceState_lorawanInterfaceState_disconnected = 2;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceState_lorawanInterfaceState_connected = 3;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceState_lorawanInterfaceState_test = 4;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceState_lorawanInterfaceState_unknown = 5;
+  }
+
+  enum LorawanInterfaceStatus {
+    OrbitPbApi_LorawanStatus_LorawanInterfaceStatus_lorawanInterfaceStatus_ok = 0;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceStatus_lorawanInterfaceStatus_error_unableToFindNetwork = 1;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceStatus_lorawanInterfaceStatus_error_connectionLost = 2;
+    OrbitPbApi_LorawanStatus_LorawanInterfaceStatus_lorawanInterfaceStatus_error_unknown = 3;
+  }
+
+  optional LorawanInterfaceState lorawanInterfaceState = 1;
+  optional LorawanInterfaceStatus lorawanInterfaceStatus = 2;
+}
+
+message OrbitPbApi_MainlineFault {
+  optional uint32 mainlineId = 1;
+  optional uint32 timestampSecEpochUtc = 2;
+  optional OrbitPbApi_FaultType_NoFlow noFlow = 11;
+  optional OrbitPbApi_FaultType_HighFlow highFlow = 12;
+  optional OrbitPbApi_FaultType_LowFlow lowFlow = 13;
+  optional OrbitPbApi_FaultType_UnscheduledFlow unscheduledFlow = 14;
+}
+
+message OrbitPbApi_ManualModeParams {
+  optional string startTimeIso8601 = 1;
+  optional uint32 activeProgramFlags = 2;
+  repeated OrbitPbApi_StationInfo stationInfo = 3;
+  optional uint32 startTimeSecEpochUtc = 4;
+  optional uint32 groupWateringPreDelaySec = 5;
+  optional uint32 groupWateringPostDelaySec = 6;
+}
+
+message OrbitPbApi_ManualPresetRunTime {
+  required uint32 presetRunTimeSec = 1;
+}
+
+message OrbitPbApi_MeshMessage {
+  enum MeshMessageCommandId {
+    OrbitPbApi_MeshMessage_MeshMessageCommandId_commandFailed = 0;
+    OrbitPbApi_MeshMessage_MeshMessageCommandId_readValue = 1;
+    OrbitPbApi_MeshMessage_MeshMessageCommandId_readValueResponse = 2;
+    OrbitPbApi_MeshMessage_MeshMessageCommandId_writeValue = 3;
+    OrbitPbApi_MeshMessage_MeshMessageCommandId_writeValueResponse = 4;
+    OrbitPbApi_MeshMessage_MeshMessageCommandId_sendMessageToBridge = 5;
+    OrbitPbApi_MeshMessage_MeshMessageCommandId_messageFromBridge = 6;
+  }
+
+  enum MeshMessageId {
+    OrbitPbApi_MeshMessage_MeshMessageId_bridgeDeviceId = 0;
+    OrbitPbApi_MeshMessage_MeshMessageId_deviceInfo = 1;
+    OrbitPbApi_MeshMessage_MeshMessageId_deviceStatus = 2;
+    OrbitPbApi_MeshMessage_MeshMessageId_batteryStatus = 3;
+    OrbitPbApi_MeshMessage_MeshMessageId_identifyDevice = 4;
+    OrbitPbApi_MeshMessage_MeshMessageId_utcTime = 5;
+    OrbitPbApi_MeshMessage_MeshMessageId_localTimeOffset = 6;
+    OrbitPbApi_MeshMessage_MeshMessageId_manualPresetRunTime = 7;
+    OrbitPbApi_MeshMessage_MeshMessageId_stationValveStatus = 8;
+    OrbitPbApi_MeshMessage_MeshMessageId_activePrograms = 9;
+    OrbitPbApi_MeshMessage_MeshMessageId_rainDelay = 10;
+    OrbitPbApi_MeshMessage_MeshMessageId_instantaneousFlowRate = 11;
+    OrbitPbApi_MeshMessage_MeshMessageId_lastWaterCycleInfo = 12;
+    OrbitPbApi_MeshMessage_MeshMessageId_deviceControl0 = 13;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleInfo0 = 16;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleInfo1 = 17;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleInfo2 = 18;
+    OrbitPbApi_MeshMessage_MeshMessageId_groupWatering = 19;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleStartTimes_0_1 = 20;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleStartTimes_2_3 = 21;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleFirstStationRunTime = 22;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleStation_maxStations = 64;
+    OrbitPbApi_MeshMessage_MeshMessageId_scheduleLastStationRunTime = 85;
+    OrbitPbApi_MeshMessage_MeshMessageId_flag_msgFromBridge = 8192;
+    OrbitPbApi_MeshMessage_MeshMessageId_flag_msgToBridge = 16384;
+    OrbitPbApi_MeshMessage_MeshMessageId_flag_orbitCsrMsg = 32768;
+  }
+
+  required uint32 meshDeviceId = 1;
+  required MeshMessageCommandId commandId = 2;
+  required MeshMessageId messageId = 3;
+  optional uint32 messageValueLow = 4;
+  optional uint32 messageValueHigh = 5;
+}
+
+message OrbitPbApi_Message {
+  optional bytes id = 1;
+  optional string timestampIso8601 = 2;
+  optional OrbitPbApi_TestMode testMode = 3;
+  optional OrbitPbApi_Version msgVersion = 4;
+  optional bytes destinationId = 5;
+  optional uint32 meshDeviceId = 6;
+  optional uint32 timestampSecEpochUTC = 7;
+  optional BhyveAgApi_RepeaterConfig repeaterConfig = 8;
+  optional uint32 messageId = 95;
+  optional uint32 ackMessageId = 96;
+  optional bytes repeaterDestinationId = 1006;
+  oneof message {
+    OrbitPbApi_KeepAlive keepAlive = 9;
+    OrbitPbApi_SyncRequest syncRequest = 10;
+    OrbitPbApi_CloseConnection closeConnection = 11;
+    OrbitPbApi_TimerMode timerMode = 14;
+    OrbitPbApi_GetDeviceStatusInfo getDeviceStatusInfo = 15;
+    OrbitPbApi_DeviceStatusInfo deviceStatusInfo = 16;
+    OrbitPbApi_SetRainDelay setRainDelay = 17;
+    OrbitPbApi_SetDateTime setDateTime = 18;
+    OrbitPbApi_SetProgramSchedule setProgramSchedule = 19;
+    OrbitPbApi_SetActivePrograms setActivePrograms = 20;
+    OrbitPbApi_SkipCurrentStation skipCurrentStation = 21;
+    OrbitPbApi_GetDeviceInfo getDeviceInfo = 22;
+    OrbitPbApi_DeviceInfo deviceInfo = 23;
+    OrbitPbApi_GetWaterEventLog getWaterEventLog = 24;
+    OrbitPbApi_WaterEventLog waterEventLog = 25;
+    OrbitPbApi_GetNextStartTime getNextStartTime = 26;
+    OrbitPbApi_NextStartTime nextStartTime = 27;
+    OrbitPbApi_GetSettings getSettings = 28;
+    OrbitPbApi_SetSettings setSettings = 29;
+    OrbitPbApi_WateringStatus wateringStatus = 30;
+    OrbitPbApi_FaultStatus faultStatus = 31;
+    OrbitPbApi_GetApList getApList = 32;
+    OrbitPbApi_ApList apList = 33;
+    OrbitPbApi_NetworkConnect networkConnect = 34;
+    OrbitPbApi_NetworkDisconnect networkDisconnect = 35;
+    OrbitPbApi_GetNetworkStatus getNetworkStatus = 36;
+    OrbitPbApi_NetworkStatus networkStatus = 37;
+    OrbitPbApi_UpdateAvailable updateAvailable = 38;
+    OrbitPbApi_UpdateBlockRequest updateBlockRequest = 39;
+    OrbitPbApi_UpdateBlockResponse updateBlockResponse = 40;
+    OrbitPbApi_MfrTest_WifiTestStatus mfrTestWifiTestStatus = 41;
+    OrbitPbApi_MfrTest_DutTestCommand mfrTestDutTestCommand = 42;
+    OrbitPbApi_MfrTest_DutProvision mfrTestDutProvision = 43;
+    OrbitPbApi_MfrTest_DutTestFinished mfrTestDutTestFinished = 44;
+    OrbitPbApi_GetBatteryStatus getBatteryStatus = 45;
+    OrbitPbApi_BatteryStatus batteryStatus = 46;
+    OrbitPbApi_IdentifyDevice identifyDevice = 47;
+    OrbitPbApi_GetManualPresetRunTime getManualPresetRunTime = 48;
+    OrbitPbApi_ManualPresetRunTime manualPresetRunTime = 49;
+    OrbitPbApi_GetStationValveStatus getStationValveStatus = 50;
+    OrbitPbApi_StationValveStatus stationValveStatus = 51;
+    OrbitPbApi_DeviceControl deviceControl = 52;
+    OrbitPbApi_MeshMessage meshMessage = 53;
+    OrbitPbApi_SetNetworkEncKey setNetworkEncKey = 54;
+    OrbitPbApi_GetFlowSensorParams getFlowSensorParams = 55;
+    OrbitPbApi_FlowSensorParams flowSensorParams = 56;
+    OrbitPbApi_EnableFlowSensorData enableFlowSensorData = 57;
+    OrbitPbApi_GetFlowSensorData getFlowSensorData = 58;
+    OrbitPbApi_FlowSensorData flowSensorData = 59;
+    OrbitPbApi_GetMfiSaltVerifier getMfiSaltVerifier = 60;
+    OrbitPbApi_MfiSaltVerifier mfiSaltVerifier = 61;
+    OrbitPbApi_ConfigureDevice configureDevice = 62;
+    BhyveAgApi_Ag_GetApList agGetApList = 63;
+    BhyveAgApi_RadioConfigure radioConfigure = 64;
+    BhyveAgApi_GetRadioConfigStatus getRadioConfigStatus = 65;
+    BhyveAgApi_RadioConfigStatus radioConfigStatus = 66;
+    BhyveAgApi_ResetRadioConfigure resetRadioConfigure = 67;
+    BhyveAgApi_CPCRadioStatus cpcRadioStatus = 68;
+    OrbitPbApi_GetProgramSchedule getProgramSchedule = 69;
+    OrbitPbApi_UpdateGetProgress updateGetProgress = 70;
+    OrbitPbApi_UpdateProgress updateProgress = 71;
+    OrbitPbApi_GetHomeKitParams getHomeKitParams = 72;
+    OrbitPbApi_SetHomeKitParams setHomeKitParams = 73;
+    OrbitPbApi_HomeKitParams homeKitParams = 74;
+    OrbitPbApi_SetEpochTime setEpochTime = 75;
+    OrbitPbApi_ProgramSchedule programSchedule = 76;
+    OrbitPbApi_GetActivePrograms getActivePrograms = 77;
+    OrbitPbApi_ActivePrograms activePrograms = 78;
+    BhyveAgApi_Cpa_Onboard cpaLiteOnboard = 80;
+    BhyveAgApi_Cpa_GetStatus cpaLiteGetStatus = 81;
+    BhyveAgApi_Cpa_Status cpaLiteStatus = 82;
+    OrbitPbApi_RequestTime requestTime = 83;
+    BhyveAgApi_Cpa_SetSettings cpaLiteSetSettings = 84;
+    OrbitPbApi_BleBridgedDevices bleBridgedDevices = 85;
+    OrbitPbApi_BleBridgedCmd bleBridgedCmd = 86;
+    OrbitPbApi_BleBridgedMessages bleBridgedMsgs = 87;
+    OrbitPbApi_GetEventLog getEventLog = 88;
+    OrbitPbApi_EventLog eventLog = 89;
+    OrbitPbApi_CheckIn checkIn = 90;
+    OrbitPbApi_BleBridgedPendMsgQueue bleBridgedPendMsgQueue = 91;
+    OrbitPbApi_BleBridgedDeviceStatus bleBridgedDeviceStatus = 92;
+    OrbitPbApi_SetWeatherForecastData setWeatherForecastData = 93;
+    OrbitPbApi_SetStationCfg setStationCfg = 94;
+    OrbitPbApi_GetStationCfg getStationCfg = 97;
+    OrbitPbApi_StationCfg stationCfg = 98;
+    OrbitPbApi_Ack ack = 100;
+    OrbitPbApi_ResetDevice resetDevice = 101;
+    OrbitPbApi_TestMsg testMsg = 102;
+    OrbitPbApi_GetSettingsHash getSettingsHash = 103;
+    OrbitPbApi_SettingsHash settingsHash = 104;
+    OrbitPbApi_PumpCfg pumpCfg = 105;
+    OrbitPbApi_PumpCfg setPumpCfg = 106;
+    OrbitPbApi_GetPumpCfg getPumpCfg = 107;
+    OrbitPbApi_GetWateringStatus getWateringStatus = 110;
+    OrbitPbApi_WateringStatusSummary wateringStatusSummary = 111;
+    OrbitPbApi_SkipWaterInstance skipWaterInstance = 112;
+    OrbitPbApi_SkipWaterEvent skipWaterEvent = 113;
+    OrbitPbApi_ProgramSchedules programSchedules = 115;
+    OrbitPbApi_SetConcurrentProgramGroups setConcurrentProgramGroups = 116;
+    OrbitPbApi_GetConcurrentProgramGroups getConcurrentProgramGroups = 117;
+    OrbitPbApi_ReportConcurrentProgramGroups reportConcurrentProgramGroups = 118;
+    OrbitPbApi_ScheduledMode scheduledMode = 119;
+    OrbitPbApi_SetScheduledMode setScheduledMode = 120;
+    OrbitPbApi_GetScheduledMode getScheduledMode = 121;
+    OrbitPbApi_GetSmartAccessories getSmartAccessories = 200;
+    OrbitPbApi_SmartAccessories setSmartAccessories = 201;
+    OrbitPbApi_CellularSettings cellularSettings = 202;
+    OrbitPbApi_GetCellularSettings getCellularSettings = 203;
+    OrbitPbApi_getCellularStatus getCellularStatus = 204;
+    OrbitPbApi_CellularStatus cellularStatus = 205;
+    OrbitPbApi_LorawanSettings lorawanSettings = 206;
+    OrbitPbApi_getLorawanStatus getLorawanStatus = 207;
+    OrbitPbApi_LorawanStatus lorawanStatus = 208;
+    OrbitPbApi_CellularSleep cellularSleep = 209;
+    OrbitPbApi_SmartAccessoryCheck smartAccessoryCheck = 210;
+    OrbitPbApi_CrcCheckFailed crcCheckFailed = 211;
+    OrbitPbApi_CellularSleepSettings cellularSleepSettings = 212;
+    OrbitPbApi_CellularSleepAbort cellularSleepAbort = 213;
+    OrbitPbApi_GetSmartAccessoryOtaStatus getSmartAccessoryOtaStatus = 214;
+    OrbitPbApi_SmartAccessoryOtaStatus smartAccessoryOtaStatus = 215;
+    BhyveAgApi_RestartDevice restartDevice = 1000;
+    BhyveAgApi_ClearFaults agClearFaults = 1001;
+    BhyveAgApi_AgDeviceInfo agDeviceInfo = 1005;
+    BhyveAgApi_CP_Settings cpSetSettings = 1021;
+    BhyveAgApi_CP_ControlStatus cpControlStatus = 1022;
+    BhyveAgApi_CP_ControlStatus cpGetControlStatus = 1023;
+    BhyveAgApi_CP_Program cpPumpProgram = 1024;
+    BhyveAgApi_CP_Program cpEndGunProgram = 1025;
+    BhyveAgApi_CP_Program cpAuxiliaryProgram = 1026;
+    BhyveAgApi_CP_Program cpVriProgram = 1027;
+    BhyveAgApi_CP_ControlStatusDebug cpStatusDebug = 1028;
+    BhyveAgApi_GetTSMValue cpGetTSMValue = 1029;
+    BhyveAgApi_CP_StepProgram cpStepProgram = 1030;
+    BhyveAgApi_SetMac cpSetMac = 1040;
+    BhyveAgApi_CPA_ControlStatus cpaGetControlStatus = 1050;
+    BhyveAgApi_CPA_ControlStatus cpaControlStatus = 1051;
+    BhyveAgApi_CPA_Settings cpaGetSettings = 1052;
+    BhyveAgApi_CPA_Settings cpaSettings = 1053;
+    BhyveAgApi_GetFlowSensorLogs getFlowSensorLogs = 1054;
+    BhyveAgApi_FlowSensorLogs flowSensorLogs = 1055;
+    BhyveAgApi_GetIpRadioData getIpRadioData = 1070;
+    BhyveAgApi_SetIpRadioData setIpRadioData = 1071;
+    BhyveAgApi_StartAntennaAlignnment startAntennaAlignment = 1072;
+    BhyveAgApi_StopAntennaAlignnment stopAntennaAlignment = 1073;
+    BhyveAgApi_PingNetwork pingNetwork = 1074;
+    BhyveAgApi_PingResults pingResults = 1075;
+    BhyveAgApi_Cpa_MfrTest cpaMfrTest = 1085;
+    BhyveAgApi_CP_MfrTest cpMfrTest = 1100;
+    BhyveAgApi_CP_MfrTest cpGetMfrTest = 1101;
+    BhyveAgApi_GC_GetStatus gcGetStatus = 2000;
+    BhyveAgApi_GC_Status gcStatus = 2001;
+    BhyveAgApi_GC_Settings gcSetSettings = 2002;
+    BhyveAgApi_Flush flush = 2003;
+    BhyveAgApi_GC_FaultStatus gcFaultStatus = 2004;
+    BhyveAgApi_GetLog getAgLog = 2005;
+    BhyveAgApi_Log agLog = 2006;
+    BhyveAgApi_PumpControl pumpControl = 2007;
+    BhyveAgApi_GC_Control gcControl = 2008;
+    BhyveAgApi_HTTP_RequestResponse httpRequest = 2009;
+    BhyveAgApi_HTTP_RequestResponse httpResponse = 2010;
+    BhyveAgApi_PN_SecDevStatus pnSecDevStatus = 2050;
+    BhyveAgApi_PN_SecDevControl pnSecDevCtl = 2051;
+  }
+}
+
+message OrbitPbApi_MfiSaltVerifier {
+  required bytes salt = 1;
+  required bytes verifier = 2;
+}
+
+message OrbitPbApi_MfrTest_DutProvision {
+  enum DutProvisionId {
+    OrbitPbApi_MfrTest_DutProvision_DutProvisionId_retailTimer = 0;
+    OrbitPbApi_MfrTest_DutProvision_DutProvisionId_proTimer = 1;
+    OrbitPbApi_MfrTest_DutProvision_DutProvisionId_internationalRetailTimer = 2;
+    OrbitPbApi_MfrTest_DutProvision_DutProvisionId_internationalProTimer = 3;
+  }
+
+  optional bytes dutId = 1;
+  required DutProvisionId provisionId = 2;
+}
+
+message OrbitPbApi_MfrTest_DutTestCommand {
+  enum Cmd {
+    OrbitPbApi_MfrTest_DutTestCommand_Cmd_cmd_none = 0;
+    OrbitPbApi_MfrTest_DutTestCommand_Cmd_cmd_testFail = 1;
+    OrbitPbApi_MfrTest_DutTestCommand_Cmd_cmd_testPass = 2;
+    OrbitPbApi_MfrTest_DutTestCommand_Cmd_cmd_testPass_debug = 3;
+    OrbitPbApi_MfrTest_DutTestCommand_Cmd_cmd_startAutoTest = 4;
+  }
+
+  enum LED_Color {
+    OrbitPbApi_MfrTest_DutTestCommand_LED_Color_off = 0;
+    OrbitPbApi_MfrTest_DutTestCommand_LED_Color_red = 1;
+    OrbitPbApi_MfrTest_DutTestCommand_LED_Color_green = 2;
+    OrbitPbApi_MfrTest_DutTestCommand_LED_Color_blue = 3;
+  }
+
+  optional bytes dutId = 1;
+  optional bool enablePump = 2;
+  optional uint32 stationsEnabledFlags_0_31 = 3;
+  optional uint32 stationsEnabledFlags_32_63 = 4;
+  optional bool rebootDevice = 5;
+  optional bool testWatchdog = 6;
+  optional uint32 pumpEnabledFlags = 7;
+  optional OrbitPbApi_InterfaceId setNetworkInterface = 8;
+  optional uint32 testDioFlags = 9;
+  optional Cmd dutCmd = 10;
+  repeated uint32 analogOutput = 11;
+  optional uint32 rs485Channel = 12;
+  repeated LED_Color ledColor = 13;
+}
+
+message OrbitPbApi_MfrTest_DutTestFinished {
+  enum DutTestStatus {
+    OrbitPbApi_MfrTest_DutTestFinished_DutTestStatus_passedAllTests = 0;
+    OrbitPbApi_MfrTest_DutTestFinished_DutTestStatus_failed = 1;
+  }
+
+  optional bytes dutId = 1;
+  optional DutTestStatus testStatus = 2;
+  optional bool clearTestMode = 3;
+}
+
+message OrbitPbApi_MfrTest_DutTestStatus {
+  enum ButtonTestState {
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_none = 0;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_clear = 1;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_back = 2;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_program = 3;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_rainDelay = 4;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_dialCw = 5;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_select = 6;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_dialCcw = 7;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_reset = 8;
+    OrbitPbApi_MfrTest_DutTestStatus_ButtonTestState_buttonTestState_finished = 9;
+  }
+
+  optional ButtonTestState buttonTestState = 1;
+  optional bool rl78CommTestPassed = 2;
+  optional bool zcdTestPassed = 3;
+  optional bool scdSigDetected = 4;
+  optional bool rainSenseSigDetected = 5;
+  optional bool battSenseGood = 6;
+  optional uint32 testDioFlags = 7;
+  optional OrbitPbApi_MfrTest_Hsc hscTestStatus = 64;
+  optional OrbitPbApi_MfrTest_GC gcTestStatus = 65;
+}
+
+message OrbitPbApi_MfrTest_GC {
+  enum MfrTestState {
+    OrbitPbApi_MfrTest_GC_MfrTestState_mfrTestState_none = 0;
+    OrbitPbApi_MfrTest_GC_MfrTestState_mfrTestState_ui = 1;
+    OrbitPbApi_MfrTest_GC_MfrTestState_mfrTestState_waitForAuto = 2;
+    OrbitPbApi_MfrTest_GC_MfrTestState_mfrTestState_auto = 3;
+    OrbitPbApi_MfrTest_GC_MfrTestState_mfrTestState_failed = 4;
+    OrbitPbApi_MfrTest_GC_MfrTestState_mfrTestState_passed = 5;
+  }
+
+  enum UiTestStatus {
+    OrbitPbApi_MfrTest_GC_UiTestStatus_uiTestStatus_none = 0;
+    OrbitPbApi_MfrTest_GC_UiTestStatus_uiTestStatus_rgbLeds = 1;
+    OrbitPbApi_MfrTest_GC_UiTestStatus_uiTestStatus_button = 2;
+    OrbitPbApi_MfrTest_GC_UiTestStatus_uiTestStatus_failed = 3;
+    OrbitPbApi_MfrTest_GC_UiTestStatus_uiTestStatus_finished = 4;
+  }
+
+  optional MfrTestState mfrTestState = 1;
+  optional OrbitPbApi_InterfaceId networkInterface = 2;
+  optional UiTestStatus uiTestStatus = 3;
+  optional uint32 flowMeter0FreqHz = 4;
+  optional uint32 flowMeter1FreqHz = 5;
+}
+
+message OrbitPbApi_MfrTest_Hsc {
+  enum MfrTestState {
+    OrbitPbApi_MfrTest_Hsc_MfrTestState_mfrTestState_none = 0;
+    OrbitPbApi_MfrTest_Hsc_MfrTestState_mfrTestState_ui = 1;
+    OrbitPbApi_MfrTest_Hsc_MfrTestState_mfrTestState_waitForAuto = 2;
+    OrbitPbApi_MfrTest_Hsc_MfrTestState_mfrTestState_auto = 3;
+    OrbitPbApi_MfrTest_Hsc_MfrTestState_mfrTestState_failed = 4;
+    OrbitPbApi_MfrTest_Hsc_MfrTestState_mfrTestState_passed = 5;
+  }
+
+  enum UiTestStatus {
+    OrbitPbApi_MfrTest_Hsc_UiTestStatus_uiTestStatus_none = 0;
+    OrbitPbApi_MfrTest_Hsc_UiTestStatus_uiTestStatus_rgbLeds = 1;
+    OrbitPbApi_MfrTest_Hsc_UiTestStatus_uiTestStatus_button1 = 2;
+    OrbitPbApi_MfrTest_Hsc_UiTestStatus_uiTestStatus_button2 = 3;
+    OrbitPbApi_MfrTest_Hsc_UiTestStatus_uiTestStatus_button3 = 4;
+    OrbitPbApi_MfrTest_Hsc_UiTestStatus_uiTestStatus_failed = 5;
+    OrbitPbApi_MfrTest_Hsc_UiTestStatus_uiTestStatus_finished = 6;
+  }
+
+  optional MfrTestState mfrTestState = 1;
+  optional OrbitPbApi_InterfaceId networkInterface = 2;
+  optional UiTestStatus uiTestStatus = 3;
+  optional uint32 flowMeter0FreqHz = 4;
+  optional uint32 flowMeter1FreqHz = 5;
+}
+
+message OrbitPbApi_MfrTest_WifiTestStatus {
+  required bool testStatus = 1;
+}
+
+message OrbitPbApi_NetworkConnect {
+  enum NetworkMode {
+    OrbitPbApi_NetworkConnect_NetworkMode_normal = 0;
+    OrbitPbApi_NetworkConnect_NetworkMode_serverInterfaceDisabled = 1;
+  }
+
+  optional bytes ssid = 1;
+  optional OrbitPbApi_SecType secType = 2;
+  optional bool useDhcp = 3;
+  optional bytes passphrase = 4;
+  optional uint32 ipv4Address = 5;
+  optional uint32 ipv4SubnetMask = 6;
+  optional uint32 ipv4Gateway = 7;
+  optional uint32 ipv4PrimaryDns = 8;
+  optional uint32 ipv4SecondaryDns = 9;
+  optional OrbitPbApi_WifiBand wifiBand = 10;
+  optional OrbitPbApi_InterfaceId interface = 11;
+  optional OrbitPbApi_CellularSettings cellSettings = 12;
+  optional NetworkMode mode = 13;
+}
+
+message OrbitPbApi_NetworkDisconnect {
+  optional bool clearNetworkParams = 1;
+}
+
+message OrbitPbApi_NetworkStatus {
+  enum NetworkInterfaceState {
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_waitingForInit = 0;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_notConfigured = 1;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_disconnected = 2;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_connecting = 3;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_disconnecting = 4;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_waitingForDhcp = 5;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_connected = 6;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_connectedToTestAp = 7;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_unknown = 8;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceState_networkInterfaceState_checkingSimCard = 9;
+  }
+
+  enum NetworkInterfaceStatus {
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_ok = 0;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_unableToFindAp = 1;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_unableToJoinAp = 2;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_connectingToApTimedOut = 3;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_waitForDhcpTimedOut = 4;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_connectionLost = 5;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_unknown = 6;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_cableUnplugged = 7;
+    OrbitPbApi_NetworkStatus_NetworkInterfaceStatus_networkInterfaceStatus_error_noSimDetected = 8;
+  }
+
+  enum ServerInterfaceState {
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_notConnected = 0;
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_retryDelay = 1;
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_resolvingHostAddress = 2;
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_openingSocket = 3;
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_closingSocket = 4;
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_connected = 5;
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_connectedToTestServer = 6;
+    OrbitPbApi_NetworkStatus_ServerInterfaceState_serverInterfaceState_unknown = 7;
+  }
+
+  enum ServerInterfaceStatus {
+    OrbitPbApi_NetworkStatus_ServerInterfaceStatus_serverInterfaceStatus_ok = 0;
+    OrbitPbApi_NetworkStatus_ServerInterfaceStatus_serverInterfaceStatus_error_unableToResolveHostAddress = 1;
+    OrbitPbApi_NetworkStatus_ServerInterfaceStatus_serverInterfaceStatus_error_unableToOpenSocket = 2;
+    OrbitPbApi_NetworkStatus_ServerInterfaceStatus_serverInterfaceStatus_unknown = 3;
+  }
+
+  required NetworkInterfaceState networkInterfaceState = 1;
+  required NetworkInterfaceStatus networkInterfaceStatus = 2;
+  required ServerInterfaceState serverInterfaceState = 3;
+  required ServerInterfaceStatus serverInterfaceStatus = 4;
+  optional BhyveAgApi_DeviceType deviceType = 5;
+  optional OrbitPbApi_InterfaceId networkInterface = 6;
+  optional OrbitPbApi_CellularStatus cellStatus = 7;
+}
+
+message OrbitPbApi_NextStartTime {
+  required string nextStartTimeIso8601 = 1;
+  required uint32 programFlags = 2;
+}
+
+message OrbitPbApi_ProgramSchedule {
+  required OrbitPbApi_ProgramId programId = 1;
+  repeated uint32 startTimesMinsFromMidnight = 8;
+  repeated OrbitPbApi_StationInfo stationInfo = 9;
+  optional uint32 budgetPercent = 10;
+  // deprecated: startDateSecEpochUtc
+  optional uint32 startDateSecEpochUtc = 11;
+  // deprecated: stopDateSecEpochUtc
+  optional uint32 stopDateSecEpochUtc = 12;
+  optional uint32 lastChangeDateSecEpochUtc = 13;
+  optional OrbitPbApi_InterfaceId lastChangeId = 14;
+  optional uint32 groupWateringPreDelaySec = 15;
+  optional uint32 groupWateringPostDelaySec = 16;
+  optional string programName = 17;
+  optional uint32 intervalHours = 18;
+  optional bool basicProgramMode = 19;
+  optional uint32 databaseId = 20;
+  optional uint32 originDateSecEpochUtc = 21;
+  optional uint32 endDateSecEpochUtc = 22;
+  oneof programType {
+    OrbitPbApi_ProgramType_NotSet programTypeNotSet = 2;
+    OrbitPbApi_ProgramType_DayOfWeek programTypeDayOfWeek = 3;
+    OrbitPbApi_ProgramType_Interval programTypeInterval = 4;
+    OrbitPbApi_ProgramType_Odd programTypeOdd = 5;
+    OrbitPbApi_ProgramType_Even programTypeEven = 6;
+    OrbitPbApi_ProgramType_RunOnce programTypeRunOnce = 7;
+  }
+}
+
+message OrbitPbApi_ProgramSchedules {
+  optional OrbitPbApi_SetActivePrograms setActivePrograms = 1;
+  repeated OrbitPbApi_SetProgramSchedule programs = 2;
+}
+
+message OrbitPbApi_ProgramType_DayOfWeek {
+  required uint32 dayFlags = 1;
+}
+
+message OrbitPbApi_ProgramType_Even {
+}
+
+message OrbitPbApi_ProgramType_Interval {
+  required uint32 intervalDays = 1;
+  // deprecated: intervalStartTimeIso8601
+  optional string intervalStartTimeIso8601 = 2;
+}
+
+message OrbitPbApi_ProgramType_NotSet {
+}
+
+message OrbitPbApi_ProgramType_Odd {
+}
+
+message OrbitPbApi_ProgramType_RunOnce {
+  optional uint32 programFlags = 1;
+}
+
+message OrbitPbApi_PumpCfg {
+  repeated OrbitPbApi_PumpCfgEntry entries = 1;
+}
+
+message OrbitPbApi_PumpCfgEntry {
+  optional uint32 pumpId = 1;
+  optional uint32 pumpStartDelaySec = 2;
+  optional uint32 pumpInterZoneDelaySec = 3;
+  optional uint32 maxRunTillRechargeSec = 4;
+  optional uint32 rechargeFillDelaySec = 5;
+}
+
+message OrbitPbApi_PumpFault {
+  optional uint32 pumpId = 1;
+  optional uint32 timestampSecEpochUtc = 2;
+  optional OrbitPbApi_FaultType_Unavailable unavailable = 11;
+  optional OrbitPbApi_FaultType_ShortCircuit shortCircuit = 12;
+  optional OrbitPbApi_FaultType_Overcurrent overcurrent = 13;
+  optional OrbitPbApi_FaultType_Undercurrent undercurrent = 14;
+}
+
+message OrbitPbApi_PumpTransition {
+  enum Type {
+    OrbitPbApi_PumpTransition_Type_together = 1;
+    OrbitPbApi_PumpTransition_Type_pumpFirst = 2;
+    OrbitPbApi_PumpTransition_Type_valveFirst = 3;
+  }
+
+  optional Type type = 1;
+  optional uint32 timeoutSecs = 2;
+}
+
+message OrbitPbApi_RainSensor {
+  enum Status {
+    OrbitPbApi_RainSensor_Status_disabled = 0;
+    OrbitPbApi_RainSensor_Status_notRaining = 1;
+    OrbitPbApi_RainSensor_Status_raining = 2;
+  }
+
+  optional Status status = 1;
+}
+
+message OrbitPbApi_ReportConcurrentProgramGroups {
+  repeated OrbitApApi_ConcurrentPrograms groups = 1;
+}
+
+message OrbitPbApi_RequestTime {
+}
+
+message OrbitPbApi_ResetDevice {
+  optional bool factoryReset = 1;
+}
+
+message OrbitPbApi_ScheduledMode {
+  optional uint32 turnOnDaySecEpochUtc = 1;
+  optional bool turnOnRepeatAnnually = 2;
+  optional uint32 turnOffDaySecEpochUtc = 3;
+  optional bool turnOffRepeatAnnually = 4;
+}
+
+message OrbitPbApi_Sensor {
+  repeated OrbitPbApi_SensorInfo sensorInfo = 1;
+}
+
+message OrbitPbApi_SensorInfo {
+  optional OrbitPbApi_SensorType type = 1;
+  optional uint32 sensorId = 3;
+  oneof status {
+    OrbitPbApi_RainSensor rainSensor = 2;
+  }
+}
+
+message OrbitPbApi_SetActivePrograms {
+  required uint32 activeProgramFlags = 1;
+  optional uint32 lastChangeDateSecEpochUtc = 2;
+  optional OrbitPbApi_InterfaceId lastChangeId = 3;
+}
+
+message OrbitPbApi_SetConcurrentProgramGroups {
+  repeated OrbitApApi_ConcurrentPrograms groups = 1;
+}
+
+message OrbitPbApi_SetDateTime {
+  required string currentTimeIso8601 = 1;
+}
+
+message OrbitPbApi_SetEpochTime {
+  optional uint32 timeSecEpochUTC = 1;
+  optional int32 timezoneOffsetSec = 2;
+}
+
+message OrbitPbApi_SetHomeKitParams {
+  optional bool enableWac = 1;
+  optional bool clearHomekitProvisioning = 2;
+}
+
+message OrbitPbApi_SetNetworkEncKey {
+  required bytes networkEncKey = 1;
+}
+
+message OrbitPbApi_SetProgramSchedule {
+  required OrbitPbApi_ProgramId programId = 1;
+  repeated uint32 startTimesMinsFromMidnight = 8;
+  repeated OrbitPbApi_StationInfo stationInfo = 9;
+  optional uint32 budgetPercent = 10;
+  // deprecated: startDateSecEpochUtc
+  optional uint32 startDateSecEpochUtc = 11;
+  // deprecated: stopDateSecEpochUtc
+  optional uint32 stopDateSecEpochUtc = 12;
+  optional uint32 lastChangeDateSecEpochUtc = 13;
+  optional OrbitPbApi_InterfaceId lastChangeId = 14;
+  optional uint32 groupWateringPreDelaySec = 15;
+  optional uint32 groupWateringPostDelaySec = 16;
+  optional string programName = 17;
+  optional uint32 intervalHours = 18;
+  optional bool basicProgramMode = 19;
+  optional uint32 databaseId = 20;
+  optional uint32 originDateSecEpochUtc = 21;
+  optional uint32 endDateSecEpochUtc = 22;
+  oneof programType {
+    OrbitPbApi_ProgramType_NotSet programTypeNotSet = 2;
+    OrbitPbApi_ProgramType_DayOfWeek programTypeDayOfWeek = 3;
+    OrbitPbApi_ProgramType_Interval programTypeInterval = 4;
+    OrbitPbApi_ProgramType_Odd programTypeOdd = 5;
+    OrbitPbApi_ProgramType_Even programTypeEven = 6;
+    OrbitPbApi_ProgramType_RunOnce programTypeRunOnce = 7;
+  }
+}
+
+message OrbitPbApi_SetRainDelay {
+  enum SensorStatus {
+    OrbitPbApi_SetRainDelay_SensorStatus_sensorDisabled = 0;
+    OrbitPbApi_SetRainDelay_SensorStatus_sensorOpen = 1;
+    OrbitPbApi_SetRainDelay_SensorStatus_sensorClosed = 2;
+  }
+
+  required uint32 rainDelayTimeMins = 1;
+  optional uint32 delayStartTimeSecEpochUtc = 2;
+  optional uint32 delayEndTimeSecEpochUtc = 3;
+  optional OrbitPbApi_ProgramDelayType delayType = 4;
+  // deprecated: sensorStatus
+  repeated SensorStatus sensorStatus = 5;
+}
+
+message OrbitPbApi_SetScheduledMode {
+  optional OrbitPbApi_ScheduledMode scheduledMode = 1;
+}
+
+message OrbitPbApi_SetSettings {
+  optional bool rainSensorEnabled = 1;
+  optional string serverHostName = 2;
+  optional uint32 serverKeepAlivePeriodSec = 3;
+  optional uint32 serverMaxReconnectBackoffTimeSec = 4;
+  optional bool useExternalAntenna = 5;
+  optional bool uiLockoutEnabled = 6;
+  optional uint32 activeUiBrightnessLevelPercent = 7;
+  optional uint32 idleUiBrightnessLevelPercent = 8;
+  optional uint32 idleUiTimeoutSec = 9;
+  optional bool uiLightsEnabled = 10;
+  optional bool enableDebugOutput = 11;
+  optional OrbitPbApi_ZoneTransitionSetting betweenZoneTransition = 12;
+  optional OrbitPbApi_PumpTransition pumpOnStart = 13;
+  optional OrbitPbApi_PumpTransition pumpOnEnd = 14;
+  optional uint32 serverFallbackIp4 = 15;
+  optional uint32 orbitPbApiPort = 17;
+}
+
+message OrbitPbApi_SetStationCfg {
+  optional OrbitPbApi_StationCfg stationCfg = 1;
+}
+
+message OrbitPbApi_SetWeatherForecastData {
+  repeated OrbitPbApi_WeatherForecastDataEntry entries = 1;
+}
+
+message OrbitPbApi_SettingsHash {
+  optional bytes programAHash = 1;
+  optional bytes programBHash = 2;
+  optional bytes programCHash = 3;
+  optional bytes programDHash = 4;
+  optional bytes programEHash = 5;
+  optional bytes programFHash = 6;
+  optional bytes activeProgramsHash = 7;
+  optional bytes programDelayHash = 8;
+  optional bytes onboardingCompleteHash = 9;
+  optional bytes timezoneOffsetHash = 10;
+  optional bytes timerModeHash = 11;
+}
+
+message OrbitPbApi_SkipCurrentStation {
+  optional uint32 stationId = 1;
+}
+
+message OrbitPbApi_SkipWaterEvent {
+  optional uint32 sessionId = 1;
+  optional uint32 waterEventIndex = 2;
+}
+
+message OrbitPbApi_SkipWaterInstance {
+  optional uint32 instanceId = 1;
+}
+
+message OrbitPbApi_SmartAccessories {
+  repeated OrbitPbApi_SmartAccessory entries = 1;
+}
+
+message OrbitPbApi_SmartAccessory {
+  optional OrbitPbApi_SmartAccessoryType type = 1;
+  optional bytes serialNumber = 2;
+  optional bool connected = 3;
+  optional uint32 flowSensorBitmap = 4;
+  optional uint32 stationBitmapConfig = 5;
+  optional uint32 stationBitmapPresent = 6;
+  optional uint32 firmwareVersion = 7;
+  optional uint32 logicalAddress = 8;
+  repeated uint32 stationsMap = 9;
+  repeated uint32 flowSensorMap = 10;
+}
+
+message OrbitPbApi_SmartAccessoryCheck {
+  optional uint32 stationId = 1;
+}
+
+message OrbitPbApi_SmartAccessoryOtaStatus {
+  enum Status {
+    OrbitPbApi_SmartAccessoryOtaStatus_Status_checking = 0;
+    OrbitPbApi_SmartAccessoryOtaStatus_Status_inProgress = 1;
+    OrbitPbApi_SmartAccessoryOtaStatus_Status_finalizing = 2;
+    OrbitPbApi_SmartAccessoryOtaStatus_Status_completed = 3;
+  }
+
+  optional bytes serialNumber = 1;
+  optional Status status = 2;
+  optional uint32 progress = 3;
+}
+
+message OrbitPbApi_StationCfg {
+  repeated OrbitPbApi_StationCfgEntry entries = 1;
+}
+
+message OrbitPbApi_StationCfgEntry {
+  optional uint32 stationId = 1;
+  optional string stationName = 2;
+  repeated uint32 pumpIds = 3;
+  repeated uint32 flowSensorIds = 4;
+  repeated uint32 sensorIds = 6;
+  optional float highFlowThresholdGpm = 7;
+  optional float lowFlowThresholdGpm = 8;
+  optional float highFlowFaultThresholdGpm = 9;
+  optional float lowFlowFaultThresholdGpm = 10;
+  optional float pumpPressureSetPointPa = 11;
+  optional uint32 pipeFillTimeSec = 12;
+}
+
+message OrbitPbApi_StationFault {
+  optional uint32 stationId = 1;
+  optional uint32 timestampSecEpochUtc = 2;
+  optional OrbitPbApi_FaultType_Unavailable unavailable = 11;
+  optional OrbitPbApi_FaultType_ShortCircuit shortCircuit = 12;
+  optional OrbitPbApi_FaultType_Overcurrent overcurrent = 13;
+  optional OrbitPbApi_FaultType_Undercurrent undercurrent = 14;
+  optional OrbitPbApi_FaultType_NoFlow noFlow = 15;
+  optional OrbitPbApi_FaultType_HighFlow highFlow = 16;
+  optional OrbitPbApi_FaultType_LowFlow lowFlow = 17;
+}
+
+message OrbitPbApi_StationInfo {
+  enum Type {
+    OrbitPbApi_StationInfo_Type_station = 0;
+    OrbitPbApi_StationInfo_Type_soak = 1;
+    OrbitPbApi_StationInfo_Type_scheduleSyncDelay = 2;
+  }
+
+  required uint32 stationId = 1;
+  required uint32 runTimeSec = 2;
+  optional uint32 groupId = 3;
+  optional bytes bridgeId = 4;
+  optional uint32 meshDeviceId = 5;
+  optional Type type = 10;
+  optional uint32 sequenceId = 11;
+}
+
+message OrbitPbApi_StationValveStatus {
+  enum ValveStatus {
+    OrbitPbApi_StationValveStatus_ValveStatus_off = 0;
+    OrbitPbApi_StationValveStatus_ValveStatus_chargingOnPulse1 = 1;
+    OrbitPbApi_StationValveStatus_ValveStatus_chargingOnPulse2 = 2;
+    OrbitPbApi_StationValveStatus_ValveStatus_on = 3;
+    OrbitPbApi_StationValveStatus_ValveStatus_chargingOffPulse1 = 4;
+    OrbitPbApi_StationValveStatus_ValveStatus_chargingOffPulse2 = 5;
+  }
+
+  optional uint32 stationId = 1;
+  optional ValveStatus status = 2;
+  optional uint32 runTimeSec = 3;
+}
+
+message OrbitPbApi_SyncRequest {
+}
+
+message OrbitPbApi_TestMsg {
+  oneof testMsg {
+    OrbitPbApi_WifiRadioTest wifiRadioTest = 1;
+    OrbitPbApi_BleRadioTest bleRadioTest = 2;
+    OrbitPbApi_LoRaRadioTest loraRadioTest = 3;
+    OrbitPbApi_CellularRadioTest cellRadioTest = 4;
+  }
+}
+
+message OrbitPbApi_TimerMode {
+  enum Mode {
+    OrbitPbApi_TimerMode_Mode_offMode = 0;
+    OrbitPbApi_TimerMode_Mode_autoMode = 1;
+    OrbitPbApi_TimerMode_Mode_manualMode = 2;
+  }
+
+  required Mode mode = 1;
+  optional OrbitPbApi_ManualModeParams manualModeParams = 2;
+}
+
+message OrbitPbApi_UpdateAvailable {
+  optional uint32 imageId = 1;
+  required string versionString = 2;
+  required uint32 imageSize = 3;
+  optional bool updateViaWiFi = 4;
+  optional uint32 deviceSn = 5;
+  optional string imageUrl = 6;
+}
+
+message OrbitPbApi_UpdateBlockRequest {
+  optional uint32 imageId = 1;
+  required string versionString = 2;
+  required uint32 imageSize = 3;
+  required uint32 imageOffset = 4;
+  required uint32 maxBlockSize = 5;
+  optional uint32 deviceSn = 6;
+}
+
+message OrbitPbApi_UpdateBlockResponse {
+  optional uint32 imageId = 1;
+  required string versionString = 2;
+  required uint32 imageSize = 3;
+  required uint32 imageOffset = 4;
+  required uint32 blockSize = 5;
+  required bytes dataBlock = 6;
+  optional uint32 deviceSn = 7;
+}
+
+message OrbitPbApi_UpdateGetProgress {
+}
+
+message OrbitPbApi_UpdateProgress {
+  optional uint32 imageSize = 1;
+  optional uint32 imageOffset = 2;
+  optional OrbitPbApi_OtaImageId imageId = 3;
+  optional uint32 imageVersion = 4;
+  optional uint32 deviceSn = 5;
+}
+
+message OrbitPbApi_WaterEventLog {
+  repeated OrbitPbApi_WaterEventLogEntry waterEventLogEntries = 1;
+}
+
+message OrbitPbApi_WaterEventLogEntry {
+  enum WaterEventStatus {
+    OrbitPbApi_WaterEventLogEntry_WaterEventStatus_stationCompleted = 0;
+    OrbitPbApi_WaterEventLogEntry_WaterEventStatus_stationSkipped = 1;
+    OrbitPbApi_WaterEventLogEntry_WaterEventStatus_stationFault = 2;
+    OrbitPbApi_WaterEventLogEntry_WaterEventStatus_unknown = 3;
+    OrbitPbApi_WaterEventLogEntry_WaterEventStatus_unresponsive = 4;
+  }
+
+  required string logTimestampIso8601 = 1;
+  optional uint32 logIndex = 2;
+  optional OrbitPbApi_ProgramId programId = 3;
+  optional uint32 stationId = 4;
+  optional uint32 stationRunTimeSec = 5;
+  optional WaterEventStatus eventStatus = 6;
+  optional uint32 waterVolumeGallons = 7;
+  optional uint32 meshDeviceId = 8;
+  optional uint32 logTimeSecEpochUTC = 9;
+  optional uint32 databaseId = 10;
+  repeated uint32 concurrentStationIds = 11;
+}
+
+message OrbitPbApi_WateringEvent {
+  enum EventType {
+    OrbitPbApi_WateringEvent_EventType_wateringInProgress = 1;
+    OrbitPbApi_WateringEvent_EventType_programPreDelay = 2;
+    OrbitPbApi_WateringEvent_EventType_programPostDelay = 3;
+    OrbitPbApi_WateringEvent_EventType_soak = 4;
+    OrbitPbApi_WateringEvent_EventType_scheduleSyncDelay = 5;
+  }
+
+  required OrbitPbApi_ProgramId programId = 1;
+  required uint32 stationId = 2;
+  required uint32 runTimeSec = 3;
+  optional uint32 databaseId = 4;
+  optional EventType eventType = 5;
+}
+
+message OrbitPbApi_WateringStatus {
+  enum Status {
+    OrbitPbApi_WateringStatus_Status_wateringComplete = 1;
+    OrbitPbApi_WateringStatus_Status_wateringInProgress = 2;
+    OrbitPbApi_WateringStatus_Status_pumpDelay = 3;
+    OrbitPbApi_WateringStatus_Status_stationComplete = 4;
+    OrbitPbApi_WateringStatus_Status_stationDelay = 5;
+    OrbitPbApi_WateringStatus_Status_programPreDelay = 6;
+    OrbitPbApi_WateringStatus_Status_programPostDelay = 7;
+  }
+
+  required Status status = 1;
+  optional bool rainSensorHold = 2;
+  optional OrbitPbApi_ProgramId currentProgramId = 3;
+  optional uint32 currentStationId = 4;
+  optional uint32 currentTimeRemainingSec = 5;
+  repeated OrbitPbApi_WateringEvent waterEventQueue = 6;
+  optional uint32 totalRunTimeSec = 7;
+  optional uint32 databaseId = 9;
+  optional uint32 runtimeIndex = 10;
+  optional uint32 sessionId = 11;
+  optional uint32 waterInstanceId = 12;
+  optional uint32 waterEventIndex = 13;
+  optional uint32 waterInstanceStartSecEpochUtc = 14;
+}
+
+message OrbitPbApi_WateringStatusSummary {
+  repeated OrbitPbApi_WateringStatus sessions = 1;
+}
+
+message OrbitPbApi_WeatherForecastDataEntry {
+  enum WeatherType {
+    OrbitPbApi_WeatherForecastDataEntry_WeatherType_unknown = 1;
+    OrbitPbApi_WeatherForecastDataEntry_WeatherType_sunny = 2;
+    OrbitPbApi_WeatherForecastDataEntry_WeatherType_partlyCloudy = 3;
+    OrbitPbApi_WeatherForecastDataEntry_WeatherType_cloudy = 4;
+    OrbitPbApi_WeatherForecastDataEntry_WeatherType_rain = 5;
+    OrbitPbApi_WeatherForecastDataEntry_WeatherType_snow = 6;
+  }
+
+  optional uint32 startDateSecEpochUtc = 1;
+  optional WeatherType weatherType = 2;
+}
+
+message OrbitPbApi_WifiRadioTest {
+  enum Cmd {
+    OrbitPbApi_WifiRadioTest_Cmd_cancel = 0;
+    OrbitPbApi_WifiRadioTest_Cmd_startTxCW = 1;
+    OrbitPbApi_WifiRadioTest_Cmd_startTxModCW = 2;
+    OrbitPbApi_WifiRadioTest_Cmd_startRx = 3;
+  }
+
+  enum DataRate {
+    OrbitPbApi_WifiRadioTest_DataRate_dr_1_Mbps = 0;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_2_Mbps = 1;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_5_5_Mbps = 2;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_6_Mbps = 3;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_9_Mbps = 4;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_12_Mbps = 5;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_18_Mbps = 6;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_24_Mbps = 7;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_36_Mbps = 8;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_48_Mbps = 9;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_54_Mbps = 10;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs0 = 11;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs1 = 12;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs2 = 13;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs3 = 14;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs4 = 15;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs5 = 16;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs6 = 17;
+    OrbitPbApi_WifiRadioTest_DataRate_dr_mcs7 = 18;
+  }
+
+  enum WifiProtocol {
+    OrbitPbApi_WifiRadioTest_WifiProtocol_wp_802_11b = 0;
+    OrbitPbApi_WifiRadioTest_WifiProtocol_wp_802_11g = 1;
+    OrbitPbApi_WifiRadioTest_WifiProtocol_wp_802_11n_20 = 2;
+    OrbitPbApi_WifiRadioTest_WifiProtocol_wp_802_11n_40 = 3;
+    OrbitPbApi_WifiRadioTest_WifiProtocol_wp_802_11n_5GHz_20 = 4;
+    OrbitPbApi_WifiRadioTest_WifiProtocol_wp_802_11n_5GHz_40 = 5;
+    OrbitPbApi_WifiRadioTest_WifiProtocol_wp_802_11a_5GHz_20 = 6;
+  }
+
+  optional Cmd cmd = 1;
+  optional WifiProtocol wifiProtocol = 2;
+  optional DataRate dataRate = 3;
+  optional uint32 channelNumber = 4;
+  optional int32 txPowerQuarterDBm = 5;
+  optional bool secondaryChannelAbove = 6;
+}
+
+message OrbitPbApi_ZoneTransitionSetting {
+  enum Type {
+    OrbitPbApi_ZoneTransitionSetting_Type_together = 1;
+    OrbitPbApi_ZoneTransitionSetting_Type_delay = 2;
+    OrbitPbApi_ZoneTransitionSetting_Type_overlap = 3;
+  }
+
+  optional Type type = 1;
+  optional uint32 timeoutSecs = 2;
+}
+
+message OrbitPbApi_getCellularStatus {
+}
+
+message OrbitPbApi_getLorawanStatus {
+}
