@@ -24,6 +24,11 @@ if TYPE_CHECKING:
 PLATFORMS: list[str] = ["sensor", "switch"]
 
 
+def _import_orbit_codec() -> None:
+    """Load orbit_codec in a worker thread; protobuf triggers C-extension imports."""
+    from . import orbit_codec  # noqa: F401
+
+
 @callback
 def _sync_default_device_names_to_registry(
     hass: "HomeAssistant", entry: "ConfigEntry"
@@ -61,6 +66,8 @@ async def async_migrate_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> bo
 
 
 async def async_setup_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> bool:
+    await hass.async_add_executor_job(_import_orbit_codec)
+
     from .hub import BhyveBleHub
 
     hub = BhyveBleHub(hass, entry)

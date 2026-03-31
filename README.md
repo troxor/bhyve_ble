@@ -1,4 +1,4 @@
-# `bhyve_ble` (Home Assistant custom integration)
+# Orbit B-hyve for Home Assistant
 
 This Integration allows Home Assistant to locally control Orbit B-hyve hose timers through Home Assistant. Currently, not all features from the official app are implemented aside from the basics.
 
