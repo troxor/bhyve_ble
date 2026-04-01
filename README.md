@@ -1,35 +1,49 @@
 # Orbit B-hyve for Home Assistant
 
-This Integration allows Home Assistant to locally control Orbit B-hyve hose timers through Home Assistant. Currently, not all features from the official app are implemented aside from the basics.
+This integration lets Home Assistant control Orbit B-hyve hose timers locally over Bluetooth Low Energy. Only a subset of official-app features is implemented.
 
-This project is **unofficial** and not endorsed by Orbit. It exists for local control of B-hyve devices you own. It may be useful in areas with no internet connectivity, and/or when you cannot use the official Android or iOS apps.
+This project is **unofficial** and not endorsed by Orbit. It exists for local control of B-hyve devices you own. It may be useful when you have little or no internet connectivity, or when you cannot use the official Android or iOS apps.
 
-Use at your own risk. The author is not responsible for bricked hardware, astronomical water bills, unhappy soaked pets, or any other undesirable outcome!
+Use at your own risk. The author is not responsible for bricked hardware, high water bills, unhappy soaked pets, or any other undesirable outcome.
 
 ## Installation
 
-Copy to **`config/custom_components/bhyve_ble/`** and restart Home Assistant.
+### HACS (recommended)
 
-## Configuring Devices
+1. Open [HACS](https://hacs.xyz/) in Home Assistant → **Integrations**.
+2. Open the menu (⋮) → **Custom repositories**.
+3. Add this repository URL, category **Integration**, then **Add**.
+4. Search for **Orbit B-hyve BLE** (or this repo name), open it, and **Download**.
+5. Restart Home Assistant.
+6. **Settings → Devices & services → Add integration** and choose **Orbit B-hyve**.
 
-1. **Add Integration.** Sets a **shared network key** for establishing a connection to the hose timers. This is equivalent to your B-hyve account in the official app.
-2. **Configure → Add timer** Put it in **pairing mode** by pressing the "b" hex button 5 times quickly, pick the BLE address (or type it), with an optional friendly name.
+See also [HACS general requirements](https://hacs.xyz/docs/publish/start) and [integration layout](https://hacs.xyz/docs/publish/integration). For the default HACS store, your GitHub repo also needs a short **description** and **topics** (for example `home-assistant`, `integration`, `bhyve`, `ble`).
 
+**Add to HACS (My link):** generate a one-click link with [My Home Assistant → HACS repository](https://my.home-assistant.io/create-link/?redirect=hacs_repository).
+
+### Manual
+
+Copy the folder `custom_components/bhyve_ble/` from this repository into your Home Assistant **`config/custom_components/`** directory (so you have `config/custom_components/bhyve_ble/manifest.json`), then restart Home Assistant.
+
+## Configuring devices
+
+1. **Add integration** — sets a **shared network key** used to talk to your hose timers (analogous to your B-hyve account in the official app).
+2. **Configure → Add timer** — put the timer in **pairing mode** (press the “b” hex button five times quickly), pick the BLE address (or enter it), and optionally set a friendly name.
 
 ## Usage
 
-Once added, Hose timers will expose a switch control for each detected Output Port to start and stop watering. The default max runtime is 10 minutes unless switched off before then.
+Each hose timer exposes a **switch** per output port to start and stop watering. The default maximum runtime is ten minutes unless you turn it off earlier.
 
-Device Info, Battery, and other information from the devices will also be populated.
+Device info, battery, and related sensors are filled in when the device reports them.
 
 ## Development
 
-### Run Tests
+### Run tests
 
-Use a Python environment where **Home Assistant is installed** so `import homeassistant` works (for example `pip install homeassistant` in a venv). Then:
+Use a Python environment where **Home Assistant is installed** so `import homeassistant` works (for example `pip install homeassistant` in a venv). From the **repository root**:
 
 ```bash
-cd /path/to/bhyve_ble
-PYTHONPATH=.. pytest -q tests
+pytest -q tests
 ```
 
+`pytest.ini` sets `pythonpath = custom_components` so `bhyve_ble` resolves like it does under Home Assistant.

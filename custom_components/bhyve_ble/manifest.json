@@ -1,7 +1,7 @@
 {
   "domain": "bhyve_ble",
   "name": "Orbit B-hyve",
-  "codeowners": [],
+  "codeowners": ["@troxor"],
   "config_flow": true,
   "dependencies": ["bluetooth"],
   "integration_type": "hub",
