@@ -31,6 +31,7 @@ class BhyveBleStationManualWateringSwitch(BhyveBleEntity, SwitchEntity):
     """Manual watering for one station (port); ``turn_off`` stops all stations (off mode)."""
 
     _attr_has_entity_name = True
+    _attr_icon = "mdi:sprinkler"
 
     def __init__(self, coordinator: BhyveBleCoordinator, station_id: int) -> None:
         super().__init__(coordinator)
