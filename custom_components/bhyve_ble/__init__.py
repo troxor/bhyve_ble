@@ -2,10 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from homeassistant.core import callback
-from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.device_registry import DeviceEntry
-
 from .const import (
     CONF_ADDRESS,
     CONF_DEC_CTR,
@@ -20,6 +16,7 @@ from .const import (
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.device_registry import DeviceEntry
 
 PLATFORMS: list[str] = ["sensor", "switch"]
 
@@ -29,10 +26,11 @@ def _import_orbit_codec() -> None:
     from . import orbit_codec  # noqa: F401
 
 
-@callback
-def _sync_default_device_names_to_registry(
-    hass: "HomeAssistant", entry: "ConfigEntry"
+def _sync_default_device_names_to_registry_impl(
+    hass: HomeAssistant, entry: ConfigEntry
 ) -> None:
+    from homeassistant.helpers import device_registry as dr
+
     hub = hass.data.get(DOMAIN, {}).get(entry.entry_id)
     if hub is None:
         return
@@ -50,7 +48,7 @@ def _sync_default_device_names_to_registry(
             reg.async_update_device(device.id, name=display)
 
 
-async def async_migrate_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> bool:
+async def async_migrate_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if entry.version == 1:
         data = dict(entry.data)
         addr = data.pop(CONF_ADDRESS, None)
@@ -65,7 +63,9 @@ async def async_migrate_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> bo
     return True
 
 
-async def async_setup_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    from homeassistant.core import callback
+
     await hass.async_add_executor_job(_import_orbit_codec)
 
     from .hub import BhyveBleHub
@@ -79,11 +79,11 @@ async def async_setup_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> bool
 
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = hub
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    _sync_default_device_names_to_registry(hass, entry)
+    callback(_sync_default_device_names_to_registry_impl)(hass, entry)
     return True
 
 
-async def async_unload_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hub = hass.data[DOMAIN].pop(entry.entry_id, None)
@@ -93,7 +93,7 @@ async def async_unload_entry(hass: "HomeAssistant", entry: "ConfigEntry") -> boo
 
 
 async def async_remove_config_entry_device(
-    hass: "HomeAssistant", config_entry: "ConfigEntry", device_entry: DeviceEntry
+    hass: HomeAssistant, config_entry: ConfigEntry, device_entry: DeviceEntry
 ) -> bool:
     address: str | None = None
     for domain, identifier in device_entry.identifiers:
