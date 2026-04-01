@@ -1,14 +1,19 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
-from .coordinator import BhyveBleCoordinator
 from .entity import BhyveBleEntity
-from .hub import BhyveBleHub
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import BhyveBleCoordinator
+    from .hub import BhyveBleHub
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
@@ -74,6 +79,5 @@ class BhyveBleBatteryMvSensor(BhyveBleEntity, SensorEntity):
         mv = bat.get("batteryLevelMV")
         try:
             return int(mv) if mv is not None else None
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return None
-

@@ -3,17 +3,23 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING
 
 import async_timeout
 from bleak.exc import BleakError
-from bleak_retry_connector import BleakClientWithServiceCache, BleakNotFoundError, establish_connection
-
+from bleak_retry_connector import (
+    BleakClientWithServiceCache,
+    BleakNotFoundError,
+    establish_connection,
+)
 from homeassistant.components.bluetooth import async_ble_device_from_address
-from homeassistant.core import HomeAssistant
 
 from .const import AES_CHAR_UUID, READ_CHAR_UUID, WRITE_CHAR_UUID
 from .link_crypto import SessionKeys, build_data_frame, parse_data_frame
 from .provisioning import build_aes_char_write_payload, derive_from_aes_char_exchange
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,6 +40,7 @@ class BhyveBleTransport:
         self._keys: SessionKeys | None = None
         self._notify_cb: NotifyCallback | None = None
         self._write_lock = asyncio.Lock()
+        self._notify_tasks: set[asyncio.Task[None]] = set()
 
     @property
     def is_connected(self) -> bool:
@@ -49,14 +56,16 @@ class BhyveBleTransport:
         self._notify_cb = notify_cb
         ble_device = async_ble_device_from_address(self.hass, self.address)
         if ble_device is None:
-            raise BhyveBleTransportError(f"BLE device not found for address {self.address}")
+            msg = f"BLE device not found for address {self.address}"
+            raise BhyveBleTransportError(msg)
 
         addr = self.address
 
         def _ble_device_callback():
             d = async_ble_device_from_address(self.hass, addr)
             if d is None:
-                raise BleakNotFoundError(f"BLE device not found for address {addr}")
+                msg = f"BLE device not found for address {addr}"
+                raise BleakNotFoundError(msg)
             return d
 
         try:
@@ -68,8 +77,9 @@ class BhyveBleTransport:
                     ble_device_callback=_ble_device_callback,
                     max_attempts=4,
                 )
-        except (BleakError, asyncio.TimeoutError, OSError) as e:
-            raise BhyveBleTransportError(f"connect failed: {e}") from e
+        except (TimeoutError, BleakError, OSError) as e:
+            msg = f"connect failed: {e}"
+            raise BhyveBleTransportError(msg) from e
 
         self._client = client
 
@@ -103,7 +113,8 @@ class BhyveBleTransport:
 
     async def async_send_plaintext(self, msg_type: int, plaintext: bytes) -> None:
         if not self._client or not self._keys:
-            raise BhyveBleTransportError("not connected")
+            msg = "not connected"
+            raise BhyveBleTransportError(msg)
         async with self._write_lock:
             frame, new_ctr = build_data_frame(
                 msg_type,
@@ -143,5 +154,6 @@ class BhyveBleTransport:
         )
 
         if self._notify_cb:
-            asyncio.create_task(self._notify_cb(msg_type, plaintext))
-
+            task = asyncio.create_task(self._notify_cb(msg_type, plaintext))
+            self._notify_tasks.add(task)
+            task.add_done_callback(self._notify_tasks.discard)

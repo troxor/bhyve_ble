@@ -17,7 +17,7 @@ def _str_or_none(value: object) -> str | None:
     if isinstance(value, bool):
         return str(value)
     s = str(value).strip()
-    return s if s else None
+    return s or None
 
 
 def build_ha_device_info_from_orbit(
@@ -41,7 +41,7 @@ def build_ha_device_info_from_orbit(
     hw = _str_or_none(orbit.get("hwVersion"))
     fw = _str_or_none(orbit.get("fwVersion"))
 
-    model = hw if hw else "Unknown Model"
+    model = hw or "Unknown Model"
 
     info: DeviceInfo = DeviceInfo(
         identifiers={(DOMAIN, address)},

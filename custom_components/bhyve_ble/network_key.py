@@ -24,7 +24,9 @@ def parse_or_generate_network_key(user_input: str | None) -> bytes:
     try:
         raw = base64.b64decode(s, validate=True)
     except binascii.Error as e:
-        raise ValueError("Invalid network key: use 32 hex characters or standard Base64") from e
+        msg = "Invalid network key: use 32 hex characters or standard Base64"
+        raise ValueError(msg) from e
     if len(raw) != 16:
-        raise ValueError(f"Decoded key must be 16 bytes, got {len(raw)}")
+        msg = f"Decoded key must be 16 bytes, got {len(raw)}"
+        raise ValueError(msg)
     return raw

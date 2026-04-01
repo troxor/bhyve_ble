@@ -15,17 +15,21 @@ def inc_ctr(n: int) -> int:
 
 def _aes_ecb_encrypt_block(key16: bytes, block16: bytes) -> bytes:
     if len(key16) != 16:
-        raise ValueError("AES key must be 16 bytes")
+        msg = "AES key must be 16 bytes"
+        raise ValueError(msg)
     if len(block16) != 16:
-        raise ValueError("ECB block must be 16 bytes")
-    cipher = Cipher(algorithms.AES(key16), modes.ECB())
+        msg = "ECB block must be 16 bytes"
+        raise ValueError(msg)
+    # Orbit wire format uses single-block AES-ECB for the network key step (not bulk data).
+    cipher = Cipher(algorithms.AES(key16), modes.ECB())  # noqa: S305
     enc = cipher.encryptor()
     return enc.update(block16) + enc.finalize()
 
 
 def _keystream_block(key16: bytes, iv12: bytes, counter: int) -> bytes:
     if len(iv12) < 12:
-        raise ValueError("IV must be at least 12 bytes")
+        msg = "IV must be at least 12 bytes"
+        raise ValueError(msg)
     block = bytearray(16)
     block[0:12] = iv12[:12]
     struct.pack_into("<I", block, 12, counter & 0xFFFFFFFF)
@@ -62,9 +66,11 @@ def build_data_frame(
 ) -> tuple[bytes, int]:
     """Outbound frame: [T][L][ciphertext][checksum u16le]."""
     if not 0 <= msg_type <= 255:
-        raise ValueError("msg_type must fit in a byte")
+        msg = "msg_type must fit in a byte"
+        raise ValueError(msg)
     if len(plaintext) > 255:
-        raise ValueError("plaintext length must fit in one byte (<= 255)")
+        msg = "plaintext length must fit in one byte (<= 255)"
+        raise ValueError(msg)
     L = len(plaintext)
     chk = checksum_16(msg_type, L, plaintext)
     ciphertext, new_ctr = perform_crypto(key16, iv12, enc_ctr, plaintext)
@@ -85,21 +91,25 @@ def parse_data_frame(
 ) -> tuple[int, bytes, int]:
     """Inbound frame: verify checksum then decrypt."""
     if len(frame) < 4:
-        raise ValueError("frame too short")
+        msg = "frame too short"
+        raise ValueError(msg)
     T = frame[0]
     L = frame[1]
     end_body = 2 + L
     if len(frame) < end_body + 2:
-        raise ValueError("frame truncated")
+        msg = "frame truncated"
+        raise ValueError(msg)
     C = frame[2:end_body]
     S = struct.unpack_from("<H", frame, end_body)[0]
 
     plaintext, new_ctr = perform_crypto(key16, iv12, dec_ctr, C)
     if len(plaintext) != L:
-        raise ValueError("length mismatch")
+        msg = "length mismatch"
+        raise ValueError(msg)
     calc = checksum_16(T, L, plaintext)
     if calc != S:
-        raise ValueError(f"checksum mismatch: wire={S} calc={calc}")
+        msg = f"checksum mismatch: wire={S} calc={calc}"
+        raise ValueError(msg)
     return T, plaintext, new_ctr
 
 
@@ -109,4 +119,3 @@ class SessionKeys:
     iv12: bytes
     enc_ctr: int
     dec_ctr: int
-

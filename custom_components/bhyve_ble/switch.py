@@ -1,14 +1,19 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
-from .coordinator import BhyveBleCoordinator
 from .entity import BhyveBleEntity
-from .hub import BhyveBleHub
 from .orbit_codec import encode_timer_mode_plaintext, station_is_actively_watering
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import BhyveBleCoordinator
+    from .hub import BhyveBleHub
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities) -> None:
@@ -31,11 +36,11 @@ class BhyveBleStationManualWateringSwitch(BhyveBleEntity, SwitchEntity):
         super().__init__(coordinator)
         self._station_id = station_id
         if station_id == 0:
-            self._attr_unique_id = f"{coordinator.entry.entry_id}_{coordinator.address}_manual_watering"
-        else:
             self._attr_unique_id = (
-                f"{coordinator.entry.entry_id}_{coordinator.address}_station_{station_id}_manual_watering"
+                f"{coordinator.entry.entry_id}_{coordinator.address}_manual_watering"
             )
+        else:
+            self._attr_unique_id = f"{coordinator.entry.entry_id}_{coordinator.address}_station_{station_id}_manual_watering"
         self._attr_name = f"Port {station_id + 1}"
 
     @property

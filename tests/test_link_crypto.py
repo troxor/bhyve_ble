@@ -15,4 +15,3 @@ def test_link_crypto_roundtrip() -> None:
     assert pt2 == pt
     assert enc2 != enc_ctr
     assert dec2 != dec_ctr
-

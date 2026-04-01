@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
+from typing import TYPE_CHECKING
 
 from .const import (
     AES_CHAR_UUID,
@@ -9,9 +9,13 @@ from .const import (
     WRITE_CHAR_UUID,
 )
 
+if TYPE_CHECKING:
+    from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
+
 
 def is_bhyve_timer(service_info: BluetoothServiceInfoBleak) -> bool:
-    """Best-effort filter for Orbit B-hyve timers.
+    """
+    Best-effort filter for Orbit B-hyve timers.
 
     We currently filter by presence of known Orbit B-hyve GATT characteristic UUIDs
     in the advertisement data (if present). Many devices do not advertise
@@ -25,4 +29,3 @@ def is_bhyve_timer(service_info: BluetoothServiceInfoBleak) -> bool:
         READ_CHAR_UUID,
     }
     return bool(uuids & wanted)
-

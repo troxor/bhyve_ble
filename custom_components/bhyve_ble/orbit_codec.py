@@ -50,7 +50,7 @@ def _normalize_enum_strings(obj: Any) -> Any:
         return {k: _normalize_enum_strings(v) for k, v in obj.items()}
     if isinstance(obj, list):
         return [_normalize_enum_strings(v) for v in obj]
-    if isinstance(obj, str) and (obj.startswith("OrbitPbApi_") or obj.startswith("BhyveAgApi_")):
+    if isinstance(obj, str) and (obj.startswith(("OrbitPbApi_", "BhyveAgApi_"))):
         if "_" in obj:
             return obj.rsplit("_", 1)[-1]
         return obj
@@ -67,16 +67,19 @@ def wrap_orbit_ble_body(protobuf_body: bytes) -> bytes:
 
 def unwrap_orbit_ble_plaintext(plaintext: bytes) -> tuple[bytes, dict[str, Any]]:
     if len(plaintext) < 8:
-        raise ValueError("plaintext too short")
+        msg = "plaintext too short"
+        raise ValueError(msg)
     magic = struct.unpack_from("<I", plaintext, 0)[0]
     if magic != MAGIC_LE:
-        raise ValueError(f"bad magic 0x{magic:08x}")
+        msg = f"bad magic 0x{magic:08x}"
+        raise ValueError(msg)
     inner_len = struct.unpack_from("<H", plaintext, 4)[0]
     body = plaintext[6:-2]
     crc_wire = struct.unpack_from("<H", plaintext, len(plaintext) - 2)[0]
     crc_calc = crc16_ccitt_init0(plaintext[:-2])
     if crc_calc != crc_wire:
-        raise ValueError(f"CRC mismatch: wire=0x{crc_wire:04x} calc=0x{crc_calc:04x}")
+        msg = f"CRC mismatch: wire=0x{crc_wire:04x} calc=0x{crc_calc:04x}"
+        raise ValueError(msg)
     meta = {
         "totalBytes": len(plaintext),
         "innerLengthField": inner_len,
@@ -123,20 +126,28 @@ def encode_timer_mode_plaintext(
     station_id: int = 0,
 ) -> bytes:
     m = str(mode)
-    mode_map = {"off": 0, "offMode": 0, "auto": 1, "autoMode": 1, "manual": 2, "manualMode": 2}
+    mode_map = {
+        "off": 0,
+        "offMode": 0,
+        "auto": 1,
+        "autoMode": 1,
+        "manual": 2,
+        "manualMode": 2,
+    }
     if m not in mode_map:
-        raise ValueError(f"mode must be one of {sorted(mode_map)}, got {mode!r}")
+        msg = f"mode must be one of {sorted(mode_map)}, got {mode!r}"
+        raise ValueError(msg)
     mode_num = mode_map[m]
 
     tm = _write_varint((1 << 3) | 0) + _write_varint(mode_num)
     if mode_num == 2:
         if run_time_sec is None:
-            raise ValueError("run_time_sec is required for manualMode")
+            msg = "run_time_sec is required for manualMode"
+            raise ValueError(msg)
         n = int(run_time_sec)
         if n < MANUAL_WATER_RUN_SEC_MIN or n > MANUAL_WATER_RUN_SEC_MAX:
-            raise ValueError(
-                f"run_time_sec must be in [{MANUAL_WATER_RUN_SEC_MIN}, {MANUAL_WATER_RUN_SEC_MAX}], got {n}"
-            )
+            msg = f"run_time_sec must be in [{MANUAL_WATER_RUN_SEC_MIN}, {MANUAL_WATER_RUN_SEC_MAX}], got {n}"
+            raise ValueError(msg)
         st = (
             _write_varint((1 << 3) | 0)
             + _write_varint(int(station_id))
@@ -165,14 +176,15 @@ def parse_num_stations_from_decoded(decoded: dict | None) -> int | None:
         return None
     try:
         return int(n)
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 
 def station_is_actively_watering(
     decoded: dict | None, station_id: int, *, num_stations: int = 1
 ) -> bool | None:
-    """Whether ``station_id`` is currently in an active watering state (manual/schedule).
+    """
+    Whether ``station_id`` is currently in an active watering state (manual/schedule).
 
     Uses ``wateringStatusSummary.sessions`` when present; otherwise legacy ``wateringStatus``
     plus ``currentStationId``. Returns ``None`` if status is unknown.
@@ -188,14 +200,18 @@ def station_is_actively_watering(
         for sess in sessions:
             try:
                 cur = int(sess.get("currentStationId", -1))
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 continue
             if cur != station_id:
                 continue
             st = sess.get("status")
             if st is None:
                 return None
-            return str(st) in ("wateringInProgress", "programPreDelay", "programPostDelay")
+            return str(st) in (
+                "wateringInProgress",
+                "programPreDelay",
+                "programPostDelay",
+            )
         return False
 
     ws = dsi.get("wateringStatus") or {}
@@ -208,7 +224,7 @@ def station_is_actively_watering(
         try:
             if int(cur) != station_id:
                 return False
-        except (TypeError, ValueError):
+        except TypeError, ValueError:
             return None
         return active
     if num_stations > 1:

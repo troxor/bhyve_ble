@@ -2,6 +2,11 @@
 
 target-version = "py314"
 
+# Protobuf/gRPC generated modules are not maintained by hand.
+extend-exclude = ["*_pb2.py"]
+
+line-length = 100
+
 [lint]
 select = [
     "ALL",
@@ -13,6 +18,37 @@ ignore = [
     "D212", # multi-line-summary-first-line (incompatible with formatter)
     "COM812", # incompatible with formatter
     "ISC001", # incompatible with formatter
+    # Custom integration / Home Assistant patterns (docstrings, lazy imports, override signatures)
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D104",
+    "D107",
+    "PLR2004",
+    "E501",
+    "PLC0415",
+    "N806",
+    "ASYNC109",
+    "SIM105",
+    "S110",
+    "ARG002",
+    "ARG004",
+    "ANN001",
+    "ANN003",
+    "ANN202",
+    "TRY300",
+    "PLR0911",
+    "PLR0912",
+    "PERF401",
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    "D100",
+    "D103",
+    "PLR2004",
+    "S101",
 ]
 
 [lint.flake8-pytest-style]

@@ -3,13 +3,12 @@ from __future__ import annotations
 import base64
 import hashlib
 import logging
+from typing import TYPE_CHECKING
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
@@ -25,11 +24,15 @@ from .const import (
 )
 from .network_key import parse_or_generate_network_key
 
+if TYPE_CHECKING:
+    from homeassistant.data_entry_flow import FlowResult
+
 _LOGGER = logging.getLogger(__name__)
 
 
 def _connectable_ble_device_labels(hass: HomeAssistant) -> dict[str, str]:
-    """Labels for all connectable BLE devices in HA's Bluetooth cache (newest discovery).
+    """
+    Labels for all connectable BLE devices in HA's Bluetooth cache (newest discovery).
 
     Likely Orbit B-hyve timers (GATT UUIDs or name) are sorted first; remainder follow by label.
     """
@@ -43,9 +46,7 @@ def _connectable_ble_device_labels(hass: HomeAssistant) -> dict[str, str]:
         if info.address in seen:
             continue
         seen.add(info.address)
-        preferred = is_bhyve_timer(info) or (
-            info.name and "b-hyve" in info.name.lower()
-        )
+        preferred = is_bhyve_timer(info) or (info.name and "b-hyve" in info.name.lower())
         label = f"{info.name or 'Unknown'} ({info.address})"
         rows.append((preferred, info.address, label))
     rows.sort(key=lambda x: (not x[0], x[2].casefold()))
@@ -102,14 +103,10 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class BhyveBleOptionsFlow(config_entries.OptionsFlow):
     """Device onboarding: Pairing mode -> GATT handshake -> confirm with valid device traffic."""
 
-    async def async_step_init(
-        self, user_input: dict | None = None
-    ) -> FlowResult:
+    async def async_step_init(self, user_input: dict | None = None) -> FlowResult:
         return await self.async_step_add_device()
 
-    async def async_step_add_device(
-        self, user_input: dict | None = None
-    ) -> FlowResult:
+    async def async_step_add_device(self, user_input: dict | None = None) -> FlowResult:
         from .ble import BhyveBleProvisionError, async_provision_with_network_key
         from .onboarding import BhyveOnboardingError, async_verify_device_communication
 

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import base64
 import logging
+from typing import TYPE_CHECKING
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-
-from .const import CONF_DEVICES, CONF_NETWORK_KEY_B64, DOMAIN, default_bhyve_device_name
+from .const import CONF_DEVICES, CONF_NETWORK_KEY_B64, default_bhyve_device_name
 from .coordinator import BhyveBleCoordinator
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +28,7 @@ class BhyveBleHub:
 
     async def async_setup(self) -> None:
         devices = self.entry.data.get(CONF_DEVICES) or {}
-        for address, _dev in devices.items():
+        for address in devices:
             self.coordinators[address] = BhyveBleCoordinator(
                 self.hass,
                 self.entry,

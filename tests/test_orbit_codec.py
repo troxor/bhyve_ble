@@ -13,4 +13,3 @@ def test_orbit_codec_roundtrip_decode_smoke() -> None:
     decoded = decode_orbit_ble_plaintext(pt)
     assert "_framing" in decoded
     assert "message" in decoded
-

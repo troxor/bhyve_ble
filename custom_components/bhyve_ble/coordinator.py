@@ -2,11 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import base64
-from datetime import timedelta
 import logging
+from datetime import timedelta
+from typing import TYPE_CHECKING
 
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import CONF_NETWORK_KEY_B64, DOMAIN
@@ -17,6 +16,10 @@ from .orbit_codec import (
     parse_num_stations_from_decoded,
 )
 from .transport import BhyveBleTransport, BhyveBleTransportError
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +61,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
             try:
                 n = int(self._device_info["numStations"])
                 return max(1, min(n, 64))
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 pass
         n = parse_num_stations_from_decoded(self._last_message)
         if n is not None:
@@ -126,5 +129,5 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
                 "last_message": self._last_message,
                 "num_stations": self.num_stations,
             }
-        except (BhyveBleTransportError, Exception) as e:  # noqa: BLE001
+        except (BhyveBleTransportError, Exception) as e:
             raise UpdateFailed(str(e)) from e

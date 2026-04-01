@@ -4,11 +4,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from typing import TYPE_CHECKING
 
-from homeassistant.core import HomeAssistant
-
-from .orbit_codec import decode_orbit_ble_plaintext, encode_get_device_info_plaintext, encode_get_device_status_info_plaintext
+from .orbit_codec import (
+    decode_orbit_ble_plaintext,
+    encode_get_device_info_plaintext,
+    encode_get_device_status_info_plaintext,
+)
 from .transport import BhyveBleTransport, BhyveBleTransportError
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +32,8 @@ async def async_verify_device_communication(
     *,
     timeout: float = 20.0,
 ) -> dict:
-    """Connect (fresh AES session), request status/info, wait for a decoded Orbit message.
+    """
+    Connect (fresh AES session), request status/info, wait for a decoded Orbit message.
 
     Returns a ``decode_orbit_ble_plaintext``-style dict (includes ``message`` / ``_framing``).
     """
@@ -49,18 +56,20 @@ async def async_verify_device_communication(
     try:
         await transport.async_connect_and_subscribe(on_notify)
         await transport.async_send_plaintext(ORBIT_APP_MSG_TYPE, encode_get_device_info_plaintext())
-        await transport.async_send_plaintext(ORBIT_APP_MSG_TYPE, encode_get_device_status_info_plaintext())
+        await transport.async_send_plaintext(
+            ORBIT_APP_MSG_TYPE, encode_get_device_status_info_plaintext()
+        )
         try:
             await asyncio.wait_for(done.wait(), timeout=timeout)
-        except asyncio.TimeoutError as e:
-            raise BhyveOnboardingError(
-                "Timed out waiting for deviceInfo or deviceStatusInfo from the timer."
-            ) from e
+        except TimeoutError as e:
+            msg = "Timed out waiting for deviceInfo or deviceStatusInfo from the timer."
+            raise BhyveOnboardingError(msg) from e
     except BhyveBleTransportError as e:
         raise BhyveOnboardingError(str(e)) from e
     finally:
         await transport.async_disconnect()
 
     if last_msg is None:
-        raise BhyveOnboardingError("No usable Orbit message received from device.")
+        msg = "No usable Orbit message received from device."
+        raise BhyveOnboardingError(msg)
     return last_msg

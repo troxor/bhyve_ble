@@ -2,17 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from typing import TYPE_CHECKING
 
-from bleak.exc import BleakError
 import async_timeout
+from bleak.exc import BleakError
 from bleak_retry_connector import (
     BleakClientWithServiceCache,
     BleakNotFoundError,
     establish_connection,
 )
-
 from homeassistant.components.bluetooth import async_ble_device_from_address
-from homeassistant.core import HomeAssistant
 
 from .const import AES_CHAR_UUID, NETWORK_CHAR_UUID
 from .provisioning import (
@@ -21,6 +20,9 @@ from .provisioning import (
     build_network_char_payload,
     derive_from_aes_char_exchange,
 )
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,16 +41,19 @@ async def async_provision_with_network_key(
 ) -> AesHandshakeDerived:
     """Write shared network key to device and complete AES init on aes_char."""
     if len(network_key_16) != 16:
-        raise BhyveBleProvisionError("network key must be 16 bytes")
+        msg = "network key must be 16 bytes"
+        raise BhyveBleProvisionError(msg)
 
     ble_device = async_ble_device_from_address(hass, address)
     if ble_device is None:
-        raise BhyveBleProvisionError(f"BLE device not found for address {address}")
+        msg = f"BLE device not found for address {address}"
+        raise BhyveBleProvisionError(msg)
 
     def _ble_device_callback():
         d = async_ble_device_from_address(hass, address)
         if d is None:
-            raise BleakNotFoundError(f"BLE device not found for address {address}")
+            msg = f"BLE device not found for address {address}"
+            raise BleakNotFoundError(msg)
         return d
 
     try:
@@ -60,8 +65,9 @@ async def async_provision_with_network_key(
                 ble_device_callback=_ble_device_callback,
                 max_attempts=4,
             )
-    except (BleakError, asyncio.TimeoutError, OSError) as e:
-        raise BhyveBleProvisionError(f"connect failed: {e}") from e
+    except (TimeoutError, BleakError, OSError) as e:
+        msg = f"connect failed: {e}"
+        raise BhyveBleProvisionError(msg) from e
 
     try:
         # 1) network_char: LE16(1) || 16-byte key
@@ -81,7 +87,8 @@ async def async_provision_with_network_key(
                 _LOGGER.debug("aes_char read not valid yet (attempt %s): %s", attempt + 1, e)
                 await asyncio.sleep(0.25)
 
-        raise BhyveBleProvisionError("AES init response did not validate after retries")
+        msg = "AES init response did not validate after retries"
+        raise BhyveBleProvisionError(msg)
     except (BleakError, OSError) as e:
         raise BhyveBleProvisionError(str(e)) from e
     finally:
@@ -89,4 +96,3 @@ async def async_provision_with_network_key(
             await client.disconnect()
         except Exception:  # noqa: BLE001
             pass
-

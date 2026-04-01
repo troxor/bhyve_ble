@@ -26,9 +26,7 @@ def _import_orbit_codec() -> None:
     from . import orbit_codec  # noqa: F401
 
 
-def _sync_default_device_names_to_registry_impl(
-    hass: HomeAssistant, entry: ConfigEntry
-) -> None:
+def _sync_default_device_names_to_registry_impl(hass: HomeAssistant, entry: ConfigEntry) -> None:
     from homeassistant.helpers import device_registry as dr
 
     hub = hass.data.get(DOMAIN, {}).get(entry.entry_id)
