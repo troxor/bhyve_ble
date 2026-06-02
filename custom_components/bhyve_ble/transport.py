@@ -143,7 +143,13 @@ class BhyveBleTransport:
                 dec_ctr=self._keys.dec_ctr,
             )
         except Exception as e:  # noqa: BLE001
-            _LOGGER.debug("notify parse failed (%d bytes): %s", len(frame), e)
+            _LOGGER.debug(
+                "[%s] notify parse failed (%d bytes): %s frame_hex=%s",
+                self.address,
+                len(frame),
+                e,
+                frame.hex(),
+            )
             return
 
         self._keys = SessionKeys(

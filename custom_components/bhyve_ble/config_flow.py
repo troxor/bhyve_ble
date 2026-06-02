@@ -170,6 +170,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
                 errors["base"] = "already_configured"
             else:
                 try:
+                    _LOGGER.debug("Onboarding %s: network_char provision + verify", address)
                     await async_provision_with_network_key(self.hass, address, key)
                     await async_verify_device_communication(self.hass, address, key)
                 except BhyveBleProvisionError as e:
