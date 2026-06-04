@@ -42,7 +42,14 @@
       },
       "add_device": {
         "title": "Add timer",
-        "description": "Put the timer in pairing mode. The address field lists connectable Bluetooth devices Home Assistant sees. The integration provisions with your saved network key and confirms pairing."
+        "description": "Put the timer in pairing mode. The address field lists connectable Bluetooth devices Home Assistant sees."
+      },
+      "device_generation": {
+        "title": "Timer generation",
+        "description": "Select the generation of the physical timer you are pairing. Gen 1 and Gen 2 are different hardware and require different Bluetooth settings.",
+        "data": {
+          "generation": "Generation"
+        }
       }
     },
     "error": {

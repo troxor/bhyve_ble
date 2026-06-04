@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 import voluptuous as vol
 from homeassistant import config_entries
-from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.selector import (
     NumberSelector,
@@ -19,6 +18,8 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import (
+    CONF_ADDRESS,
+    CONF_DEVICE_GENERATION,
     CONF_DEVICES,
     CONF_NETWORK_KEY_B64,
     CONF_NETWORK_KEY_INPUT,
@@ -29,6 +30,7 @@ from .const import (
     MIN_POLL_INTERVAL_HOURS,
     normalize_ble_address,
 )
+from .device_profile import GENERATION_CHOICES, device_ble_profile
 from .network_key import parse_or_generate_network_key
 
 if TYPE_CHECKING:
@@ -153,40 +155,19 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_add_device(self, user_input: dict | None = None) -> FlowResult:
-        from .ble import BhyveBleProvisionError, async_provision_with_network_key
-        from .onboarding import BhyveOnboardingError, async_verify_device_communication
-
         errors: dict[str, str] = {}
         discovered = _connectable_ble_device_labels(self.hass)
 
         if user_input is not None:
             address = normalize_ble_address(user_input[CONF_ADDRESS].strip())
-            key = base64.b64decode(self.config_entry.data[CONF_NETWORK_KEY_B64])
-
             existing = {
                 normalize_ble_address(a) for a in (self.config_entry.data.get(CONF_DEVICES) or {})
             }
             if address in existing:
                 errors["base"] = "already_configured"
             else:
-                try:
-                    _LOGGER.debug("Onboarding %s: network_char provision + verify", address)
-                    await async_provision_with_network_key(self.hass, address, key)
-                    await async_verify_device_communication(self.hass, address, key)
-                except BhyveBleProvisionError as e:
-                    _LOGGER.warning("Provision failed for %s: %s", address, e)
-                    errors["base"] = "cannot_connect"
-                except BhyveOnboardingError as e:
-                    _LOGGER.warning("Onboarding verify failed for %s: %s", address, e)
-                    errors["base"] = "verify_failed"
-                else:
-                    devices = dict(self.config_entry.data.get(CONF_DEVICES) or {})
-                    devices[address] = {}
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry,
-                        data={**self.config_entry.data, CONF_DEVICES: devices},
-                    )
-                    return self.async_abort(reason="device_added")
+                self.context["add_device_address"] = address
+                return await self.async_step_device_generation()
 
         if discovered:
             schema = vol.Schema(
@@ -212,6 +193,72 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="add_device",
+            data_schema=schema,
+            errors=errors,
+        )
+
+    async def async_step_device_generation(self, user_input: dict | None = None) -> FlowResult:
+        from .ble import BhyveBleProvisionError, async_provision_with_network_key
+        from .onboarding import BhyveOnboardingError, async_verify_device_communication
+
+        errors: dict[str, str] = {}
+        address = self.context.get("add_device_address")
+        if not address:
+            return await self.async_step_add_device()
+
+        if user_input is not None:
+            generation = user_input[CONF_DEVICE_GENERATION]
+            profile = device_ble_profile(generation)
+            key = base64.b64decode(self.config_entry.data[CONF_NETWORK_KEY_B64])
+            try:
+                _LOGGER.debug(
+                    "Onboarding %s (%s): provision + verify tx_delay_ms=%s link_type=0x%02x",
+                    address,
+                    generation,
+                    profile.tx_delay_ms,
+                    profile.link_msg_type,
+                )
+                await async_provision_with_network_key(
+                    self.hass,
+                    address,
+                    key,
+                    tx_delay_ms=profile.tx_delay_ms,
+                )
+                await async_verify_device_communication(
+                    self.hass,
+                    address,
+                    key,
+                    ble_profile=profile,
+                )
+            except BhyveBleProvisionError as e:
+                _LOGGER.warning("Provision failed for %s: %s", address, e)
+                errors["base"] = "cannot_connect"
+            except BhyveOnboardingError as e:
+                _LOGGER.warning("Onboarding verify failed for %s: %s", address, e)
+                errors["base"] = "verify_failed"
+            else:
+                devices = dict(self.config_entry.data.get(CONF_DEVICES) or {})
+                devices[address] = {CONF_DEVICE_GENERATION: generation}
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    data={**self.config_entry.data, CONF_DEVICES: devices},
+                )
+                return self.async_abort(reason="device_added")
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_DEVICE_GENERATION): SelectSelector(
+                    SelectSelectorConfig(
+                        options=[
+                            {"value": value, "label": label} for value, label in GENERATION_CHOICES
+                        ],
+                        mode=SelectSelectorMode.LIST,
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(
+            step_id="device_generation",
             data_schema=schema,
             errors=errors,
         )

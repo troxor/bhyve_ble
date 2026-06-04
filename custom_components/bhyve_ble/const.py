@@ -34,6 +34,11 @@ CONF_NAME = "name"
 CONF_NETWORK_KEY_B64 = "network_key_b64"
 CONF_DEVICES = "devices"  # dict[str, dict] — address -> optional per-device metadata
 
+# Per-device: hardware generation (set once when adding the timer; not user-editable).
+CONF_DEVICE_GENERATION = "generation"
+GENERATION_GEN1 = "gen1"
+GENERATION_GEN2 = "gen2"
+
 # Config flow: optional paste (hex or base64); empty = generate.
 CONF_NETWORK_KEY_INPUT = "network_key_input"
 

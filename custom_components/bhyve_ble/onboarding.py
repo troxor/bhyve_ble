@@ -15,6 +15,7 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING
 
+from .device_profile import DeviceBleProfile, device_ble_profile
 from .logging import log_ble_rx, log_ble_rx_decode_failed, log_ble_tx
 from .orbit_codec import (
     decode_orbit_ble_plaintext,
@@ -28,8 +29,6 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-ORBIT_APP_MSG_TYPE = 0x11
-
 
 class BhyveOnboardingError(Exception):
     """Raised when we cannot confirm the device after GATT provisioning."""
@@ -41,22 +40,25 @@ async def async_verify_device_communication(
     network_key_16: bytes,
     *,
     timeout: float = 20.0,
+    ble_profile: DeviceBleProfile | None = None,
 ) -> dict:
     """
     Connect (fresh AES session), request status/info, wait for a decoded Orbit message.
 
     Returns a ``decode_orbit_ble_plaintext``-style dict (includes ``message`` / ``_framing``).
     """
+    profile = ble_profile or device_ble_profile(None)
     transport = BhyveBleTransport(hass, address, network_key_16)
     last_msg: dict | None = None
     done = asyncio.Event()
     notify_count = 0
 
     _LOGGER.debug(
-        "[%s] onboarding verify start timeout=%.1fs link_msg_type=0x%02x",
+        "[%s] onboarding verify start timeout=%.1fs tx_delay_ms=%s link_msg_type=0x%02x",
         address,
         timeout,
-        ORBIT_APP_MSG_TYPE,
+        profile.tx_delay_ms,
+        profile.link_msg_type,
     )
 
     async def on_notify(msg_type: int, plaintext: bytes) -> None:
@@ -90,18 +92,18 @@ async def async_verify_device_communication(
             )
 
     try:
-        await transport.async_connect_and_subscribe(on_notify)
+        await transport.async_connect_and_subscribe(on_notify, tx_delay_ms=profile.tx_delay_ms)
         _LOGGER.debug(
             "[%s] onboarding connected, sending getDeviceInfo + getDeviceStatusInfo", address
         )
 
         info_plain = encode_get_device_info_plaintext()
-        log_ble_tx(address, ORBIT_APP_MSG_TYPE, info_plain)
-        await transport.async_send_plaintext(ORBIT_APP_MSG_TYPE, info_plain)
+        log_ble_tx(address, profile.link_msg_type, info_plain)
+        await transport.async_send_plaintext(profile.link_msg_type, info_plain)
 
         status_plain = encode_get_device_status_info_plaintext()
-        log_ble_tx(address, ORBIT_APP_MSG_TYPE, status_plain)
-        await transport.async_send_plaintext(ORBIT_APP_MSG_TYPE, status_plain)
+        log_ble_tx(address, profile.link_msg_type, status_plain)
+        await transport.async_send_plaintext(profile.link_msg_type, status_plain)
 
         try:
             await asyncio.wait_for(done.wait(), timeout=timeout)

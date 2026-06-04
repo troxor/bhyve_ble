@@ -41,7 +41,7 @@ Use at your own risk. The author is not responsible for bricked hardware, high w
 1. Search for `B-hyve`.
 1. If you cannot find `Orbit B-hyve` in the list then be sure to clear your browser cache and/or perform a hard-refresh of the page.
 1. **Network key** step: set a unique identifier used to talk to your hose timers. This is analogous to your B-hyve account in the official app.
-1. **Configure** — Put the timer in **pairing mode** (press the “b” hex button five times quickly), choose the BLE address from the dropdown
+1. **Configure** — Put the timer in **pairing mode** (press the “b” hex button five times quickly), choose the BLE address, then select **Gen 1** (older BH1G1-class) or **Gen 2** (newer HT25G2-class)
 
 
 ## Usage

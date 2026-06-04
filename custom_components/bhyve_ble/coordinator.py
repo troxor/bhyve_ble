@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import CONF_NETWORK_KEY_B64, DOMAIN
+from .const import CONF_DEVICES, CONF_NETWORK_KEY_B64, DOMAIN
+from .device_profile import device_ble_profile_from_meta
 from .logging import log_ble_merged, log_ble_rx, log_ble_rx_decode_failed, log_ble_tx
 from .orbit_codec import (
     decode_orbit_ble_plaintext,
@@ -26,8 +27,6 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-ORBIT_APP_MSG_TYPE = 0x11
-
 
 class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
     def __init__(
@@ -43,6 +42,10 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
         self.address = address
         self.name = name
         self._network_key16 = base64.b64decode(entry.data[CONF_NETWORK_KEY_B64])
+        device_meta = (entry.data.get(CONF_DEVICES) or {}).get(address) or {}
+        profile = device_ble_profile_from_meta(device_meta)
+        self._link_msg_type = profile.link_msg_type
+        self._tx_delay_ms = profile.tx_delay_ms
         self._transport = BhyveBleTransport(hass, self.address, self._network_key16)
         self._last_message: dict | None = None
         self._device_info: dict | None = None
@@ -91,9 +94,11 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
 
     async def async_send_orbit_plaintext(self, plaintext: bytes) -> None:
         if not self._transport.is_connected:
-            await self._transport.async_connect_and_subscribe(self._handle_notify)
-        log_ble_tx(self.address, ORBIT_APP_MSG_TYPE, plaintext)
-        await self._transport.async_send_plaintext(ORBIT_APP_MSG_TYPE, plaintext)
+            await self._transport.async_connect_and_subscribe(
+                self._handle_notify, tx_delay_ms=self._tx_delay_ms
+            )
+        log_ble_tx(self.address, self._link_msg_type, plaintext)
+        await self._transport.async_send_plaintext(self._link_msg_type, plaintext)
 
     async def async_shutdown(self) -> None:
         await self._transport.async_disconnect()
@@ -120,14 +125,16 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
     async def _async_update_data(self) -> dict:
         try:
             if not self._transport.is_connected:
-                await self._transport.async_connect_and_subscribe(self._handle_notify)
+                await self._transport.async_connect_and_subscribe(
+                    self._handle_notify, tx_delay_ms=self._tx_delay_ms
+                )
 
             await self._transport.async_send_plaintext(
-                ORBIT_APP_MSG_TYPE, encode_get_device_info_plaintext()
+                self._link_msg_type, encode_get_device_info_plaintext()
             )
             await asyncio.sleep(0.2)
             await self._transport.async_send_plaintext(
-                ORBIT_APP_MSG_TYPE, encode_get_device_status_info_plaintext()
+                self._link_msg_type, encode_get_device_status_info_plaintext()
             )
             await asyncio.sleep(0.35)
 
