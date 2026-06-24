@@ -5,12 +5,27 @@ import struct
 from dataclasses import dataclass
 
 
-def build_network_char_payload(network_key_16: bytes) -> bytes:
-    """network_char: LE16(1) || 16-byte network key."""
+def build_network_char_payload(
+    network_key_16: bytes,
+    mesh_device_id: int | None = None,
+) -> bytes:
+    """
+    network_char provision: LE16(prefix) || 16-byte key.
+
+    Gen2: prefix ``1`` (``01 00``). Gen1: mesh / BLE device id (e.g. ``1806`` → ``0e 07``).
+    """
     if len(network_key_16) != 16:
         msg = "network key must be 16 raw bytes"
         raise ValueError(msg)
-    return struct.pack("<H", 1) + network_key_16
+    if mesh_device_id is None:
+        prefix = struct.pack("<H", 1)
+    else:
+        mid = int(mesh_device_id)
+        if not 0 <= mid <= 0xFFFF:
+            msg = "mesh_device_id must be 0..65535"
+            raise ValueError(msg)
+        prefix = struct.pack("<H", mid)
+    return prefix + network_key_16
 
 
 def build_aes_char_write_payload(tx_delay_ms: int = 0) -> bytes:

@@ -10,13 +10,14 @@ from bleak.exc import BleakError
 from bleak_retry_connector import (
     BleakClientWithServiceCache,
     BleakNotFoundError,
+    close_stale_connections_by_address,
     establish_connection,
 )
 from homeassistant.components.bluetooth import async_ble_device_from_address
 
+from .aes_handshake import async_complete_aes_char_handshake
 from .const import AES_CHAR_UUID, READ_CHAR_UUID, WRITE_CHAR_UUID
 from .link_crypto import SessionKeys, build_data_frame, parse_data_frame
-from .provisioning import build_aes_char_write_payload, derive_from_aes_char_exchange
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -24,6 +25,11 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 NotifyCallback = Callable[[int, bytes], Awaitable[None]]
+
+
+def _gatt_write_without_response_required(exc: BaseException) -> bool:
+    text = str(exc).casefold()
+    return "request not supported" in text or "error=6" in text
 
 
 class BhyveBleTransportError(Exception):
@@ -69,6 +75,7 @@ class BhyveBleTransport:
             return d
 
         try:
+            await close_stale_connections_by_address(addr)
             async with async_timeout.timeout(timeout):
                 client = await establish_connection(
                     BleakClientWithServiceCache,
@@ -83,11 +90,15 @@ class BhyveBleTransport:
 
         self._client = client
 
-        # Session AES init: re-derive iv/counters on each connect.
-        write20 = build_aes_char_write_payload(tx_delay_ms)
-        await client.write_gatt_char(AES_CHAR_UUID, write20, response=True)
-        read20 = await client.read_gatt_char(AES_CHAR_UUID)
-        derived = derive_from_aes_char_exchange(write20, read20)
+        try:
+            derived = await async_complete_aes_char_handshake(
+                client,
+                AES_CHAR_UUID,
+                tx_delay_ms=tx_delay_ms,
+            )
+        except ValueError as e:
+            msg = str(e)
+            raise BhyveBleTransportError(msg) from e
         self._keys = SessionKeys(
             network_key16=self.network_key16,
             iv12=derived.iv12,
@@ -129,7 +140,25 @@ class BhyveBleTransport:
                 enc_ctr=new_ctr,
                 dec_ctr=self._keys.dec_ctr,
             )
-            await self._client.write_gatt_char(WRITE_CHAR_UUID, frame, response=False)
+            await self._write_gatt_frame(frame)
+
+    async def _write_gatt_frame(self, frame: bytes) -> None:
+        if not self._client:
+            msg = "not connected"
+            raise BhyveBleTransportError(msg)
+        try:
+            await self._client.write_gatt_char(WRITE_CHAR_UUID, frame, response=True)
+        except BleakError as e:
+            if not _gatt_write_without_response_required(e):
+                raise BhyveBleTransportError(str(e)) from e
+            _LOGGER.debug(
+                "[%s] GATT write-with-response unsupported; using write-without-response",
+                self.address,
+            )
+            try:
+                await self._client.write_gatt_char(WRITE_CHAR_UUID, frame, response=False)
+            except BleakError as e2:
+                raise BhyveBleTransportError(str(e2)) from e2
 
     def _on_notify(self, _handle: int, data: bytearray) -> None:
         if not self._keys:

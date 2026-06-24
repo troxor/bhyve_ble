@@ -39,6 +39,15 @@ CONF_DEVICE_GENERATION = "generation"
 GENERATION_GEN1 = "gen1"
 GENERATION_GEN2 = "gen2"
 
+# B-hyve hose timers ship with 1, 2, or 4 valve ports (0-based station ids 0..3).
+VALID_TIMER_PORT_COUNTS: frozenset[int] = frozenset({1, 2, 4})
+MAX_TIMER_PORTS = 4
+MAX_TIMER_STATION_ID = MAX_TIMER_PORTS - 1
+
+# Gen1 only: per-timer mesh id and dedicated network key (gen2 shares entry-level key).
+CONF_MESH_DEVICE_ID = "mesh_device_id"
+CONF_DEVICE_NETWORK_KEY_B64 = "device_network_key_b64"
+
 # Config flow: optional paste (hex or base64); empty = generate.
 CONF_NETWORK_KEY_INPUT = "network_key_input"
 
@@ -47,6 +56,19 @@ CONF_POLL_INTERVAL_HOURS = "poll_interval_hours"
 DEFAULT_POLL_INTERVAL_HOURS = 24.0
 MIN_POLL_INTERVAL_HOURS = 1 / 60
 MAX_POLL_INTERVAL_HOURS = 24 * 14  # 14 days
+
+# BLE session timing (connect → handshake → work → listen → disconnect).
+# Keeps the radio off between polls/commands to preserve timer battery life.
+# Gen2 status NOTIFY window (lab client uses 1.0 s; gen1 status session uses 0.5 s).
+BLE_STATUS_LISTEN_S = 0.5
+GEN2_STATUS_LISTEN_S = 1.0
+BLE_COMMAND_LISTEN_S = 1.0
+BLE_START_CONFIRM_LISTEN_S = 3.0
+BLE_QUERY_GAP_S = 0.2
+BLE_STATUS_SETTLE_S = 0.35
+
+# Default manual run when turning a station on (seconds); per-station Number entity overrides.
+DEFAULT_MANUAL_WATER_RUN_SEC = 600
 
 
 def poll_interval_timedelta(entry: ConfigEntry) -> timedelta:

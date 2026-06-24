@@ -2,23 +2,14 @@
 
 from __future__ import annotations
 
-import base64
-import logging
 from typing import TYPE_CHECKING
 
-from .const import (
-    CONF_DEVICES,
-    CONF_NETWORK_KEY_B64,
-    default_bhyve_device_name,
-    poll_interval_timedelta,
-)
+from .const import CONF_DEVICES, default_bhyve_device_name, poll_interval_timedelta
 from .coordinator import BhyveBleCoordinator
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
-
-_LOGGER = logging.getLogger(__name__)
 
 
 class BhyveBleHub:
@@ -26,10 +17,6 @@ class BhyveBleHub:
         self.hass = hass
         self.entry = entry
         self.coordinators: dict[str, BhyveBleCoordinator] = {}
-
-    @property
-    def network_key(self) -> bytes:
-        return base64.b64decode(self.entry.data[CONF_NETWORK_KEY_B64])
 
     async def async_setup(self) -> None:
         devices = self.entry.data.get(CONF_DEVICES) or {}

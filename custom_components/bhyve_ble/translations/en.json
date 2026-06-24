@@ -9,15 +9,37 @@
   "config": {
     "step": {
       "user": {
-        "title": "Network key",
-        "description": "Set the shared BLE network key used for all timers. Leave empty to generate a random key, or paste an existing key (32 hex characters or Base64).",
+        "title": "Add timer",
+        "description": "Put the timer in pairing mode. Choose the Bluetooth address Home Assistant sees.",
         "data": {
+          "address": "BLE address"
+        }
+      },
+      "device_generation": {
+        "title": "Timer generation",
+        "description": "Select the generation of the physical timer you are pairing. Gen 1 (BH1G1) uses a dedicated network key and mesh device ID per timer. Gen 2 (HT25G2) shares the integration network key.",
+        "data": {
+          "generation": "Generation"
+        }
+      },
+      "network_key": {
+        "title": "Network key",
+        "description": "Shared BLE network key for Gen 2 timers (all Gen 2 devices on this account use the same key). Leave empty to generate a random key, or paste Base64 from the Orbit app (or the same key as 32 hex characters).",
+        "data": {
+          "network_key_input": "Network key (optional)"
+        }
+      },
+      "gen1_mesh": {
+        "title": "Gen 1 credentials",
+        "description": "Each Gen 1 timer has its own mesh device ID and network key. For {address}, pairing-mode advertisement mesh ID: {discovered}. Put the timer in pairing mode (factory reset if it was already onboarded). Home Assistant listens up to 8 seconds. If the value is \"not found\" or wrong, enter the BLE Device ID from the Orbit app. Leave the network key empty only for first-time pairing.",
+        "data": {
+          "mesh_device_id": "Mesh device ID",
           "network_key_input": "Network key (optional)"
         }
       }
     },
     "error": {
-      "invalid_key": "Invalid key. Use 32 hex characters.",
+      "invalid_key": "Invalid key. Use Base64 from the Orbit app or 32 hex characters.",
       "cannot_connect": "Could not connect or provision the timer. Put it in pairing mode and try again.",
       "verify_failed": "Handshake worked but the timer did not return device information. Try again."
     },
@@ -51,9 +73,24 @@
       },
       "device_generation": {
         "title": "Timer generation",
-        "description": "Select the generation of the physical timer you are pairing. Gen 1 and Gen 2 are different hardware and require different Bluetooth settings.",
+        "description": "Select the generation of the physical timer you are pairing. Gen 1 (BH1G1) uses a dedicated network key and mesh device ID per timer. Gen 2 (HT25G2) shares the integration network key.",
         "data": {
           "generation": "Generation"
+        }
+      },
+      "gen1_mesh": {
+        "title": "Gen 1 credentials",
+        "description": "Each Gen 1 timer has its own mesh device ID and network key. For {address}, pairing-mode advertisement mesh ID: {discovered}. Put the timer in pairing mode (factory reset if it was already onboarded). Home Assistant listens up to 8 seconds. If the value is \"not found\" or wrong, enter the BLE Device ID from the Orbit app. Leave the network key empty only for first-time pairing.",
+        "data": {
+          "mesh_device_id": "Mesh device ID",
+          "network_key_input": "Network key (optional)"
+        }
+      },
+      "network_key": {
+        "title": "Network key",
+        "description": "Shared BLE network key for Gen 2 timers (all Gen 2 devices on this account use the same key). Leave empty to generate a random key, or paste Base64 from the Orbit app (or the same key as 32 hex characters).",
+        "data": {
+          "network_key_input": "Network key (optional)"
         }
       }
     },
@@ -61,7 +98,9 @@
       "cannot_connect": "Could not connect or provision the timer. Put it in pairing mode and try again.",
       "verify_failed": "Handshake worked but the timer did not return device information. Try again.",
       "already_configured": "This address is already added.",
-      "invalid_interval": "Enter a valid number of hours."
+      "invalid_interval": "Enter a valid number of hours.",
+      "invalid_mesh_id": "Enter a mesh device ID as a decimal number or 0x hex (0–65535).",
+      "invalid_key": "Invalid key. Use Base64 from the Orbit app or 32 hex characters."
     },
     "abort": {
       "device_added": "Hose Watering Timer added successfully."

@@ -5,6 +5,7 @@ from __future__ import annotations
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 
 from .const import DOMAIN
+from .device_model import device_generation_label, device_model_name
 
 
 def _bt_address(address: str) -> str:
@@ -25,37 +26,42 @@ def build_ha_device_info_from_orbit(
     address: str,
     name: str,
     orbit: dict | None,
+    generation: str | None = None,
 ) -> DeviceInfo:
     """Build registry ``DeviceInfo`` from decoded ``OrbitPbApi_DeviceInfo`` fields."""
     conn = {(CONNECTION_BLUETOOTH, _bt_address(address))}
+    gen_label = device_generation_label(generation)
+    model = device_model_name(None, generation=generation)
 
     if not orbit:
-        return DeviceInfo(
+        info: DeviceInfo = DeviceInfo(
             identifiers={(DOMAIN, address)},
             connections=conn,
             name=name,
             manufacturer="Orbit",
-            model="Orbit B-hyve",
+            model=model,
         )
+        if gen_label:
+            info["model_id"] = gen_label
+        return info
 
     hw = _str_or_none(orbit.get("hwVersion"))
     fw = _str_or_none(orbit.get("fwVersion"))
 
-    model = hw or "Unknown Model"
+    model = device_model_name(hw, generation=generation)
 
-    info: DeviceInfo = DeviceInfo(
+    info = DeviceInfo(
         identifiers={(DOMAIN, address)},
         connections=conn,
         name=name,
         manufacturer="Orbit",
         model=model,
     )
+    if gen_label:
+        info["model_id"] = gen_label
 
     if fw:
         info["sw_version"] = fw
-
-    if hw:
-        info["model_id"] = hw
 
     hw_parts: list[str] = []
     dtype = orbit.get("deviceType")

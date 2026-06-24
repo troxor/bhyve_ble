@@ -1,0 +1,18 @@
+# Mirrors .github/workflows/lint.yml (ruff check + format).
+# Setup (prek):  prek install
+# Setup (pre-commit):  pip install pre-commit && pre-commit install
+# Manual (all files):  prek run -a   (or: pre-commit run --all-files)
+# On commit: hooks run on staged files only — git add before committing.
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.18
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-json
+        files: \.json$

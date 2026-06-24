@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.device_registry import DeviceEntry
 
-PLATFORMS: list[str] = ["button", "sensor", "switch"]
+PLATFORMS: list[str] = ["button", "number", "sensor", "switch"]
 
 
 def _import_orbit_codec() -> None:
