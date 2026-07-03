@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bhyve_ble.orbit_codec import (
+from bhyve_ble.pybhyve.gen2_codec import (
     deep_merge_device_status_info,
     parse_station_faults,
     parse_station_status,
@@ -21,7 +21,7 @@ def test_parse_station_status_watering_session() -> None:
                     "sessions": [
                         {
                             "currentStationId": 1,
-                            "status": "OrbitPbApi_WateringStatus_Status_wateringInProgress",
+                            "status": "wateringInProgress",
                             "currentTimeRemainingSec": 120,
                         }
                     ]
@@ -44,7 +44,7 @@ def test_parse_station_status_delay() -> None:
                     "sessions": [
                         {
                             "currentStationId": 0,
-                            "status": "programPreDelay",
+                            "status": "stationDelay",
                             "currentTimeRemainingSec": 5,
                         }
                     ]
@@ -53,23 +53,24 @@ def test_parse_station_status_delay() -> None:
         }
     }
     assert parse_station_status(decoded, 0)["state"] == "delay"
+    assert station_is_actively_watering(decoded, 0) is False
 
 
-def test_parse_station_faults_from_list_and_flags() -> None:
+def test_parse_station_faults_from_station_list() -> None:
     decoded = {
         "message": {
             "deviceStatusInfo": {
                 "faultStatus": {
                     "stationFaults": [
-                        {"stationId": 2, "shortCircuit": {}},
+                        {"stationId": 2, "highFlow": {"flowGpm": 2.5}},
+                        {"stationId": 0, "noFlow": {}},
                     ],
-                    "stationFaultFlags_0_31": 1 << 0,
                 }
             }
         }
     }
-    assert parse_station_faults(decoded, 2) == ["shortCircuit"]
-    assert parse_station_faults(decoded, 0) == ["station_fault"]
+    assert parse_station_faults(decoded, 2) == ["highFlow"]
+    assert parse_station_faults(decoded, 0) == ["noFlow"]
 
 
 def test_parse_station_status_fault_when_idle() -> None:
@@ -205,7 +206,7 @@ def test_parse_station_status_device_status_only_when_legacy_dropped() -> None:
 
 
 def test_parse_battery_top_level_oneof() -> None:
-    from bhyve_ble.orbit_codec import parse_battery_percent_mv_from_decoded
+    from bhyve_ble.pybhyve.gen2_codec import parse_battery_percent_mv_from_decoded
 
     decoded = {
         "message": {
