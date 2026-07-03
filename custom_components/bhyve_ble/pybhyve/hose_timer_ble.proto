@@ -1,0 +1,132 @@
+// Gen 2 hose-timer BLE protobuf (capture-derived subset).
+//
+// Regenerate (pin gencode to protobuf 6.32.x for Home Assistant):
+//   cd custom_components/bhyve_ble/pybhyve
+//   protoc --python_out=. hose_timer_ble.proto
+
+syntax = "proto2";
+
+package hose_timer;
+
+enum DeviceStatus {
+  deviceOff = 0;
+  deviceIdle = 1;
+  lowBattery = 2;
+  wateringInProgress = 4;
+  meshDeviceOffline = 5;
+}
+
+message GetDeviceStatusInfo {}
+
+message GetDeviceInfo {}
+
+message GetBatteryStatus {}
+
+message FaultNoFlow {}
+message FaultHighFlow {
+  optional float flowGpm = 1;
+}
+message FaultLowFlow {
+  optional float flowGpm = 1;
+}
+
+message StationFault {
+  optional uint32 stationId = 1;
+  optional uint32 timestampSecEpochUtc = 2;
+  optional FaultNoFlow noFlow = 15;
+  optional FaultHighFlow highFlow = 16;
+  optional FaultLowFlow lowFlow = 17;
+}
+
+message FaultStatus {
+  optional bool valveOffFlowDetected = 5;
+  optional bool valveOnNoFlowDetected = 6;
+  optional bool valveLowFlowDetected = 7;
+  optional bool valveHighFlowDetected = 8;
+  repeated StationFault stationFaults = 16;
+}
+
+message WateringStatus {
+  enum Status {
+    wateringComplete = 1;
+    wateringInProgress = 2;
+    pumpDelay = 3;
+    stationComplete = 4;
+    stationDelay = 5;
+  }
+  required Status status = 1;
+  optional uint32 currentStationId = 4;
+  optional uint32 currentTimeRemainingSec = 5;
+  optional uint32 totalRunTimeSec = 7;
+}
+
+message WateringStatusSummary {
+  repeated WateringStatus sessions = 1;
+}
+
+message StationInfo {
+  required uint32 stationId = 1;
+  required uint32 runTimeSec = 2;
+}
+
+message ManualModeParams {
+  repeated StationInfo stationInfo = 3;
+}
+
+message TimerMode {
+  enum Mode {
+    offMode = 0;
+    manualMode = 2;
+  }
+  required Mode mode = 1;
+  optional ManualModeParams manualModeParams = 2;
+}
+
+message BatteryStatus {
+  enum BatteryState {
+    charging = 0;
+  }
+  optional BatteryState state = 1;
+  optional uint32 batteryLevelPercent = 2;
+  optional uint32 batteryLevelMV = 3;
+  optional bool externallyPowered = 4;
+}
+
+message DeviceInfo {
+  optional int32 numStations = 1;
+  optional string hwVersion = 2;
+  optional string fwVersion = 3;
+  optional uint32 wifiVersion = 4;
+  optional bool pumpEnabled = 7;
+  optional uint32 stationsEnabledFlags_0_31 = 8;
+  optional uint32 stationsEnabledFlags_32_63 = 9;
+}
+
+message DeviceStatusInfo {
+  required DeviceStatus deviceStatus = 1;
+  optional TimerMode timerMode = 2;
+  optional uint32 batteryLevelPercent = 3;
+  optional WateringStatus wateringStatus = 6;
+  optional FaultStatus faultStatus = 7;
+  optional uint32 batteryLevelMV = 11;
+  optional BatteryStatus batteryStatus = 14;
+  optional WateringStatusSummary wateringStatusSummary = 18;
+}
+
+message BleEnvelope {
+  optional bytes id = 1;
+  optional string timestampIso8601 = 2;
+  optional uint32 timestampSecEpochUTC = 7;
+
+  oneof payload {
+    TimerMode timerMode = 14;
+    GetDeviceStatusInfo getDeviceStatusInfo = 15;
+    DeviceStatusInfo deviceStatusInfo = 16;
+    GetDeviceInfo getDeviceInfo = 22;
+    DeviceInfo deviceInfo = 23;
+    WateringStatus wateringStatus = 30;
+    FaultStatus faultStatus = 31;
+    GetBatteryStatus getBatteryStatus = 45;
+    BatteryStatus batteryStatus = 46;
+  }
+}

@@ -31,7 +31,7 @@ Use at your own risk. The author is not responsible for bricked hardware, high w
 
 ### Manual Installation (not recommended)
 
-1. Copy the folder `custom_components/bhyve_ble/` from this repository into **`config/custom_components/`** directory (so you have `config/custom_components/bhyve_ble/manifest.json`)
+1. Copy the folder `custom_components/bhyve_ble/` from this repository into your **`config/custom_components/`** directory (so you have `config/custom_components/bhyve_ble/manifest.json`). The BLE library (`pybhyve`) ships inside that folder — no separate pip install is required.
 1. Restart Home Assistant to load the integration.
 
 ## Configuration
@@ -40,23 +40,24 @@ Use at your own risk. The author is not responsible for bricked hardware, high w
 1. Click the `+ Add Integration` button.
 1. Search for `B-hyve`.
 1. If you cannot find `Orbit B-hyve` in the list then be sure to clear your browser cache and/or perform a hard-refresh of the page.
-1. Put the timer in **pairing mode** (press the “b” hex button five times quickly) and choose its **Bluetooth address**.
-1. Select **Gen 1** (older BH1G1-class) or **Gen 2** (newer HT25G2-class). For the first **Gen 2** timer, you can set or paste a shared **network key** (or leave empty to generate one). Gen 1 timers get their own key automatically.
+1. Put the timer in **pairing mode** (press the “b” hex button five times quickly) and choose its **Bluetooth address** from the dropdown.
+1. Select hardware generation.
+1. Provide existing secrets or allow integration to generate new values.
 
 
 ## Usage
 
 Each hose timer exposes, per output port:
 
-- **Status** — read-only state (`off`, `watering`, `delay`, or `fault`); defaults to `off`. Fault details appear in attributes when the timer reports them.
-- **Run time** — seconds for the next manual run (15 s–4 h; default 10 minutes).
-- **Switch** — turn on runs manual watering for the configured run time; turn off stops all ports.
+- **Status**:  read-only state (`off`, `watering`, `delay`, or `fault`); defaults to `off`. Fault details appear in attributes when the timer reports them.
+- **Run time**: seconds for the next manual run. Valid values range from 15 to 14400 (4 hours).
+- **Switch**: turn on runs manual watering for the configured run time; turn off stops all ports.
 
 Device info, battery, and related sensors are filled in when the device reports them.
 
 ## Development
 
-### Pre-commit / prek (recommended)
+### Pre-commit hooks
 
 Catch syntax, JSON, and lint issues before commit (Ruff matches the **Lint** GitHub workflow; `check-json` catches invalid `strings.json` / `translations/*.json`).
 
@@ -67,16 +68,6 @@ prek install          # git hooks
 prek run -a           # lint entire repo (not just staged files)
 ```
 
-**pre-commit**:
-
-```bash
-pip install pre-commit   # or: uv tool install pre-commit
-pre-commit install
-pre-commit run --all-files
-```
-
-`prek run` / `pre-commit run` without `-a` / `--all-files` only checks **staged** files. If nothing is `git add`ed, hooks report **no files to check** — that is expected. Use `-a` for a full-repo pass, or stage changes before committing.
-
 ### Run tests
 
 Use a Python environment where **Home Assistant is installed** so `import homeassistant` works (for example `pip install homeassistant` in a venv). From the **repository root**:
@@ -85,4 +76,13 @@ Use a Python environment where **Home Assistant is installed** so `import homeas
 pytest -q tests
 ```
 
-`pytest.ini` sets `pythonpath = custom_components` so `bhyve_ble` resolves like it does under Home Assistant.
+### pybhyve (library and CLI)
+
+BLE protocol code and the standalone `bhyve` CLI live in [`custom_components/bhyve_ble/pybhyve/`](custom_components/bhyve_ble/pybhyve/). From the repository root:
+
+```bash
+uv sync
+uv run bhyve --help
+uv run pytest -q
+```
+

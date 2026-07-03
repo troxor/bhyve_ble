@@ -6,16 +6,20 @@ from typing import Any
 
 from google.protobuf.json_format import MessageToDict
 
-from .const import MAX_TIMER_PORTS, VALID_TIMER_PORT_COUNTS
+from .constants import (
+    MANUAL_WATER_RUN_SEC_MAX,
+    MANUAL_WATER_RUN_SEC_MIN,
+    MAX_TIMER_PORTS,
+    VALID_TIMER_PORT_COUNTS,
+    estimate_battery_percent_from_mv,
+)
 
-# Gencode version must stay <= Home Assistant's bundled google.protobuf (often 6.32.x).
-from .orbit_pb_api_pb2 import OrbitPbApi_Message
+# Gencode from hose_timer_ble.proto (capture-derived Gen 2 subset).
+# Regenerate: see hose_timer_ble.proto header. Pin gencode to protobuf 6.32.x.
+from .hose_timer_ble_pb2 import BleEnvelope
 
 MAGIC_LE = 0x0F5A77AA
-
-# Manual watering run duration bounds (seconds), matching the vendor app range.
-MANUAL_WATER_RUN_SEC_MIN = 15
-MANUAL_WATER_RUN_SEC_MAX = 4 * 3600
+MAGIC_BYTES = MAGIC_LE.to_bytes(4, "little")
 
 
 def crc16_ccitt_init0(data: bytes) -> int:
@@ -42,32 +46,26 @@ def _write_varint(n: int) -> bytes:
     return bytes(out)
 
 
-def _pb_snake_to_camel_field(name: str) -> str:
-    parts = name.split("_")
-    return parts[0] + "".join(p.capitalize() for p in parts[1:])
-
-
-def _normalize_enum_strings(obj: Any) -> Any:
+def _to_jsonable(obj: Any) -> Any:
     if isinstance(obj, dict):
-        return {k: _normalize_enum_strings(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_normalize_enum_strings(v) for v in obj]
-    if isinstance(obj, str) and (obj.startswith(("OrbitPbApi_", "BhyveAgApi_"))):
-        if "_" in obj:
-            return obj.rsplit("_", 1)[-1]
-        return obj
+        return {k: _to_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_to_jsonable(v) for v in obj]
+    if isinstance(obj, bytes):
+        return base64.b64encode(obj).decode("ascii")
+    if isinstance(obj, str):
+        return short_gen2_enum_name(obj)
     return obj
 
 
-def wrap_orbit_ble_body(protobuf_body: bytes) -> bytes:
-    magic = struct.pack("<I", MAGIC_LE)
+def wrap_gen2_ble_body(protobuf_body: bytes) -> bytes:
     inner = len(protobuf_body) + 2
-    head = magic + struct.pack("<H", inner) + protobuf_body
+    head = MAGIC_BYTES + struct.pack("<H", inner) + protobuf_body
     crc = crc16_ccitt_init0(head)
     return head + struct.pack("<H", crc)
 
 
-def unwrap_orbit_ble_plaintext(plaintext: bytes) -> tuple[bytes, dict[str, Any]]:
+def decode_gen2_ble_plaintext(plaintext: bytes) -> dict[str, Any]:
     if len(plaintext) < 8:
         msg = "plaintext too short"
         raise ValueError(msg)
@@ -82,43 +80,25 @@ def unwrap_orbit_ble_plaintext(plaintext: bytes) -> tuple[bytes, dict[str, Any]]
     if crc_calc != crc_wire:
         msg = f"CRC mismatch: wire=0x{crc_wire:04x} calc=0x{crc_calc:04x}"
         raise ValueError(msg)
-    meta = {
+    meta: dict[str, Any] = {
         "totalBytes": len(plaintext),
         "innerLengthField": inner_len,
         "protobufBytes": len(body),
         "wireChecksumUInt16LE": crc_wire,
     }
-    return body, meta
 
-
-def _message_to_jsonable(msg: dict[str, Any]) -> dict[str, Any]:
-    def conv(x: Any) -> Any:
-        if isinstance(x, dict):
-            return {k: conv(v) for k, v in x.items()}
-        if isinstance(x, (list, tuple)):
-            return [conv(v) for v in x]
-        if isinstance(x, bytes):
-            return base64.b64encode(x).decode("ascii")
-        return x
-
-    return conv(msg)
-
-
-def decode_orbit_ble_plaintext(plaintext: bytes) -> dict[str, Any]:
-    body, meta = unwrap_orbit_ble_plaintext(plaintext)
-    parsed = OrbitPbApi_Message()
+    parsed = BleEnvelope()
     parsed.ParseFromString(body)
-    branch = parsed.WhichOneof("message")
+    branch = parsed.WhichOneof("payload")
     if branch:
-        meta["oneof"] = _pb_snake_to_camel_field(branch)
+        parts = branch.split("_")
+        meta["oneof"] = parts[0] + "".join(p.capitalize() for p in parts[1:])
     raw = MessageToDict(
         parsed,
         preserving_proto_field_name=True,
         use_integers_for_enums=False,
     )
-    msgj = _normalize_enum_strings(raw)
-    msgj = _message_to_jsonable(msgj)
-    return {"_framing": meta, "message": msgj}
+    return {"_framing": meta, "message": _to_jsonable(raw)}
 
 
 def encode_timer_mode_plaintext(
@@ -127,19 +107,15 @@ def encode_timer_mode_plaintext(
     run_time_sec: int | None = None,
     station_id: int = 0,
 ) -> bytes:
+    """Encode manual start (manualMode) or stop (offMode) timerMode oneof."""
     m = str(mode)
-    mode_map = {
-        "off": 0,
-        "offMode": 0,
-        "auto": 1,
-        "autoMode": 1,
-        "manual": 2,
-        "manualMode": 2,
-    }
-    if m not in mode_map:
-        msg = f"mode must be one of {sorted(mode_map)}, got {mode!r}"
+    if m in ("off", "offMode"):
+        mode_num = 0
+    elif m in ("manual", "manualMode"):
+        mode_num = 2
+    else:
+        msg = "mode must be offMode or manualMode"
         raise ValueError(msg)
-    mode_num = mode_map[m]
 
     tm = _write_varint((1 << 3) | 0) + _write_varint(mode_num)
     if mode_num == 2:
@@ -159,43 +135,35 @@ def encode_timer_mode_plaintext(
         mmp = _write_varint((3 << 3) | 2) + _write_varint(len(st)) + st
         tm += _write_varint((2 << 3) | 2) + _write_varint(len(mmp)) + mmp
     else:
-        # offMode / autoMode: empty manualModeParams (matches app captures).
         tm += _write_varint((2 << 3) | 2) + _write_varint(0)
     msg_body = _write_varint((14 << 3) | 2) + _write_varint(len(tm)) + tm
-    return wrap_orbit_ble_body(msg_body)
+    return wrap_gen2_ble_body(msg_body)
 
 
-def encode_manual_watering_plaintext(
-    run_time_sec: int,
-    *,
-    station_id: int = 0,
-) -> bytes:
-    """Manual ``timerMode`` for one station (lab ``start`` uses ``station_id=0``)."""
-    return encode_timer_mode_plaintext(
-        "manualMode",
-        run_time_sec=run_time_sec,
-        station_id=station_id,
-    )
+def _encode_ble_envelope(**oneof_branch: object) -> bytes:
+    """Serialize BleEnvelope with exactly one payload branch set."""
+    msg = BleEnvelope()
+    for name, value in oneof_branch.items():
+        if value is None:
+            getattr(msg, name).SetInParent()
+        else:
+            getattr(msg, name).CopyFrom(value)
+    return wrap_gen2_ble_body(msg.SerializeToString())
 
 
 def encode_get_device_status_info_plaintext() -> bytes:
-    msg_body = _write_varint((15 << 3) | 2) + _write_varint(0)
-    return wrap_orbit_ble_body(msg_body)
+    return _encode_ble_envelope(getDeviceStatusInfo=None)
 
 
 def encode_get_battery_status_plaintext() -> bytes:
-    """Encode ``getBatteryStatus`` request (empty submessage). Observed body: ``ea 02 00``."""
-    msg_body = _write_varint((45 << 3) | 2) + _write_varint(0)
-    return wrap_orbit_ble_body(msg_body)
+    return _encode_ble_envelope(getBatteryStatus=None)
 
 
-def normalize_orbit_message_for_status(msg: dict) -> dict:
-    """
-    Fold top-level Orbit oneof branches into ``deviceStatusInfo``.
+def encode_get_device_info_plaintext() -> bytes:
+    return _encode_ble_envelope(getDeviceInfo=None)
 
-    Gen2 NOTIFYs often return ``wateringStatus`` or ``batteryStatus`` as sibling oneofs,
-    not nested under ``deviceStatusInfo``. HA sensors read the nested form.
-    """
+
+def normalize_gen2_message_for_status(msg: dict) -> dict:
     out = dict(msg)
     dsi = dict(out.get("deviceStatusInfo") or {})
 
@@ -229,14 +197,6 @@ def normalize_orbit_message_for_status(msg: dict) -> dict:
 
 
 def deep_merge_partial_proto_dict(base: dict, update: dict) -> dict:
-    """
-    Recursively merge ``update`` into ``base``.
-
-    Consecutive BLE notifications often send the same oneof branch (e.g.
-    ``deviceStatusInfo``) with different subsets of fields. A shallow merge at the
-    branch level would drop siblings such as ``batteryStatus`` when a later payload
-    omits them even though the device did not clear those values.
-    """
     out = dict(base)
     for key, val in update.items():
         if key in out and isinstance(out[key], dict) and isinstance(val, dict):
@@ -247,53 +207,45 @@ def deep_merge_partial_proto_dict(base: dict, update: dict) -> dict:
 
 
 def deep_merge_device_status_info(base: dict, update: dict) -> dict:
-    """
-    Merge ``deviceStatusInfo`` NOTIFY fragments.
-
-  When a newer payload includes an empty ``wateringStatusSummary`` without legacy
-    ``wateringStatus``, drop stale legacy only if ``deviceStatus`` indicates idle.
-    Gen2 often sends ``sessions: []`` during active watering while legacy
-    ``wateringStatus`` / ``deviceStatus: wateringInProgress`` carry the real state.
-    """
     merged = deep_merge_partial_proto_dict(base, update)
     if "wateringStatusSummary" not in update or "wateringStatus" in update:
         return merged
     sessions = (update.get("wateringStatusSummary") or {}).get("sessions") or []
     if sessions:
         return merged
-    ds = short_orbit_enum_name(update.get("deviceStatus"))
+    ds = short_gen2_enum_name(update.get("deviceStatus"))
     if not ds:
-        ds = short_orbit_enum_name(merged.get("deviceStatus"))
+        ds = short_gen2_enum_name(merged.get("deviceStatus"))
     if ds in ("deviceIdle", "deviceOff"):
         merged.pop("wateringStatus", None)
     return merged
 
 
-# Hose-timer battery mV to percent (linear, 2400-3000 mV).
-BATTERY_MV_EMPTY = 2400
-BATTERY_MV_FULL = 3000
-
-
-def mv_to_percent_linear(mv: int, mv_empty: int, mv_full: int) -> int:
-    """Clamp mV to [empty, full], linear scale to 0-100, truncate toward zero."""
-    low = min(mv_empty, mv_full)
-    high = max(mv_empty, mv_full)
-    if high <= low:
-        return 0
-    clamped = max(low, min(mv, high))
-    return int((clamped - low) * 100 / (high - low))
-
-
-def estimate_battery_percent_from_mv(mv: int) -> int:
-    """Map pack millivolts to 0-100 when the device omits ``batteryLevelPercent``."""
-    return mv_to_percent_linear(mv, BATTERY_MV_EMPTY, BATTERY_MV_FULL)
+def merge_gen2_decoded(prev: dict | None, new: dict) -> dict:
+    """Merge NOTIFY oneof branches so deviceInfo and deviceStatusInfo can coexist."""
+    if not prev:
+        return new
+    prev_msg = prev.get("message") or {}
+    new_msg = new.get("message") or {}
+    merged_msg = {**prev_msg, **new_msg}
+    for key in ("deviceInfo", "deviceStatusInfo"):
+        prev_b = prev_msg.get(key)
+        new_b = new_msg.get(key)
+        if isinstance(prev_b, dict) and isinstance(new_b, dict):
+            if key == "deviceStatusInfo":
+                merged_msg[key] = deep_merge_device_status_info(prev_b, new_b)
+            else:
+                merged_msg[key] = deep_merge_partial_proto_dict(prev_b, new_b)
+    out = {**new, "message": normalize_gen2_message_for_status(merged_msg)}
+    out["_framing"] = new.get("_framing") or prev.get("_framing")
+    return out
 
 
 def parse_battery_percent_mv_from_decoded(decoded: dict | None) -> tuple[int | None, int | None]:
-    """Read battery percent and voltage from ``deviceStatusInfo`` (or top-level ``batteryStatus``)."""
+    """Read battery percent and voltage from deviceStatusInfo (or top-level batteryStatus)."""
     if not decoded:
         return None, None
-    m = normalize_orbit_message_for_status(decoded.get("message") or {})
+    m = normalize_gen2_message_for_status(decoded.get("message") or {})
     dsi = m.get("deviceStatusInfo") or {}
     bat = dsi.get("batteryStatus") or m.get("batteryStatus") or {}
 
@@ -310,14 +262,14 @@ def parse_battery_percent_mv_from_decoded(decoded: dict | None) -> tuple[int | N
         try:
             p = int(pct_raw)
             pct = max(0, min(100, p))
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             pct = None
 
     mv: int | None = None
     if mv_raw is not None:
         try:
             mv = int(mv_raw)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             mv = None
 
     return pct, mv
@@ -335,7 +287,7 @@ def resolve_battery_percent_display(
 
 
 def normalize_num_stations(raw: int | None) -> int:
-    """Clamp ``deviceInfo.numStations`` to known hose-timer port counts (1, 2, or 4)."""
+    """Clamp deviceInfo.numStations to known hose-timer port counts (1, 2, or 4)."""
     if raw is None:
         return 1
     try:
@@ -352,7 +304,7 @@ def normalize_num_stations(raw: int | None) -> int:
 
 
 def parse_num_stations_from_decoded(decoded: dict | None) -> int | None:
-    """Read ``deviceInfo.numStations`` from a decoded Orbit BLE message (if present)."""
+    """Read deviceInfo.numStations from a decoded Gen 2 BLE message (if present)."""
     if not decoded:
         return None
     m = decoded.get("message") or {}
@@ -362,12 +314,12 @@ def parse_num_stations_from_decoded(decoded: dict | None) -> int | None:
         return None
     try:
         return normalize_num_stations(int(n))
-    except TypeError, ValueError:
+    except (TypeError, ValueError):
         return None
 
 
-def short_orbit_enum_name(value: Any) -> str:
-    """``OrbitPbApi_WateringStatus_Status_wateringInProgress`` → ``wateringInProgress``."""
+def short_gen2_enum_name(value: Any) -> str:
+    """Protobuf enum name → short value (DeviceStatus_deviceIdle → deviceIdle)."""
     if value is None:
         return ""
     s = str(value)
@@ -376,54 +328,23 @@ def short_orbit_enum_name(value: Any) -> str:
     return s
 
 
-_STATION_FAULT_TYPE_KEYS: tuple[str, ...] = (
-    "unavailable",
-    "shortCircuit",
-    "overcurrent",
-    "undercurrent",
-    "noFlow",
-    "highFlow",
-    "lowFlow",
-)
+_STATION_FAULT_TYPE_KEYS: tuple[str, ...] = ("noFlow", "highFlow", "lowFlow")
 
 _ACTIVE_WATERING_STATUSES: frozenset[str] = frozenset(
     {
         "wateringInProgress",
-        "programPreDelay",
-        "programPostDelay",
         "pumpDelay",
         "stationDelay",
     }
 )
 
-_ACTIVE_SWITCH_STATUSES: frozenset[str] = frozenset(
-    {
-        "wateringInProgress",
-        "programPreDelay",
-        "programPostDelay",
-    }
-)
-
-
-def _station_fault_flag_set(fault_status: dict[str, Any], station_id: int) -> bool:
-    if station_id < 32:
-        flags = fault_status.get("stationFaultFlags_0_31")
-    else:
-        flags = fault_status.get("stationFaultFlags_32_63")
-        station_id -= 32
-    if flags is None:
-        return False
-    try:
-        return bool(int(flags) & (1 << station_id))
-    except TypeError, ValueError:
-        return False
+_ACTIVE_SWITCH_STATUSES: frozenset[str] = frozenset({"wateringInProgress"})
 
 
 def parse_station_faults(decoded: dict | None, station_id: int) -> list[str]:
-    """Fault type names for one station from ``deviceStatusInfo.faultStatus``."""
     if not decoded:
         return []
-    m = normalize_orbit_message_for_status(decoded.get("message") or {})
+    m = normalize_gen2_message_for_status(decoded.get("message") or {})
     dsi = m.get("deviceStatusInfo") or {}
     fault_status = dsi.get("faultStatus") or {}
     faults: list[str] = []
@@ -433,7 +354,7 @@ def parse_station_faults(decoded: dict | None, station_id: int) -> list[str]:
             continue
         try:
             sid = int(entry.get("stationId", -1))
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             continue
         if sid != station_id:
             continue
@@ -441,43 +362,27 @@ def parse_station_faults(decoded: dict | None, station_id: int) -> list[str]:
             if entry.get(key) is not None:
                 faults.append(key)
 
-    if _station_fault_flag_set(fault_status, station_id) and "station_fault" not in faults:
-        faults.append("station_fault")
-
     return faults
-
-
-def _watering_session_for_station(sessions: list[Any], station_id: int) -> dict[str, Any] | None:
-    for sess in sessions:
-        if not isinstance(sess, dict):
-            continue
-        try:
-            cur = int(sess.get("currentStationId", -1))
-        except TypeError, ValueError:
-            continue
-        if cur == station_id:
-            return sess
-    return None
 
 
 def _legacy_watering_applies_to_station(
     ws: dict[str, Any], station_id: int, *, num_stations: int
 ) -> bool:
-    st_name = short_orbit_enum_name(ws.get("status"))
+    st_name = short_gen2_enum_name(ws.get("status"))
     if st_name not in _ACTIVE_WATERING_STATUSES:
         return False
     cur = ws.get("currentStationId")
     if cur is not None:
         try:
             return int(cur) == station_id
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return False
     return num_stations == 1 and station_id == 0
 
 
 def _timer_mode_run_time_sec(dsi: dict[str, Any], station_id: int) -> int | None:
     tm = dsi.get("timerMode") or {}
-    if short_orbit_enum_name(tm.get("mode")) != "manualMode":
+    if short_gen2_enum_name(tm.get("mode")) != "manualMode":
         return None
     mmp = tm.get("manualModeParams") or {}
     for st in mmp.get("stationInfo") or []:
@@ -485,7 +390,7 @@ def _timer_mode_run_time_sec(dsi: dict[str, Any], station_id: int) -> int | None
             continue
         try:
             sid = int(st.get("stationId", -1))
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             continue
         if sid != station_id:
             continue
@@ -494,15 +399,14 @@ def _timer_mode_run_time_sec(dsi: dict[str, Any], station_id: int) -> int | None
             return None
         try:
             return int(raw)
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             return None
     return None
 
 
 def _manual_mode_targets_station(dsi: dict[str, Any], station_id: int) -> bool:
-    """True when ``timerMode.manualMode`` lists ``station_id`` (or single-port default)."""
     tm = dsi.get("timerMode") or {}
-    if short_orbit_enum_name(tm.get("mode")) != "manualMode":
+    if short_gen2_enum_name(tm.get("mode")) != "manualMode":
         return False
     mmp = tm.get("manualModeParams") or {}
     stations = mmp.get("stationInfo") or []
@@ -522,8 +426,8 @@ def _manual_mode_targets_station(dsi: dict[str, Any], station_id: int) -> bool:
 def _session_from_device_status_watering(
     dsi: dict[str, Any], station_id: int, *, num_stations: int
 ) -> dict[str, Any] | None:
-    """Fallback when ``deviceStatus`` is ``wateringInProgress`` (lab status shape)."""
-    if short_orbit_enum_name(dsi.get("deviceStatus")) != "wateringInProgress":
+    """Fallback when deviceStatus is wateringInProgress (lab status shape)."""
+    if short_gen2_enum_name(dsi.get("deviceStatus")) != "wateringInProgress":
         return None
     ws = dsi.get("wateringStatus") or {}
     if isinstance(ws, dict) and ws:
@@ -558,15 +462,20 @@ def _resolve_watering_session(
     *,
     num_stations: int = 1,
 ) -> dict[str, Any] | None:
-    """Prefer ``wateringStatusSummary.sessions``, then nested or top-level ``wateringStatus``."""
-    m = normalize_orbit_message_for_status(decoded.get("message") or {})
+    m = normalize_gen2_message_for_status(decoded.get("message") or {})
     dsi = m.get("deviceStatusInfo") or {}
     has_summary = "wateringStatusSummary" in dsi
     sessions = (dsi.get("wateringStatusSummary") or {}).get("sessions") or []
 
-    sess = _watering_session_for_station(sessions, station_id)
-    if sess:
-        return sess
+    for sess in sessions:
+        if not isinstance(sess, dict):
+            continue
+        try:
+            cur = int(sess.get("currentStationId", -1))
+        except (TypeError, ValueError):
+            continue
+        if cur == station_id:
+            return sess
 
     for ws in (dsi.get("wateringStatus"), m.get("wateringStatus")):
         if isinstance(ws, dict) and _legacy_watering_applies_to_station(
@@ -594,13 +503,6 @@ def parse_station_status(
     *,
     num_stations: int = 1,
 ) -> dict[str, Any]:
-    """
-    Per-station status for HA sensors.
-
-    Returns ``state`` (``off`` | ``watering`` | ``delay`` | ``fault`` | ``unknown``),
-    optional ``watering_status`` / ``remaining_sec``, and ``faults`` list.
-    Defaults to ``off`` when no watering activity is reported.
-    """
     faults = parse_station_faults(decoded, station_id)
     out: dict[str, Any] = {
         "state": "off",
@@ -617,13 +519,13 @@ def parse_station_status(
     )
 
     if sess:
-        st_name = short_orbit_enum_name(sess.get("status"))
+        st_name = short_gen2_enum_name(sess.get("status"))
         out["watering_status"] = st_name or None
         rem = sess.get("currentTimeRemainingSec")
         if rem is not None:
             try:
                 out["remaining_sec"] = int(rem)
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 out["remaining_sec"] = None
         if st_name in _ACTIVE_WATERING_STATUSES:
             out["state"] = "watering" if st_name == "wateringInProgress" else "delay"
@@ -639,16 +541,11 @@ def parse_station_status(
 def station_is_actively_watering(
     decoded: dict | None, station_id: int, *, num_stations: int = 1
 ) -> bool | None:
-    """
-    Whether ``station_id`` is currently in an active watering state (manual/schedule).
-
-    Uses ``wateringStatusSummary.sessions`` when present; otherwise legacy ``wateringStatus``
-    plus ``currentStationId``. Returns ``None`` if status is unknown.
-    """
+    """Whether station_id is actively manual-watering (not idle or between-station delay)."""
     if not decoded:
         return None
 
-    m = normalize_orbit_message_for_status(decoded.get("message") or {})
+    m = normalize_gen2_message_for_status(decoded.get("message") or {})
     dsi = m.get("deviceStatusInfo") or {}
     has_summary = "wateringStatusSummary" in dsi
 
@@ -656,12 +553,12 @@ def station_is_actively_watering(
         decoded, station_id, num_stations=num_stations
     )
     if sess:
-        st_name = short_orbit_enum_name(sess.get("status"))
+        st_name = short_gen2_enum_name(sess.get("status"))
         if not st_name:
             return None
         return st_name in _ACTIVE_SWITCH_STATUSES
 
-    ds_name = short_orbit_enum_name(dsi.get("deviceStatus"))
+    ds_name = short_gen2_enum_name(dsi.get("deviceStatus"))
     if ds_name == "wateringInProgress":
         fallback = _session_from_device_status_watering(
             dsi, station_id, num_stations=num_stations
@@ -676,6 +573,61 @@ def station_is_actively_watering(
     return False
 
 
-def encode_get_device_info_plaintext() -> bytes:
-    msg_body = _write_varint((22 << 3) | 2) + _write_varint(0)
-    return wrap_orbit_ble_body(msg_body)
+def ingest_gen2_notify(pt: bytes, store: dict[str, Any]) -> None:
+    """Merge one decoded NOTIFY oneof branch into a lab-client status store."""
+    try:
+        data = decode_gen2_ble_plaintext(pt)
+    except Exception:
+        return
+    oneof = (data.get("_framing") or {}).get("oneof")
+    if not oneof:
+        return
+    payload = (data.get("message") or {}).get(oneof)
+    if payload is not None:
+        store[oneof] = payload
+
+
+def gen2_notify_store_port_state(store: dict[str, Any], station_id: int) -> str:
+    """Per-port watering state from accumulated Gen2 NOTIFY branches (lab store shape)."""
+    dsi = store.get("deviceStatusInfo")
+    if not isinstance(dsi, dict):
+        return "unknown"
+    wss = dsi.get("wateringStatusSummary") or {}
+    for sess in wss.get("sessions") or []:
+        if not isinstance(sess, dict):
+            continue
+        try:
+            cur = int(sess.get("currentStationId", -1))
+        except (TypeError, ValueError):
+            continue
+        if cur == station_id:
+            return str(sess.get("status") or "active")
+    for ws in (dsi.get("wateringStatus"), store.get("wateringStatus")):
+        if not isinstance(ws, dict) or not ws.get("status"):
+            continue
+        cur = ws.get("currentStationId")
+        applies = False
+        if cur is not None:
+            try:
+                applies = int(cur) == station_id
+            except (TypeError, ValueError):
+                applies = False
+        elif station_id == 0:
+            applies = True
+        if applies:
+            return str(ws.get("status"))
+    if dsi.get("deviceStatus") == "wateringInProgress":
+        tm = dsi.get("timerMode") or {}
+        if tm.get("mode") == "manualMode":
+            mmp = tm.get("manualModeParams") or {}
+            for st in mmp.get("stationInfo") or []:
+                if not isinstance(st, dict):
+                    continue
+                try:
+                    if int(st.get("stationId", -1)) == station_id:
+                        return "wateringInProgress"
+                except (TypeError, ValueError):
+                    continue
+        if station_id == 0:
+            return "wateringInProgress"
+    return "idle"

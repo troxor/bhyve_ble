@@ -7,23 +7,21 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+from .constants import GEN1_ACK_DELAY_S, GEN1_RESPONSE_TIMEOUT_S, GEN1_STEP_DELAY_S
 from .gen1_codec import (
     GEN1_ASYNC_NOTIFY_CMDS,
     GEN1_COMMIT_DRAIN_MAX_S,
     GEN1_COMMIT_QUIET_S,
     GEN1_POST_HANDSHAKE_CMD,
     GEN1_RESPONSE_BIT,
+    assigned_device_id_from_register_response,
     decode_gen1_inner_payload,
     decode_gen1_plaintext,
-    encode_gen1_ack,
+    encode_gen1_plaintext,
     merge_gen1_status_record,
 )
 
 _LOGGER = logging.getLogger(__name__)
-
-GEN1_STEP_DELAY_S = 0.10
-GEN1_ACK_DELAY_S = 0.02
-GEN1_RESPONSE_TIMEOUT_S = 8.0
 
 SendPlaintextFn = Callable[[bytes, str], Awaitable[None]]
 
@@ -50,6 +48,7 @@ class Gen1Session:
         self._pending_fut: asyncio.Future[dict[str, Any]] | None = None
         self._ack_lock = asyncio.Lock()
         self._status: dict[str, dict[str, Any]] = {}
+        self._assigned_device_id: int | None = None
         self._last_notify_at: float | None = None
         self._ack_tasks: set[asyncio.Task[None]] = set()
 
@@ -57,12 +56,13 @@ class Gen1Session:
     def status_snapshot(self) -> dict[str, dict[str, Any]]:
         return dict(self._status)
 
-    def note_inner_payload(self, payload: bytes) -> dict[str, Any] | None:
-        status = decode_gen1_inner_payload(payload)
-        if status is None:
-            return None
-        merge_gen1_status_record(self._status, status)
-        return status
+    @property
+    def assigned_device_id(self) -> int | None:
+        return self._assigned_device_id
+
+    @property
+    def received_any_notify(self) -> bool:
+        return self._last_notify_at is not None
 
     def alloc_cmd(self) -> int:
         cmd = self._next_cmd
@@ -78,8 +78,13 @@ class Gen1Session:
             dec = decode_gen1_plaintext(pt)
         except ValueError:
             return
+        assigned = assigned_device_id_from_register_response(dec)
+        if assigned is not None:
+            self._assigned_device_id = assigned
         try:
-            self.note_inner_payload(bytes.fromhex(dec["payload_hex"]))
+            status = decode_gen1_inner_payload(bytes.fromhex(dec["payload_hex"]))
+            if status is not None:
+                merge_gen1_status_record(self._status, status)
         except ValueError:
             pass
         cmd = int(dec["cmd"])
@@ -100,7 +105,10 @@ class Gen1Session:
 
     async def _ack_notify(self, dec: dict[str, Any]) -> None:
         async with self._ack_lock:
-            ack = encode_gen1_ack(self._magic, int(dec["cmd"]), bytes.fromhex(dec["payload_hex"]))
+            notify_payload = bytes.fromhex(dec["payload_hex"])
+            ack_cmd = int(dec["cmd"]) | GEN1_RESPONSE_BIT
+            ack_payload = notify_payload[:-1] if notify_payload else notify_payload
+            ack = encode_gen1_plaintext(self._magic, ack_cmd, ack_payload)
             await self._send(ack, f"gen1 ACK {dec['cmd_hex']}")
             if self._ack_delay_s > 0:
                 await asyncio.sleep(self._ack_delay_s)
@@ -158,3 +166,10 @@ async def run_gen1_session(
             await gen1.drain_commit_async()
         else:
             await gen1.send_and_wait(label, pt)
+
+
+__all__ = [
+    "Gen1Session",
+    "SendPlaintextFn",
+    "run_gen1_session",
+]
