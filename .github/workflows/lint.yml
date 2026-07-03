@@ -25,10 +25,10 @@ jobs:
           enable-cache: true
 
       - name: Lint
-        run: uv run --with ruff ruff check .
+        run: uv run --project custom_components/bhyve_ble --with ruff ruff check .
 
       - name: Format
-        run: uv run --with ruff ruff format . --check
+        run: uv run --project custom_components/bhyve_ble --with ruff ruff format . --check
 
       - name: Check JSON
         run: |

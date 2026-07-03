@@ -78,11 +78,21 @@ pytest -q tests
 
 ### pybhyve (library and CLI)
 
-BLE protocol code and the standalone `bhyve` CLI live in [`custom_components/bhyve_ble/pybhyve/`](custom_components/bhyve_ble/pybhyve/). From the repository root:
+BLE protocol code and the `bhyve` CLI live in [`custom_components/bhyve_ble/pybhyve/`](custom_components/bhyve_ble/pybhyve/). Packaging metadata is in [`custom_components/bhyve_ble/pyproject.toml`](custom_components/bhyve_ble/pyproject.toml). **CLI examples:** [`pybhyve/README.md`](custom_components/bhyve_ble/pybhyve/README.md).
+
+From the repository root:
 
 ```bash
 uv sync
 uv run bhyve --help
 uv run pytest -q
+```
+
+Or from the integration directory:
+
+```bash
+cd custom_components/bhyve_ble
+uv sync
+uv run bhyve --help
 ```
 
