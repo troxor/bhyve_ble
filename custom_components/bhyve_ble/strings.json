@@ -84,7 +84,7 @@
         "title": "Gen 1 credentials",
         "description": "If the timer already has credentials, uncheck pairing below and enter them. To pair a fresh or factory-reset timer, leave pairing enabled and leave the fields empty to generate new credentials.",
         "data": {
-          "gen1_run_pairing": "Pair timer (press button 5× until red blink)",
+          "gen1_run_pairing": "Pair timer (press button 5x until LED blinks red)",
           "device_id": "Device ID (optional)",
           "network_key_input": "Network key (optional)"
         }
@@ -93,7 +93,7 @@
         "title": "Gen 2 credentials",
         "description": "If the timer already has the integration's network key, uncheck pairing and enter the key below. To pair a fresh timer, leave pairing enabled and leave the key empty to generate one.",
         "data": {
-          "gen2_run_pairing": "Pair timer (put in pairing mode)",
+          "gen2_run_pairing": "Pair timer (press button 5x until LED blinks red)",
           "network_key_input": "Network key (optional)"
         }
       }
