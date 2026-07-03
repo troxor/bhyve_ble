@@ -11,6 +11,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.selector import (
+    BooleanSelector,
+    BooleanSelectorConfig,
     NumberSelector,
     NumberSelectorConfig,
     NumberSelectorMode,
@@ -24,7 +26,9 @@ from .const import (
     CONF_DEVICE_GENERATION,
     CONF_DEVICE_NETWORK_KEY_B64,
     CONF_DEVICES,
-    CONF_MESH_DEVICE_ID,
+    CONF_DEVICE_ID,
+    CONF_GEN1_RUN_PAIRING,
+    CONF_GEN2_RUN_PAIRING,
     CONF_NETWORK_KEY_B64,
     CONF_NETWORK_KEY_INPUT,
     CONF_POLL_INTERVAL_HOURS,
@@ -37,9 +41,11 @@ from .const import (
     normalize_ble_address,
 )
 from .device_profile import GENERATION_CHOICES, DeviceBleProfile, device_ble_profile
-from .entry_data import entry_needs_network_key_prompt, parse_gen1_credentials_submission
-from .gen1_discovery import async_discover_gen1_mesh_device_id
-from .network_key import parse_or_generate_network_key
+from .entry_data import (
+    entry_gen2_pairing_locked,
+    parse_gen1_credentials_submission,
+    parse_gen2_credentials_submission,
+)
 
 if TYPE_CHECKING:
     from homeassistant.data_entry_flow import FlowResult
@@ -50,15 +56,17 @@ _CTX_ADDRESS = "add_device_address"
 _CTX_GENERATION = "add_device_generation"
 _CTX_NETWORK_KEY_RAW = "network_key_raw"
 _CTX_GEN1_DEVICE_KEY_RAW = "gen1_device_key_raw"
+_CTX_GEN1_RUN_PAIRING = "gen1_run_pairing"
+_CTX_GEN2_RUN_PAIRING = "gen2_run_pairing"
 
 
-def _gen1_credentials_schema(discovered: int | None) -> vol.Schema:
+def _gen1_credentials_schema() -> vol.Schema:
     return vol.Schema(
         {
-            vol.Required(
-                CONF_MESH_DEVICE_ID,
-                default=str(discovered) if discovered is not None else "",
-            ): str,
+            vol.Required(CONF_GEN1_RUN_PAIRING, default=True): BooleanSelector(
+                BooleanSelectorConfig()
+            ),
+            vol.Optional(CONF_DEVICE_ID, default=""): str,
             vol.Optional(CONF_NETWORK_KEY_INPUT, default=""): str,
         }
     )
@@ -106,61 +114,88 @@ def _address_picker_schema(hass: HomeAssistant) -> vol.Schema:
     return vol.Schema({vol.Required(CONF_ADDRESS): str})
 
 
-def _network_key_schema() -> vol.Schema:
-    return vol.Schema({vol.Optional(CONF_NETWORK_KEY_INPUT, default=""): str})
+def _gen2_credentials_schema(
+    entry_data: dict[str, Any] | None,
+    *,
+    pairing_default: bool = True,
+    key_default: str = "",
+) -> vol.Schema:
+    locked = entry_gen2_pairing_locked(entry_data)
+    fields: dict = {
+        vol.Required(CONF_GEN2_RUN_PAIRING, default=True): BooleanSelector(
+            BooleanSelectorConfig(read_only=locked)
+        ),
+    }
+    if not locked:
+        fields[vol.Optional(CONF_NETWORK_KEY_INPUT, default=key_default)] = str
+    return vol.Schema(fields)
 
 
 @dataclass(frozen=True, slots=True)
 class Gen1SetupRequest:
     address: str
     device_key: bytes
-    mesh_id: int
+    device_id: int | None
     profile: DeviceBleProfile
-    user_supplied_key: bool
+    run_pairing: bool
 
 
-async def _async_run_gen1_setup(hass: HomeAssistant, request: Gen1SetupRequest) -> None:
+async def _async_run_gen1_setup(hass: HomeAssistant, request: Gen1SetupRequest) -> int | None:
     from .onboarding import async_onboard_gen1_device, async_verify_gen1_device_communication
 
-    if request.user_supplied_key:
+    if not request.run_pairing:
+        if request.device_id is None:
+            msg = "device ID is required when verifying existing credentials"
+            raise ValueError(msg)
         await async_verify_gen1_device_communication(
             hass,
             request.address,
             request.device_key,
-            request.mesh_id,
+            request.device_id,
             ble_profile=request.profile,
         )
-        return
-    await async_onboard_gen1_device(
+        return request.device_id
+    result = await async_onboard_gen1_device(
         hass,
         request.address,
         request.device_key,
-        request.mesh_id,
+        request.device_id,
         ble_profile=request.profile,
     )
+    return result.assigned_device_id
 
 
-async def _async_run_gen2_onboard(
+async def _async_run_gen2_setup(
     hass: HomeAssistant,
     address: str,
     network_key_16: bytes,
     profile: DeviceBleProfile,
+    *,
+    run_pairing: bool,
 ) -> None:
     from .ble import BleProvisionOptions, async_provision_with_network_key
     from .onboarding import async_verify_device_communication
 
-    _LOGGER.debug(
-        "Onboarding %s (gen2): provision + verify tx_delay_ms=%s link_type=0x%02x",
-        address,
-        profile.tx_delay_ms,
-        profile.link_msg_type,
-    )
-    await async_provision_with_network_key(
-        hass,
-        address,
-        network_key_16,
-        BleProvisionOptions(tx_delay_ms=profile.tx_delay_ms),
-    )
+    if run_pairing:
+        _LOGGER.debug(
+            "Onboarding %s (gen2): provision + verify tx_delay_ms=%s link_type=0x%02x",
+            address,
+            profile.tx_delay_ms,
+            profile.link_msg_type,
+        )
+        await async_provision_with_network_key(
+            hass,
+            address,
+            network_key_16,
+            BleProvisionOptions(tx_delay_ms=profile.tx_delay_ms),
+        )
+    else:
+        _LOGGER.debug(
+            "Onboarding %s (gen2): verify only tx_delay_ms=%s link_type=0x%02x",
+            address,
+            profile.tx_delay_ms,
+            profile.link_msg_type,
+        )
     await async_verify_device_communication(
         hass,
         address,
@@ -206,16 +241,7 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             if generation == GENERATION_GEN1:
                 return await self.async_step_gen1_mesh()
-            if entry_needs_network_key_prompt(self._entry_data()):
-                return await self.async_step_network_key()
-            try:
-                return await self._async_complete_gen2_onboard(address, profile)
-            except BhyveBleProvisionError as e:
-                _LOGGER.warning("Provision failed for %s: %s", address, e)
-                errors["base"] = "cannot_connect"
-            except BhyveOnboardingError as e:
-                _LOGGER.warning("Onboarding verify failed for %s: %s", address, e)
-                errors["base"] = "verify_failed"
+            return await self.async_step_network_key()
 
         return self.async_show_form(
             step_id="device_generation",
@@ -247,14 +273,15 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_device_generation()
 
         profile = device_ble_profile(GENERATION_GEN2)
+        entry_data = self._entry_data()
 
         if user_input is not None:
-            try:
-                raw_key = parse_or_generate_network_key(user_input.get(CONF_NETWORK_KEY_INPUT))
-            except ValueError as e:
-                errors["base"] = "invalid_key"
-                _LOGGER.warning("Invalid network key input: %s", e)
-            else:
+            explicit_key, run_pairing, errors = parse_gen2_credentials_submission(
+                user_input, entry_data
+            )
+            if not errors:
+                raw_key = explicit_key or secrets.token_bytes(16)
+                self.context[_CTX_GEN2_RUN_PAIRING] = run_pairing
                 self.context[_CTX_NETWORK_KEY_RAW] = raw_key
                 try:
                     return await self._async_complete_gen2_onboard(address, profile)
@@ -267,7 +294,7 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="network_key",
-            data_schema=_network_key_schema(),
+            data_schema=_gen2_credentials_schema(entry_data),
             errors=errors,
         )
 
@@ -275,37 +302,36 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         from .ble import BhyveBleProvisionError
         from .onboarding import BhyveOnboardingError
 
-        errors: dict[str, str] = {}
         address = self.context.get(_CTX_ADDRESS)
         if not address:
             return await self.async_step_user()
-
         profile = device_ble_profile(GENERATION_GEN1)
+        errors: dict[str, str] = {}
 
         if user_input is not None:
-            mesh_id, device_key, parse_errors = parse_gen1_credentials_submission(user_input)
-            errors.update(parse_errors)
-            if mesh_id is not None and not errors:
+            device_id, device_key, run_pairing, errors = parse_gen1_credentials_submission(
+                user_input
+            )
+            if not errors:
+                self.context[_CTX_GEN1_RUN_PAIRING] = run_pairing
                 if device_key is not None:
                     self.context[_CTX_GEN1_DEVICE_KEY_RAW] = device_key
+                else:
+                    self.context.pop(_CTX_GEN1_DEVICE_KEY_RAW, None)
                 try:
-                    return await self._async_complete_gen1_onboard(address, mesh_id, profile)
+                    return await self._async_complete_gen1_onboard(address, device_id, profile)
                 except BhyveBleProvisionError as e:
                     _LOGGER.warning("Gen1 provision failed for %s: %s", address, e)
                     errors["base"] = "cannot_connect"
                 except BhyveOnboardingError as e:
-                    _LOGGER.warning("Gen1 onboard failed for %s: %s", address, e)
+                    _LOGGER.warning("Gen1 onboarding failed for %s: %s", address, e)
                     errors["base"] = "verify_failed"
 
-        discovered = await async_discover_gen1_mesh_device_id(self.hass, address)
         return self.async_show_form(
             step_id="gen1_mesh",
-            data_schema=_gen1_credentials_schema(discovered),
+            data_schema=_gen1_credentials_schema(),
             errors=errors,
-            description_placeholders={
-                "address": address,
-                "discovered": str(discovered) if discovered is not None else "not found",
-            },
+            description_placeholders={"address": address},
         )
 
     async def _async_complete_gen2_onboard(
@@ -314,7 +340,10 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         profile: DeviceBleProfile,
     ) -> FlowResult:
         raw_key: bytes = self.context.get(_CTX_NETWORK_KEY_RAW) or secrets.token_bytes(16)
-        await _async_run_gen2_onboard(self.hass, address, raw_key, profile)
+        run_pairing = bool(self.context.get(_CTX_GEN2_RUN_PAIRING, True))
+        await _async_run_gen2_setup(
+            self.hass, address, raw_key, profile, run_pairing=run_pairing
+        )
         await self._async_set_unique_id_from_key(raw_key)
         self._abort_if_unique_id_configured()
         return self.async_create_entry(
@@ -328,27 +357,30 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def _async_complete_gen1_onboard(
         self,
         address: str,
-        mesh_id: int,
+        device_id: int | None,
         profile: DeviceBleProfile,
     ) -> FlowResult:
         device_key: bytes = self.context.get(_CTX_GEN1_DEVICE_KEY_RAW) or secrets.token_bytes(16)
-        user_supplied_key = _CTX_GEN1_DEVICE_KEY_RAW in self.context
+        run_pairing = bool(self.context.get(_CTX_GEN1_RUN_PAIRING, True))
         entry_key = secrets.token_bytes(16)
         _LOGGER.debug(
-            "Gen1 setup %s mesh_id=%s (%s)",
+            "Gen1 setup %s device_id=%s (%s)",
             address,
-            mesh_id,
-            "verify existing credentials" if user_supplied_key else "first-time onboard",
+            device_id,
+            "pairing onboard" if run_pairing else "verify existing credentials",
         )
-        await _async_run_gen1_setup(
+        assigned_device_id = await _async_run_gen1_setup(
             self.hass,
             Gen1SetupRequest(
                 address=address,
                 device_key=device_key,
-                mesh_id=mesh_id,
+                device_id=device_id,
                 profile=profile,
-                user_supplied_key=user_supplied_key,
+                run_pairing=run_pairing,
             ),
+        )
+        saved_device_id = int(
+            assigned_device_id if assigned_device_id is not None else device_id
         )
         await self._async_set_unique_id_from_key(entry_key)
         self._abort_if_unique_id_configured()
@@ -359,7 +391,7 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_DEVICES: {
                     address: {
                         CONF_DEVICE_GENERATION: GENERATION_GEN1,
-                        CONF_MESH_DEVICE_ID: mesh_id,
+                        CONF_DEVICE_ID: saved_device_id,
                         CONF_DEVICE_NETWORK_KEY_B64: base64.b64encode(device_key).decode("ascii"),
                     }
                 },
@@ -408,7 +440,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 hours = float(user_input[CONF_POLL_INTERVAL_HOURS])
-            except TypeError, ValueError:
+            except (TypeError, ValueError):
                 errors["base"] = "invalid_interval"
             else:
                 hours = max(MIN_POLL_INTERVAL_HOURS, min(hours, MAX_POLL_INTERVAL_HOURS))
@@ -472,16 +504,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
 
             if generation == GENERATION_GEN1:
                 return await self.async_step_gen1_mesh()
-            if entry_needs_network_key_prompt(self._entry_data()):
-                return await self.async_step_network_key()
-            try:
-                return await self._async_complete_gen2_onboard(address, generation, profile)
-            except BhyveBleProvisionError as e:
-                _LOGGER.warning("Provision failed for %s: %s", address, e)
-                errors["base"] = "cannot_connect"
-            except BhyveOnboardingError as e:
-                _LOGGER.warning("Onboarding verify failed for %s: %s", address, e)
-                errors["base"] = "verify_failed"
+            return await self.async_step_network_key()
 
         return self.async_show_form(
             step_id="device_generation",
@@ -514,22 +537,24 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
             return await self.async_step_device_generation()
 
         profile = device_ble_profile(GENERATION_GEN2)
+        entry_data = self._entry_data()
 
         if user_input is not None:
-            try:
-                raw_key = parse_or_generate_network_key(user_input.get(CONF_NETWORK_KEY_INPUT))
-            except ValueError as e:
-                errors["base"] = "invalid_key"
-                _LOGGER.warning("Invalid network key input: %s", e)
-            else:
+            explicit_key, run_pairing, errors = parse_gen2_credentials_submission(
+                user_input, entry_data
+            )
+            if not errors:
+                raw_key = explicit_key or secrets.token_bytes(16)
+                self.context[_CTX_GEN2_RUN_PAIRING] = run_pairing
                 self.context[_CTX_NETWORK_KEY_RAW] = raw_key
-                self.hass.config_entries.async_update_entry(
-                    self.config_entry,
-                    data={
-                        **self.config_entry.data,
-                        CONF_NETWORK_KEY_B64: base64.b64encode(raw_key).decode("ascii"),
-                    },
-                )
+                if not entry_gen2_pairing_locked(entry_data):
+                    self.hass.config_entries.async_update_entry(
+                        self.config_entry,
+                        data={
+                            **self.config_entry.data,
+                            CONF_NETWORK_KEY_B64: base64.b64encode(raw_key).decode("ascii"),
+                        },
+                    )
                 try:
                     return await self._async_complete_gen2_onboard(address, generation, profile)
                 except BhyveBleProvisionError as e:
@@ -541,7 +566,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="network_key",
-            data_schema=_network_key_schema(),
+            data_schema=_gen2_credentials_schema(entry_data),
             errors=errors,
         )
 
@@ -549,37 +574,36 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         from .ble import BhyveBleProvisionError
         from .onboarding import BhyveOnboardingError
 
-        errors: dict[str, str] = {}
         address = self.context.get(_CTX_ADDRESS)
         if not address:
             return await self.async_step_add_device()
-
         profile = device_ble_profile(GENERATION_GEN1)
+        errors: dict[str, str] = {}
 
         if user_input is not None:
-            mesh_id, device_key, parse_errors = parse_gen1_credentials_submission(user_input)
-            errors.update(parse_errors)
-            if mesh_id is not None and not errors:
+            device_id, device_key, run_pairing, errors = parse_gen1_credentials_submission(
+                user_input
+            )
+            if not errors:
+                self.context[_CTX_GEN1_RUN_PAIRING] = run_pairing
                 if device_key is not None:
                     self.context[_CTX_GEN1_DEVICE_KEY_RAW] = device_key
+                else:
+                    self.context.pop(_CTX_GEN1_DEVICE_KEY_RAW, None)
                 try:
-                    return await self._async_complete_gen1_onboard(address, mesh_id, profile)
+                    return await self._async_complete_gen1_onboard(address, device_id, profile)
                 except BhyveBleProvisionError as e:
                     _LOGGER.warning("Gen1 provision failed for %s: %s", address, e)
                     errors["base"] = "cannot_connect"
                 except BhyveOnboardingError as e:
-                    _LOGGER.warning("Gen1 onboard failed for %s: %s", address, e)
+                    _LOGGER.warning("Gen1 onboarding failed for %s: %s", address, e)
                     errors["base"] = "verify_failed"
 
-        discovered = await async_discover_gen1_mesh_device_id(self.hass, address)
         return self.async_show_form(
             step_id="gen1_mesh",
-            data_schema=_gen1_credentials_schema(discovered),
+            data_schema=_gen1_credentials_schema(),
             errors=errors,
-            description_placeholders={
-                "address": address,
-                "discovered": str(discovered) if discovered is not None else "not found",
-            },
+            description_placeholders={"address": address},
         )
 
     async def _async_complete_gen2_onboard(
@@ -589,7 +613,10 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         profile: DeviceBleProfile,
     ) -> FlowResult:
         key = self._resolve_gen2_network_key()
-        await _async_run_gen2_onboard(self.hass, address, key, profile)
+        run_pairing = bool(self.context.get(_CTX_GEN2_RUN_PAIRING, True))
+        await _async_run_gen2_setup(
+            self.hass, address, key, profile, run_pairing=run_pairing
+        )
         devices = dict(self.config_entry.data.get(CONF_DEVICES) or {})
         devices[address] = {CONF_DEVICE_GENERATION: generation}
         self.hass.config_entries.async_update_entry(
@@ -601,32 +628,35 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
     async def _async_complete_gen1_onboard(
         self,
         address: str,
-        mesh_id: int,
+        device_id: int | None,
         profile: DeviceBleProfile,
     ) -> FlowResult:
         device_key: bytes = self.context.get(_CTX_GEN1_DEVICE_KEY_RAW) or secrets.token_bytes(16)
-        user_supplied_key = _CTX_GEN1_DEVICE_KEY_RAW in self.context
+        run_pairing = bool(self.context.get(_CTX_GEN1_RUN_PAIRING, True))
         _LOGGER.debug(
-            "Gen1 setup %s mesh_id=%s (%s)",
+            "Gen1 setup %s device_id=%s (%s)",
             address,
-            mesh_id,
-            "verify existing credentials" if user_supplied_key else "first-time onboard",
+            device_id,
+            "pairing onboard" if run_pairing else "verify existing credentials",
         )
-        await _async_run_gen1_setup(
+        assigned_device_id = await _async_run_gen1_setup(
             self.hass,
             Gen1SetupRequest(
                 address=address,
                 device_key=device_key,
-                mesh_id=mesh_id,
+                device_id=device_id,
                 profile=profile,
-                user_supplied_key=user_supplied_key,
+                run_pairing=run_pairing,
             ),
+        )
+        saved_device_id = int(
+            assigned_device_id if assigned_device_id is not None else device_id
         )
 
         devices = dict(self.config_entry.data.get(CONF_DEVICES) or {})
         devices[address] = {
             CONF_DEVICE_GENERATION: GENERATION_GEN1,
-            CONF_MESH_DEVICE_ID: mesh_id,
+            CONF_DEVICE_ID: saved_device_id,
             CONF_DEVICE_NETWORK_KEY_B64: base64.b64encode(device_key).decode("ascii"),
         }
         self.hass.config_entries.async_update_entry(

@@ -1,13 +1,10 @@
 """
 Optional debug logging for Orbit BLE plaintext and decoded payloads.
 
-Enable in Home Assistant ``configuration.yaml``::
-
+Enable in Home Assistant configuration.yaml
     logger:
       logs:
         custom_components.bhyve_ble.logging: debug
-
-Lines are prefixed with ``[<MAC>]`` for easy grepping in **Settings → System → Logs**.
 """
 
 from __future__ import annotations
@@ -16,7 +13,10 @@ import json
 import logging
 from typing import Any
 
-from .orbit_codec import decode_orbit_ble_plaintext
+from .pybhyve.ble_trace import BleTraceReporter, network_char_detail
+from .pybhyve.constants import GEN1_HANDLES
+
+from .pybhyve.gen2_codec import decode_gen2_ble_plaintext
 
 _LOG = logging.getLogger(__name__)
 
@@ -27,9 +27,67 @@ def _debug(address: str, msg: str, *args: object) -> None:
     _LOG.debug("[%s] " + msg, address, *args)
 
 
+def _gen1_att_trace(address: str) -> BleTraceReporter | None:
+    if not _LOG.isEnabledFor(logging.DEBUG):
+        return None
+    return BleTraceReporter(
+        address,
+        GEN1_HANDLES,
+        emit=lambda line: _LOG.debug("%s", line),
+    )
+
+
+def log_ble_att_write_req(
+    address: str,
+    char_role: str,
+    wire: bytes,
+    *,
+    detail: str = "",
+) -> None:
+    trace = _gen1_att_trace(address)
+    if trace is not None:
+        trace.write_req(char_role, wire, detail=detail)
+
+
+def log_ble_att_write_f(
+    address: str,
+    wire: bytes,
+    *,
+    plaintext: bytes | None = None,
+    detail: str = "",
+) -> None:
+    trace = _gen1_att_trace(address)
+    if trace is not None:
+        trace.write_f("write_char", wire, plaintext=plaintext, detail=detail)
+
+
+def log_ble_att_read_rsp(address: str, char_role: str, wire: bytes, *, detail: str = "") -> None:
+    trace = _gen1_att_trace(address)
+    if trace is not None:
+        trace.read_rsp(char_role, wire, detail=detail)
+
+
+def log_ble_att_notify(
+    address: str,
+    wire: bytes,
+    *,
+    plaintext: bytes | None = None,
+    detail: str = "",
+) -> None:
+    trace = _gen1_att_trace(address)
+    if trace is not None:
+        trace.notify(wire, plaintext=plaintext, detail=detail)
+
+
+def log_ble_att_network_char(address: str, wire: bytes) -> None:
+    trace = _gen1_att_trace(address)
+    if trace is not None:
+        trace.write_req("network_char", wire, detail=network_char_detail(wire))
+
+
 def _oneof_from_plaintext(plaintext: bytes) -> str | None:
     try:
-        decoded = decode_orbit_ble_plaintext(plaintext)
+        decoded = decode_gen2_ble_plaintext(plaintext)
     except Exception:  # noqa: BLE001
         return None
     return (decoded.get("_framing") or {}).get("oneof")

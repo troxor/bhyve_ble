@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .const import (
+from .pybhyve.constants import (
     AES_CHAR_UUID,
     NETWORK_CHAR_UUID,
     READ_CHAR_UUID,

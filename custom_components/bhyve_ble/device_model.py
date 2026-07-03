@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from .const import GENERATION_GEN1, GENERATION_GEN2
-from .gen1_codec import GEN1_MODEL
+from .pybhyve.gen1_codec import GEN1_MODEL
 
 
 def device_generation_label(generation: str | None) -> str | None:
-    """Short generation tag for HA ``model_id`` (shown in parentheses by the UI)."""
+    """Short generation tag for HA model_id (shown in parentheses by the UI)."""
     if generation == GENERATION_GEN1:
         return "Gen 1"
     if generation == GENERATION_GEN2:
@@ -20,7 +20,7 @@ def device_model_name(
     *,
     generation: str | None,
 ) -> str:
-    """Hardware model name only — generation goes in ``model_id`` for HA display."""
+    """Hardware model name only — generation goes in model_id for HA display."""
     if hw_version:
         return hw_version
     if generation == GENERATION_GEN1:

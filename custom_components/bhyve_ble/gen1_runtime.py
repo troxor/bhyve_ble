@@ -1,36 +1,33 @@
-"""Gen1 BLE runtime: status reads, manual start, and stop (shared with onboarding)."""
-
 from __future__ import annotations
 
 import asyncio
 import logging
+import struct
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from bleak_retry_connector import close_stale_connections_by_address
-
-from .const import BLE_COMMAND_LISTEN_S, BLE_START_CONFIRM_LISTEN_S, BLE_STATUS_LISTEN_S
-from .device_profile import DeviceBleProfile
-from .gen1_codec import (
-    decode_gen1_plaintext,
-    format_gen1_watering_status,
-    gen1_manual_start_plaintext,
-    gen1_onboard_write_plaintexts,
-    gen1_reconnect_write_plaintexts,
-    gen1_session_poll_plaintext,
-    gen1_status_probe_plaintext,
-    gen1_status_session_plaintexts,
-    gen1_stop_plaintext,
-    mesh_prefix_bytes,
+from .pybhyve.constants import (
+    COMMAND_LISTEN_S,
+    GEN1_STATUS_LISTEN_S,
+    START_CONFIRM_LISTEN_S,
 )
-from .gen1_session import Gen1Session, run_gen1_session
 from .logging import log_ble_rx, log_ble_rx_decode_failed, log_ble_tx
 from .transport import BhyveBleTransport, BhyveBleTransportError
+from .pybhyve.gen1_codec import decode_gen1_plaintext
+from .pybhyve.gen1_ops import (
+    run_gen1_manual_start,
+    run_gen1_onboard,
+    run_gen1_status_session,
+    run_gen1_stop_watering,
+)
+from .pybhyve.gen1_session import Gen1Session
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from homeassistant.core import HomeAssistant
+
+    from .device_profile import DeviceBleProfile
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -43,50 +40,29 @@ class Gen1RuntimeError(Exception):
 class Gen1BleSessionParams:
     address: str
     network_key_16: bytes
-    mesh_device_id: int
+    device_id: int
     ble_profile: DeviceBleProfile
 
 
-async def async_run_gen1_status_session(
-    gen1: Gen1Session,
-    mesh_device_id: int,
-    *,
-    passive_poll: bool = True,
-) -> None:
-    """Run the lab-client ``status`` script (no onboard, no network_char write)."""
-    mid = int(mesh_device_id)
-    await run_gen1_session(gen1, gen1_status_session_plaintexts(mid))
-    if passive_poll and format_gen1_watering_status(gen1.status_snapshot) is None:
-        cmd = gen1.alloc_cmd()
-        pt = gen1_session_poll_plaintext(mid, cmd)
-        await gen1.send_and_wait(f"gen1 passive poll cmd=0x{cmd:02x}", pt)
+@dataclass(frozen=True, slots=True)
+class Gen1SessionResult:
+    """Outcome of one gen1 BLE session: status snapshot plus any assigned device id."""
+
+    snapshot: dict[str, Any]
+    assigned_device_id: int | None = None
 
 
-async def async_run_gen1_stop_sequence(gen1: Gen1Session, mesh_device_id: int) -> None:
-    """Stop sequence from ``gen1_pairingY-activity1`` captures."""
-    mid = int(mesh_device_id)
-    cmd = gen1.alloc_cmd()
-    pt = gen1_status_probe_plaintext(mid, cmd)
-    await gen1.send_and_wait(f"gen1 stop: status probe cmd=0x{cmd:02x}", pt)
-    for repeat in (1, 2):
-        pt = gen1_stop_plaintext(mid, cmd)
-        await gen1.send_and_wait(f"gen1 stop cmd=0x{cmd:02x} ({repeat}/2)", pt)
-    cmd2 = gen1.alloc_cmd()
-    pt = gen1_stop_plaintext(mid, cmd2)
-    await gen1.send_and_wait(f"gen1 stop cmd=0x{cmd2:02x}", pt)
-
-
-async def async_run_gen1_ble_session(
+async def _async_run_gen1_ble_session(
     hass: HomeAssistant,
     params: Gen1BleSessionParams,
     session_runner: Callable[[Gen1Session, int], Awaitable[None]],
     *,
-    listen_seconds: float = BLE_STATUS_LISTEN_S,
-) -> dict[str, Any]:
-    """Connect, subscribe, run gen1 application scripts, listen briefly, disconnect."""
-    mid = int(params.mesh_device_id)
+    listen_seconds: float = GEN1_STATUS_LISTEN_S,
+) -> Gen1SessionResult:
+    """Connect, subscribe, run an operation, listen briefly, disconnect."""
+    mid = int(params.device_id)
     transport = BhyveBleTransport(hass, params.address, params.network_key_16)
-    magic = mesh_prefix_bytes(mid)
+    magic = struct.pack("<H", mid)
     link_t = params.ble_profile.link_msg_type
     gen1: Gen1Session | None = None
 
@@ -107,7 +83,6 @@ async def async_run_gen1_ble_session(
         gen1.on_notify_plaintext(plaintext)
 
     try:
-        await close_stale_connections_by_address(params.address)
         await transport.async_connect_and_subscribe(
             on_notify, tx_delay_ms=params.ble_profile.tx_delay_ms
         )
@@ -115,7 +90,10 @@ async def async_run_gen1_ble_session(
         await session_runner(gen1, mid)
         if listen_seconds > 0:
             await asyncio.sleep(listen_seconds)
-        return gen1.status_snapshot
+        return Gen1SessionResult(
+            snapshot=gen1.status_snapshot,
+            assigned_device_id=gen1.assigned_device_id,
+        )
     except BhyveBleTransportError as e:
         _LOGGER.debug("[%s] gen1 session transport error: %s", params.address, e)
         raise Gen1RuntimeError(str(e)) from e
@@ -127,48 +105,54 @@ async def async_run_gen1_ble_session(
 async def async_read_gen1_status(
     hass: HomeAssistant,
     params: Gen1BleSessionParams,
-) -> dict[str, Any]:
-    async def run_status(gen1: Gen1Session, mesh_id: int) -> None:
-        await async_run_gen1_status_session(gen1, mesh_id)
+) -> Gen1SessionResult:
+    async def run_status(gen1: Gen1Session, device_id: int) -> None:
+        await run_gen1_status_session(gen1, device_id)
 
-    return await async_run_gen1_ble_session(hass, params, run_status)
+    return await _async_run_gen1_ble_session(hass, params, run_status)
 
 
 async def async_gen1_manual_start(
     hass: HomeAssistant,
     params: Gen1BleSessionParams,
     duration_sec: int,
-) -> dict[str, Any]:
-    async def run_start(gen1: Gen1Session, mesh_id: int) -> None:
-        await run_gen1_session(gen1, gen1_reconnect_write_plaintexts(mesh_id))
-        cmd = gen1.alloc_cmd()
-        pt = gen1_manual_start_plaintext(mesh_id, duration_sec, cmd=cmd)
-        await gen1.send_and_wait(f"gen1 manual start {duration_sec}s cmd=0x{cmd:02x}", pt)
+) -> Gen1SessionResult:
+    async def run_start(gen1: Gen1Session, device_id: int) -> None:
+        await run_gen1_manual_start(gen1, device_id, duration_sec)
 
-    return await async_run_gen1_ble_session(
-        hass, params, run_start, listen_seconds=BLE_START_CONFIRM_LISTEN_S
+    return await _async_run_gen1_ble_session(
+        hass, params, run_start, listen_seconds=START_CONFIRM_LISTEN_S
     )
 
 
 async def async_gen1_stop_watering(
     hass: HomeAssistant,
     params: Gen1BleSessionParams,
-) -> dict[str, Any]:
-    async def run_stop(gen1: Gen1Session, mesh_id: int) -> None:
-        await async_run_gen1_status_session(gen1, mesh_id)
-        await async_run_gen1_stop_sequence(gen1, mesh_id)
+) -> Gen1SessionResult:
+    async def run_stop(gen1: Gen1Session, device_id: int) -> None:
+        await run_gen1_stop_watering(gen1, device_id)
 
-    return await async_run_gen1_ble_session(
-        hass, params, run_stop, listen_seconds=BLE_COMMAND_LISTEN_S
+    return await _async_run_gen1_ble_session(
+        hass, params, run_stop, listen_seconds=COMMAND_LISTEN_S
     )
 
 
 async def async_gen1_onboard_session(
     hass: HomeAssistant,
     params: Gen1BleSessionParams,
-) -> dict[str, Any]:
-    async def run_onboard(gen1: Gen1Session, mesh_id: int) -> None:
-        await run_gen1_session(gen1, gen1_onboard_write_plaintexts(mesh_id))
-        await async_run_gen1_status_session(gen1, mesh_id, passive_poll=False)
+) -> Gen1SessionResult:
+    async def run_onboard(gen1: Gen1Session, device_id: int) -> None:
+        await run_gen1_onboard(gen1, device_id)
 
-    return await async_run_gen1_ble_session(hass, params, run_onboard)
+    return await _async_run_gen1_ble_session(hass, params, run_onboard)
+
+
+__all__ = [
+    "Gen1BleSessionParams",
+    "Gen1RuntimeError",
+    "Gen1SessionResult",
+    "async_gen1_manual_start",
+    "async_gen1_onboard_session",
+    "async_gen1_stop_watering",
+    "async_read_gen1_status",
+]

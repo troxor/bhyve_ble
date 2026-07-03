@@ -11,11 +11,16 @@ from ..gen1_codec import (
     GEN1_RESPONSE_BIT,
     decode_gen1_inner_payload,
     decode_gen1_plaintext,
+    gen1_status_snapshot_verified,
+    parse_gen1_battery_percent_mv,
+    parse_gen1_station_status,
 )
 from ..gen2_codec import (
     MAGIC_BYTES,
     decode_gen2_ble_plaintext,
+    format_gen2_battery_line,
     gen2_notify_store_port_state,
+    resolve_battery_percent_display,
 )
 from ..constants import Generation
 
@@ -86,6 +91,185 @@ def format_gen1_decoded(
     return f"gen1 {role}{hex_part}"
 
 
+_STATUS_LABEL_WIDTH = 12
+
+
+def _print_status_field(label: str, value: str) -> None:
+    print(f"  {label + ':':{_STATUS_LABEL_WIDTH}}{value}")
+
+
+def _map_gen1_state(raw: str) -> str:
+    return {
+        "watering": "wateringInProgress",
+        "off": "idle",
+        "fault": "fault",
+        "unknown": "unknown",
+    }.get(raw, raw)
+
+
+def _gen1_port_state(snapshot: dict[str, dict[str, Any]], station_id: int | None) -> str:
+    sid = 0 if station_id is None else station_id
+    return _map_gen1_state(parse_gen1_station_status(snapshot, sid)["state"])
+
+
+def _gen1_state_detail(snapshot: dict[str, dict[str, Any]]) -> str | None:
+    ws = snapshot.get("watering_status")
+    if not isinstance(ws, dict) or not ws.get("active"):
+        return None
+    parts: list[str] = []
+    rem = ws.get("remaining_sec")
+    tot = ws.get("total_sec")
+    if rem is not None:
+        parts.append(f"remaining_sec={rem}")
+    if tot is not None:
+        parts.append(f"total_sec={tot}")
+    return "  ".join(parts) if parts else None
+
+
+def _format_gen1_battery_line(snapshot: dict[str, dict[str, Any]]) -> str | None:
+    pct, mv = parse_gen1_battery_percent_mv(snapshot)
+    display_pct, _source = resolve_battery_percent_display(pct, mv)
+    if display_pct is not None and mv is not None:
+        return f"{display_pct}% ({mv} mV)"
+    if display_pct is not None:
+        return f"{display_pct}%"
+    if mv is not None:
+        return f"{mv} mV"
+    return None
+
+
+def _gen2_port_state(store: dict[str, Any], station_id: int | None) -> str:
+    if station_id is not None:
+        return gen2_notify_store_port_state(store, station_id)
+    dsi = store.get("deviceStatusInfo")
+    if isinstance(dsi, dict):
+        ds = dsi.get("deviceStatus")
+        if ds:
+            return str(ds)
+    return "unknown"
+
+
+def _gen2_state_detail(store: dict[str, Any]) -> str | None:
+    dsi = store.get("deviceStatusInfo")
+    sources: list[dict[str, Any]] = []
+    if isinstance(dsi, dict):
+        ws = dsi.get("wateringStatus")
+        if isinstance(ws, dict):
+            sources.append(ws)
+    ws_top = store.get("wateringStatus")
+    if isinstance(ws_top, dict):
+        sources.append(ws_top)
+    for ws in sources:
+        if not ws.get("status"):
+            continue
+        parts = [f"status={ws['status']}"]
+        if ws.get("currentStationId") is not None:
+            parts.append(f"station={ws['currentStationId']}")
+        if ws.get("currentTimeRemainingSec") is not None:
+            parts.append(f"remaining_sec={ws['currentTimeRemainingSec']}")
+        if ws.get("totalRunTimeSec") is not None:
+            parts.append(f"total_sec={ws['totalRunTimeSec']}")
+        return "  ".join(parts)
+    return None
+
+
+def _gen2_battery_line_from_store(store: dict[str, Any]) -> str | None:
+    msg: dict[str, Any] = {}
+    dsi = store.get("deviceStatusInfo")
+    if isinstance(dsi, dict):
+        msg["deviceStatusInfo"] = dsi
+    bat = store.get("batteryStatus")
+    if isinstance(bat, dict):
+        msg["batteryStatus"] = bat
+    return format_gen2_battery_line(msg)
+
+
+def _gen2_fault_summary(store: dict[str, Any]) -> str | None:
+    fs = store.get("faultStatus")
+    if not isinstance(fs, dict) or not fs:
+        dsi = store.get("deviceStatusInfo")
+        if isinstance(dsi, dict):
+            nested = dsi.get("faultStatus")
+            if isinstance(nested, dict):
+                fs = nested
+    if not isinstance(fs, dict) or not fs:
+        return None
+    bool_fields = [
+        ("valveOnNoFlowDetected", "VALVE ON but NO FLOW detected"),
+        ("valveOffFlowDetected", "VALVE OFF but FLOW detected"),
+        ("valveLowFlowDetected", "LOW FLOW detected"),
+        ("valveHighFlowDetected", "HIGH FLOW detected"),
+    ]
+    hits = [label for key, label in bool_fields if fs.get(key) is True]
+    if hits:
+        return "; ".join(hits)
+    station_faults = fs.get("stationFaults")
+    if isinstance(station_faults, list) and station_faults:
+        return f"{len(station_faults)} station fault(s)"
+    return None
+
+
+def _print_gen1_status_summary(
+    snapshot: dict[str, dict[str, Any]],
+    station_id: int | None,
+) -> None:
+    if not gen1_status_snapshot_verified(snapshot):
+        print("  (no status NOTIFY decoded)")
+        return
+
+    _print_status_field("State", _gen1_port_state(snapshot, station_id))
+    detail = _gen1_state_detail(snapshot)
+    if detail:
+        _print_status_field("detail", detail)
+
+    device_info = snapshot.get("device_info")
+    if isinstance(device_info, dict):
+        if device_info.get("num_stations") is not None:
+            _print_status_field("stations", str(device_info["num_stations"]))
+        if device_info.get("firmware_version"):
+            _print_status_field("firmware", str(device_info["firmware_version"]))
+    _print_status_field("hardware", GEN1_MODEL)
+
+    battery_line = _format_gen1_battery_line(snapshot)
+    if battery_line:
+        _print_status_field("battery", battery_line)
+
+    fault = snapshot.get("fault")
+    if isinstance(fault, dict) and fault.get("kind") == "fault" and not fault.get("battery_mv"):
+        _print_status_field("faults", "fault")
+
+
+def _print_gen2_status_summary(
+    store: dict[str, Any],
+    station_id: int | None,
+) -> None:
+    if not store:
+        print("  (no status NOTIFY decoded)")
+        return
+
+    _print_status_field("State", _gen2_port_state(store, station_id))
+    detail = _gen2_state_detail(store)
+    if detail:
+        _print_status_field("detail", detail)
+
+    di = store.get("deviceInfo")
+    if isinstance(di, dict) and di:
+        if di.get("numStations") is not None:
+            _print_status_field("stations", str(di["numStations"]))
+        if di.get("fwVersion"):
+            _print_status_field("firmware", str(di["fwVersion"]))
+        if di.get("hwVersion"):
+            _print_status_field("hardware", str(di["hwVersion"]))
+
+    battery_line = _gen2_battery_line_from_store(store)
+    if battery_line:
+        _print_status_field("battery", battery_line)
+
+    fault_line = _gen2_fault_summary(store)
+    if fault_line:
+        _print_status_field("faults", fault_line)
+
+
 def print_device_status_summary(
     *,
     generation: Generation,
@@ -97,77 +281,16 @@ def print_device_status_summary(
     if station_id is not None:
         print(f"  Port {station_id + 1}")
     if generation == "gen1":
-        record = gen1_snapshot.get("watering_status") or gen1_snapshot.get("watering_idle")
-        watering = format_gen1_inner_status(record) if isinstance(record, dict) else None
-        if watering:
-            print(f"  watering:   {watering}")
-        else:
-            print("  watering:   (no status NOTIFY decoded)")
-        print(f"  model:      {GEN1_MODEL}")
-        device_info = gen1_snapshot.get("device_info")
-        if device_info:
-            print(f"  firmware:   {device_info['firmware_version']}")
-            print(f"  stations:   {device_info['num_stations']}")
-        fault = gen1_snapshot.get("fault")
-        battery = gen1_snapshot.get("battery")
-        if battery:
-            print(
-                f"  battery:    {battery['battery_percent']}% "
-                f"({battery['battery_mv']} mV)"
-            )
-        elif fault and fault.get("battery_mv"):
-            print(
-                f"  battery:    {fault.get('battery_percent')}% "
-                f"({fault['battery_mv']} mV)"
-            )
+        _print_gen1_status_summary(gen1_snapshot, station_id)
     else:
-        if station_id is not None:
-            print(f"  State:   {gen2_notify_store_port_state(gen2_store, station_id)}")
-        dsi = gen2_store.get("deviceStatusInfo")
-        if isinstance(dsi, dict):
-            detail_lines: list[str] = []
-            _gen2_summarize_device_status_info(dsi, detail_lines)
-            for line in detail_lines:
-                print(line.replace("   ", "  ", 1) if line.startswith("   ") else f"  {line}")
-        di = gen2_store.get("deviceInfo")
-        if isinstance(di, dict) and di:
-            if di.get("numStations") is not None:
-                print(f"  stations:     {di['numStations']}")
-            if di.get("fwVersion"):
-                print(f"  firmware:     {di['fwVersion']}")
-            if di.get("hwVersion"):
-                print(f"  hardware:     {di['hwVersion']}")
-            if not any(di.get(k) for k in ("numStations", "fwVersion", "hwVersion")):
-                snippet = json.dumps(di, ensure_ascii=False)
-                print(f"  deviceInfo:   {snippet[:200]}{'...' if len(snippet) > 200 else ''}")
-        bat = gen2_store.get("batteryStatus")
-        if isinstance(bat, dict) and bat and not (
-            isinstance(dsi, dict) and isinstance(dsi.get("batteryStatus"), dict) and dsi["batteryStatus"]
-        ):
-            mv = bat.get("batteryLevelMV")
-            if mv:
-                print(f"  battery:      {bat.get('state')}  {mv} mV")
-        fs = gen2_store.get("faultStatus")
-        if isinstance(fs, dict) and fs:
-            fault_lines: list[str] = []
-            _gen2_summarize_fault_status(fs, fault_lines)
-            for line in fault_lines:
-                print(line.replace("   ", "  ", 1) if line.startswith("   ") else f"  {line}")
-        ws = gen2_store.get("wateringStatus")
-        if isinstance(ws, dict) and ws and not (
-            isinstance(dsi, dict) and isinstance(dsi.get("wateringStatus"), dict) and dsi["wateringStatus"]
-        ):
-            line = _gen2_format_watering_line(ws).replace("   ", "  ", 1)
-            print(line if line.startswith("  ") else f"  {line}")
-        if not gen2_store:
-            print("  (no status NOTIFY decoded)")
+        _print_gen2_status_summary(gen2_store, station_id)
     print("=====================\n")
 
 
 def _gen2_summarize_device_status_info(dsi: dict, lines: list[str]) -> None:
     ds = dsi.get("deviceStatus")
     if ds:
-        lines.append(f"   deviceStatus: {ds}")
+        lines.append(f"   State:        {ds}")
     tm = dsi.get("timerMode")
     if isinstance(tm, dict):
         mode = tm.get("mode")
@@ -186,21 +309,26 @@ def _gen2_summarize_device_status_info(dsi: dict, lines: list[str]) -> None:
     ws = dsi.get("wateringStatus")
     if isinstance(ws, dict) and any(ws.values()):
         lines.append(_gen2_format_watering_line(ws))
-    bat = dsi.get("batteryStatus")
-    if isinstance(bat, dict) and bat.get("batteryLevelMV"):
-        lines.append(f"   battery:      {bat.get('state')}  {bat.get('batteryLevelMV')} mV")
+    battery_line = format_gen2_battery_line({"deviceStatusInfo": dsi})
+    if battery_line:
+        lines.append(f"   battery:      {battery_line}")
 
 
 def _gen2_format_watering_line(ws: dict) -> str:
-    return (
-        "   watering:     status={status}  station={st}"
-        "  remaining_sec={rem}  total_sec={tot}".format(
-            status=ws.get("status"),
-            st=ws.get("currentStationId"),
-            rem=ws.get("currentTimeRemainingSec"),
-            tot=ws.get("totalRunTimeSec"),
-        )
-    )
+    parts: list[str] = []
+    status = ws.get("status")
+    if status:
+        parts.append(f"status={status}")
+    st = ws.get("currentStationId")
+    if st is not None:
+        parts.append(f"station={st}")
+    rem = ws.get("currentTimeRemainingSec")
+    if rem is not None:
+        parts.append(f"remaining_sec={rem}")
+    tot = ws.get("totalRunTimeSec")
+    if tot is not None:
+        parts.append(f"total_sec={tot}")
+    return f"   detail:       {'  '.join(parts)}"
 
 
 def _gen2_summarize_fault_status(fs: dict, lines: list[str]) -> None:
@@ -302,9 +430,9 @@ def brief_gen2_plaintext(pt: bytes) -> str:
             if rem is not None:
                 seg += f" rem={rem}s"
             parts.append(seg)
-        bat = payload.get("batteryStatus") or {}
-        if isinstance(bat, dict) and bat.get("batteryLevelMV"):
-            parts.append(f"{bat['batteryLevelMV']} mV")
+        battery_line = format_gen2_battery_line({"deviceStatusInfo": payload})
+        if battery_line:
+            parts.append(battery_line)
     elif oneof == "faultStatus" and payload:
         fault_labels = [
             ("valveOnNoFlowDetected", "VALVE ON but NO FLOW detected"),

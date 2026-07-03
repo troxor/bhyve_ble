@@ -9,13 +9,14 @@ from typing import Any
 from .const import (
     CONF_DEVICE_GENERATION,
     CONF_DEVICES,
-    CONF_MESH_DEVICE_ID,
+    CONF_DEVICE_ID,
+    CONF_GEN1_RUN_PAIRING,
+    CONF_GEN2_RUN_PAIRING,
     CONF_NETWORK_KEY_B64,
     CONF_NETWORK_KEY_INPUT,
-    GENERATION_GEN1,
     GENERATION_GEN2,
 )
-from .network_key import parse_or_generate_network_key
+from .pybhyve.gen1_ops import gen1_network_key
 
 
 def entry_has_network_key(data: dict[str, Any]) -> bool:
@@ -30,11 +31,11 @@ def entry_has_network_key(data: dict[str, Any]) -> bool:
 
 
 def entry_has_gen2_device(data: dict[str, Any]) -> bool:
-    """Return whether at least one onboarded timer is Gen 2 (or legacy without generation)."""
+    """Return whether at least one onboarded timer is Gen 2."""
     devices = data.get(CONF_DEVICES) or {}
     for meta in devices.values():
         gen = (meta or {}).get(CONF_DEVICE_GENERATION, GENERATION_GEN2)
-        if gen != GENERATION_GEN1:
+        if gen == GENERATION_GEN2:
             return True
     return False
 
@@ -46,29 +47,87 @@ def entry_needs_network_key_prompt(data: dict[str, Any] | None) -> bool:
     return not entry_has_gen2_device(data) and not entry_has_network_key(data)
 
 
+def entry_network_key_bytes(data: dict[str, Any] | None) -> bytes | None:
+    """Return the integration entry shared key, or None if missing/invalid."""
+    if not data:
+        return None
+    b64 = data.get(CONF_NETWORK_KEY_B64)
+    if not b64:
+        return None
+    try:
+        key = base64.b64decode(b64)
+    except (TypeError, ValueError, binascii.Error):
+        return None
+    if len(key) != 16:
+        return None
+    return key
+
+
+def entry_gen2_pairing_locked(data: dict[str, Any] | None) -> bool:
+    """True when the integration already has Gen 2 device(s) and a shared network key."""
+    if not data:
+        return False
+    return entry_has_gen2_device(data) and entry_network_key_bytes(data) is not None
+
+
+def parse_gen2_credentials_submission(
+    user_input: dict[str, Any],
+    entry_data: dict[str, Any] | None,
+) -> tuple[bytes | None, bool, dict[str, str]]:
+    errors: dict[str, str] = {}
+    locked = entry_gen2_pairing_locked(entry_data)
+    run_pairing = True if locked else bool(user_input.get(CONF_GEN2_RUN_PAIRING, True))
+
+    if locked:
+        key = entry_network_key_bytes(entry_data)
+        if key is None:
+            errors["base"] = "cannot_connect"
+        return key, True, errors
+
+    key_input = user_input.get(CONF_NETWORK_KEY_INPUT, "")
+    explicit_key: bytes | None = None
+    if key_input and str(key_input).strip():
+        try:
+            explicit_key = gen1_network_key(str(key_input))
+        except ValueError:
+            errors["base"] = "invalid_key"
+
+    return explicit_key, run_pairing, errors
+
+
 def parse_gen1_credentials_submission(
     user_input: dict[str, Any],
-) -> tuple[int | None, bytes | None, dict[str, str]]:
-    """Parse mesh id and optional per-device key from the gen1 credentials step."""
+) -> tuple[int | None, bytes | None, bool, dict[str, str]]:
+    """Parse gen1 credentials step; third value is whether to run pairing/onboard."""
     errors: dict[str, str] = {}
-    raw_mesh = user_input.get(CONF_MESH_DEVICE_ID, "").strip()
-    mesh_id: int | None = None
-    if not raw_mesh:
-        errors["base"] = "invalid_mesh_id"
+    run_pairing = bool(user_input.get(CONF_GEN1_RUN_PAIRING, True))
+
+    raw_device_id = user_input.get(CONF_DEVICE_ID, "").strip()
+    device_id: int | None = None
+    if not raw_device_id:
+        device_id = None
     else:
         try:
-            mesh_id = int(raw_mesh, 0) if raw_mesh.lower().startswith("0x") else int(raw_mesh, 10)
+            if str(raw_device_id).strip().lower().startswith("0x"):
+                raise ValueError("hex not accepted")
+            device_id = int(raw_device_id, 10)
         except (TypeError, ValueError):
-            errors["base"] = "invalid_mesh_id"
-        if mesh_id is not None and not 0 <= mesh_id <= 0xFFFF:
-            errors["base"] = "invalid_mesh_id"
+            errors["base"] = "invalid_device_id"
+        if device_id is not None and not 0 <= device_id <= 0xFFFF:
+            errors["base"] = "invalid_device_id"
 
     device_key: bytes | None = None
     key_input = user_input.get(CONF_NETWORK_KEY_INPUT, "")
     if key_input and str(key_input).strip():
         try:
-            device_key = parse_or_generate_network_key(str(key_input))
+            device_key = gen1_network_key(str(key_input))
         except ValueError:
             errors["base"] = "invalid_key"
 
-    return mesh_id, device_key, errors
+    if not run_pairing:
+        if device_id is None or device_key is None:
+            errors["base"] = "credentials_required"
+    elif device_id is None and device_key is not None:
+        errors["base"] = "invalid_device_id"
+
+    return device_id, device_key, run_pairing, errors

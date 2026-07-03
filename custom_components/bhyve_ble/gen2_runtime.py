@@ -21,8 +21,7 @@ from .pybhyve.gen2_ops import (
     run_gen2_status_queries,
     run_gen2_stop_watering,
 )
-from .pybhyve.gen2_codec import decode_gen2_ble_plaintext
-from .pybhyve.timer import merge_gen2_decoded
+from .pybhyve.gen2_codec import decode_gen2_ble_plaintext, merge_gen2_decoded
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable

@@ -286,6 +286,21 @@ def resolve_battery_percent_display(
     return None, None
 
 
+def format_gen2_battery_line(message: dict | None) -> str | None:
+    """Human-readable battery summary, e.g. ``72% (2833 mV)``."""
+    if not message:
+        return None
+    pct, mv = parse_battery_percent_mv_from_decoded({"message": message})
+    display_pct, _source = resolve_battery_percent_display(pct, mv)
+    if display_pct is not None and mv is not None:
+        return f"{display_pct}% ({mv} mV)"
+    if display_pct is not None:
+        return f"{display_pct}%"
+    if mv is not None:
+        return f"{mv} mV"
+    return None
+
+
 def normalize_num_stations(raw: int | None) -> int:
     """Clamp deviceInfo.numStations to known hose-timer port counts (1, 2, or 4)."""
     if raw is None:

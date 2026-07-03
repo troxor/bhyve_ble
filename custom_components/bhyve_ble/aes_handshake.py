@@ -6,7 +6,7 @@ import asyncio
 import logging
 from typing import Protocol
 
-from .provisioning import (
+from .pybhyve.link_crypto import (
     AesHandshakeDerived,
     build_aes_char_write_payload,
     derive_from_aes_char_exchange,
@@ -29,13 +29,18 @@ async def async_complete_aes_char_handshake(
     *,
     tx_delay_ms: int = 0,
     max_attempts: int = 12,
+    trace_address: str | None = None,
 ) -> AesHandshakeDerived:
     """
     Write aes_char, poll read until the session material validates.
 
-    Gen 1 uses ``tx_delay_ms=100``; Gen 2 uses ``0``.
+    Gen 1 uses tx_delay_ms=100; Gen 2 uses 0.
     """
     write20 = build_aes_char_write_payload(tx_delay_ms)
+    if trace_address is not None:
+        from .logging import log_ble_att_read_rsp, log_ble_att_write_req
+
+        log_ble_att_write_req(trace_address, "aes_char", write20, detail=f"tx_delay_ms={tx_delay_ms}")
     await client.write_gatt_char(aes_char_uuid, write20, response=True)
 
     last_error: ValueError | None = None
@@ -48,7 +53,12 @@ async def async_complete_aes_char_handshake(
             _LOGGER.debug("aes_char read wrong length (attempt %s)", attempt + 1)
             continue
         try:
-            return derive_from_aes_char_exchange(write20, read20)
+            derived = derive_from_aes_char_exchange(write20, read20)
+            if trace_address is not None:
+                from .logging import log_ble_att_read_rsp
+
+                log_ble_att_read_rsp(trace_address, "aes_char", read20)
+            return derived
         except ValueError as e:
             last_error = e
             _LOGGER.debug("aes_char read not valid yet (attempt %s): %s", attempt + 1, e)

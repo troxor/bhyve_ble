@@ -7,10 +7,8 @@ from homeassistant.const import PERCENTAGE
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import DOMAIN
-from .const import DOMAIN, GENERATION_GEN1, GENERATION_GEN2
 from .entity import BhyveBleEntity
-from .gen1_codec import parse_gen1_battery_percent_mv, parse_gen1_station_status
-from .orbit_codec import (
+from .pybhyve.gen2_codec import (
     parse_battery_percent_mv_from_decoded,
     parse_station_status,
     resolve_battery_percent_display,
@@ -43,8 +41,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 
 class BhyveBleStationStatusSensor(BhyveBleEntity, SensorEntity):
-    """Per-port watering state and faults (defaults to ``off`` until the timer reports)."""
-
     _attr_has_entity_name = True
     _attr_icon = "mdi:information-outline"
 
@@ -58,8 +54,7 @@ class BhyveBleStationStatusSensor(BhyveBleEntity, SensorEntity):
 
     def _status(self) -> dict:
         if self.coordinator.is_gen1:
-            snap = (self.coordinator.data or {}).get("gen1_snapshot")
-            return parse_gen1_station_status(snap, self._station_id)
+            return self.coordinator.gen1_station_status(self._station_id)
         last = (self.coordinator.data or {}).get("last_message")
         return parse_station_status(
             last,
@@ -89,7 +84,7 @@ class BhyveBleStationStatusSensor(BhyveBleEntity, SensorEntity):
 
 
 class BhyveBleNumStationsSensor(BhyveBleEntity, SensorEntity):
-    """Reports ``deviceInfo.numStations`` (number of valve ports)."""
+    """Reports deviceInfo.numStations (number of valve ports)."""
 
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -105,7 +100,7 @@ class BhyveBleNumStationsSensor(BhyveBleEntity, SensorEntity):
 
 
 class BhyveBleBatterySensor(BhyveBleEntity, SensorEntity):
-    """``batteryLevelPercent`` when sent; otherwise estimated from ``batteryLevelMV``."""
+    """batteryLevelPercent when sent; otherwise estimated from batteryLevelMV."""
 
     _attr_has_entity_name = True
     _attr_device_class = SensorDeviceClass.BATTERY
@@ -118,12 +113,10 @@ class BhyveBleBatterySensor(BhyveBleEntity, SensorEntity):
 
     def _battery_fields(self) -> tuple[int | None, int | None, str | None]:
         if self.coordinator.is_gen1:
-            snap = (self.coordinator.data or {}).get("gen1_snapshot")
-            pct, mv = parse_gen1_battery_percent_mv(snap)
+            pct, mv = self.coordinator.gen1_battery_percent_mv()
             display_pct, source = resolve_battery_percent_display(pct, mv)
             return display_pct, mv, source
-        last = (self.coordinator.data or {}).get("last_message")
-        pct, mv = parse_battery_percent_mv_from_decoded(last)
+        pct, mv = parse_battery_percent_mv_from_decoded(self.coordinator.last_message)
         display_pct, source = resolve_battery_percent_display(pct, mv)
         return display_pct, mv, source
 
@@ -148,7 +141,7 @@ class BhyveBleBatterySensor(BhyveBleEntity, SensorEntity):
 
 
 class BhyveBleBatteryMvSensor(BhyveBleEntity, SensorEntity):
-    """Millivolts from ``deviceStatusInfo`` payload."""
+    """Millivolts from deviceStatusInfo payload."""
 
     _attr_has_entity_name = True
     _attr_entity_category = EntityCategory.DIAGNOSTIC
@@ -162,9 +155,7 @@ class BhyveBleBatteryMvSensor(BhyveBleEntity, SensorEntity):
     @property
     def native_value(self) -> int | None:
         if self.coordinator.is_gen1:
-            snap = (self.coordinator.data or {}).get("gen1_snapshot")
-            _pct, mv = parse_gen1_battery_percent_mv(snap)
+            _pct, mv = self.coordinator.gen1_battery_percent_mv()
             return mv
-        last = (self.coordinator.data or {}).get("last_message")
-        _pct, mv = parse_battery_percent_mv_from_decoded(last)
+        _pct, mv = parse_battery_percent_mv_from_decoded(self.coordinator.last_message)
         return mv

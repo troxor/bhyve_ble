@@ -173,7 +173,7 @@ def _apply_learned_gen1_device_id(
                     "The timer never acknowledged our writes. Check that it is:\n"
                     "  - in pairing mode (blinking blue),\n"
                     "  - within ~1 m of the Bluetooth adapter,\n"
-                    "  - not already connected to any other app or hub,\n"
+                    "  - not already connected to any other app or integration,\n"
                     "then reset the timer and retry."
                 )
         return profile
@@ -563,17 +563,10 @@ async def ble_session(args: argparse.Namespace) -> None:
                 await run_gen2_status_queries(send_plaintext)
 
         if post_action.listen_seconds > 0:
-            if post_action.mode == "start":
-                start_sec = int(args.seconds)
-                print(f"Listening {post_action.listen_seconds:g}s (watering, {start_sec}s) ...")
-            elif post_action.mode in ("stop", "status"):
-                print(f"Listening {post_action.listen_seconds:g}s (status) ...")
-            else:
-                print(f"Listening {post_action.listen_seconds:g}s ...")
             await asyncio.sleep(post_action.listen_seconds)
         if post_action.print_status:
             summary_station: int | None = None
-            if profile.generation == "gen2" and args.command in ("start", "stop", "status"):
+            if args.command in ("start", "stop", "status"):
                 summary_station = int(args.port) - 1
             print_device_status_summary(
                 generation=profile.generation,

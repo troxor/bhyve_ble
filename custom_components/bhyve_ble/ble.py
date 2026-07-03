@@ -15,8 +15,9 @@ from bleak_retry_connector import (
 from homeassistant.components.bluetooth import async_ble_device_from_address
 
 from .aes_handshake import async_complete_aes_char_handshake
-from .const import AES_CHAR_UUID, NETWORK_CHAR_UUID
-from .provisioning import (
+from .pybhyve.constants import AES_CHAR_UUID, NETWORK_CHAR_UUID
+from .logging import log_ble_att_network_char
+from .pybhyve.link_crypto import (
     AesHandshakeDerived,
     build_network_char_payload,
 )
@@ -33,10 +34,10 @@ class BhyveBleProvisionError(Exception):
 
 @dataclass(frozen=True, slots=True)
 class BleProvisionOptions:
-    """Optional parameters for :func:`async_provision_with_network_key`."""
+    """Optional parameters for async_provision_with_network_key."""
 
     tx_delay_ms: int = 0
-    mesh_device_id: int | None = None
+    device_id: int | None = None
     timeout: float = 30.0
 
 
@@ -79,8 +80,8 @@ async def async_provision_with_network_key(
         raise BhyveBleProvisionError(msg) from e
 
     try:
-        # 1) network_char: LE16(1) || 16-byte key
-        net_payload = build_network_char_payload(network_key_16, opts.mesh_device_id)
+        net_payload = build_network_char_payload(network_key_16, opts.device_id)
+        log_ble_att_network_char(address, net_payload)
         await client.write_gatt_char(NETWORK_CHAR_UUID, net_payload, response=True)
 
         try:
@@ -88,6 +89,7 @@ async def async_provision_with_network_key(
                 client,
                 AES_CHAR_UUID,
                 tx_delay_ms=opts.tx_delay_ms,
+                trace_address=address,
             )
         except ValueError as e:
             msg = str(e)

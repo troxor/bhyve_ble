@@ -7,7 +7,7 @@ from homeassistant.const import UnitOfTime
 
 from .const import DOMAIN
 from .entity import BhyveBleEntity
-from .orbit_codec import MANUAL_WATER_RUN_SEC_MAX, MANUAL_WATER_RUN_SEC_MIN
+from .pybhyve.constants import MANUAL_WATER_RUN_SEC_MAX, MANUAL_WATER_RUN_SEC_MIN
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry

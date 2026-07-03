@@ -16,8 +16,9 @@ from bleak_retry_connector import (
 from homeassistant.components.bluetooth import async_ble_device_from_address
 
 from .aes_handshake import async_complete_aes_char_handshake
-from .const import AES_CHAR_UUID, READ_CHAR_UUID, WRITE_CHAR_UUID
-from .link_crypto import SessionKeys, build_data_frame, parse_data_frame
+from .pybhyve.constants import AES_CHAR_UUID, NOTIFY_CHAR_UUID, WRITE_CHAR_UUID
+from .logging import log_ble_att_notify, log_ble_att_write_f
+from .pybhyve.link_crypto import SessionKeys, build_data_frame, parse_inbound_data_frame
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -27,17 +28,17 @@ _LOGGER = logging.getLogger(__name__)
 NotifyCallback = Callable[[int, bytes], Awaitable[None]]
 
 
-def _gatt_write_without_response_required(exc: BaseException) -> bool:
-    text = str(exc).casefold()
-    return "request not supported" in text or "error=6" in text
-
-
 class BhyveBleTransportError(Exception):
     pass
 
 
 class BhyveBleTransport:
-    def __init__(self, hass: HomeAssistant, address: str, network_key16: bytes) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        address: str,
+        network_key16: bytes,
+    ) -> None:
         self.hass = hass
         self.address = address
         self.network_key16 = network_key16
@@ -106,13 +107,13 @@ class BhyveBleTransport:
             dec_ctr=derived.dec_ctr,
         )
 
-        await client.start_notify(READ_CHAR_UUID, self._on_notify)
+        await client.start_notify(NOTIFY_CHAR_UUID, self._on_notify)
 
     async def async_disconnect(self) -> None:
         if not self._client:
             return
         try:
-            await self._client.stop_notify(READ_CHAR_UUID)
+            await self._client.stop_notify(NOTIFY_CHAR_UUID)
         except Exception:  # noqa: BLE001
             pass
         try:
@@ -140,6 +141,7 @@ class BhyveBleTransport:
                 enc_ctr=new_ctr,
                 dec_ctr=self._keys.dec_ctr,
             )
+            log_ble_att_write_f(self.address, frame, plaintext=plaintext)
             await self._write_gatt_frame(frame)
 
     async def _write_gatt_frame(self, frame: bytes) -> None:
@@ -149,29 +151,28 @@ class BhyveBleTransport:
         try:
             await self._client.write_gatt_char(WRITE_CHAR_UUID, frame, response=True)
         except BleakError as e:
-            if not _gatt_write_without_response_required(e):
-                raise BhyveBleTransportError(str(e)) from e
-            _LOGGER.debug(
-                "[%s] GATT write-with-response unsupported; using write-without-response",
-                self.address,
-            )
-            try:
-                await self._client.write_gatt_char(WRITE_CHAR_UUID, frame, response=False)
-            except BleakError as e2:
-                raise BhyveBleTransportError(str(e2)) from e2
+            raise BhyveBleTransportError(str(e)) from e
 
     def _on_notify(self, _handle: int, data: bytearray) -> None:
         if not self._keys:
             return
         frame = bytes(data)
+        if len(frame) < 4:
+            return
         try:
-            msg_type, plaintext, new_ctr = parse_data_frame(
+            msg_type, plaintext, new_ctr, _skipped = parse_inbound_data_frame(
                 frame,
                 key16=self._keys.network_key16,
                 iv12=self._keys.iv12,
                 dec_ctr=self._keys.dec_ctr,
+                accept_plaintext=None,
             )
         except Exception as e:  # noqa: BLE001
+            log_ble_att_notify(
+                self.address,
+                frame,
+                detail=f"parse failed: {e}",
+            )
             _LOGGER.debug(
                 "[%s] notify parse failed (%d bytes): %s frame_hex=%s",
                 self.address,
@@ -187,6 +188,8 @@ class BhyveBleTransport:
             enc_ctr=self._keys.enc_ctr,
             dec_ctr=new_ctr,
         )
+
+        log_ble_att_notify(self.address, frame, plaintext=plaintext)
 
         if self._notify_cb:
             task = asyncio.create_task(self._notify_cb(msg_type, plaintext))

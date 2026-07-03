@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Final
 
 from .const import CONF_DEVICE_GENERATION, GENERATION_GEN1, GENERATION_GEN2
+from .pybhyve.constants import GEN1_TX_DELAY_MS, GEN2_TX_DELAY_MS
+from .pybhyve.constants import GEN1_HANDLES, GEN2_HANDLES
 
 GENERATION_CHOICES: Final[tuple[tuple[str, str], ...]] = (
     (GENERATION_GEN2, "Gen 2 (newer, e.g. HT25G2)"),
@@ -25,13 +27,13 @@ class DeviceBleProfile:
 _PROFILES: Final[dict[str, DeviceBleProfile]] = {
     GENERATION_GEN1: DeviceBleProfile(
         generation=GENERATION_GEN1,
-        tx_delay_ms=100,
-        link_msg_type=0x10,
+        tx_delay_ms=GEN1_TX_DELAY_MS,
+        link_msg_type=GEN1_HANDLES.link_msg_type,
     ),
     GENERATION_GEN2: DeviceBleProfile(
         generation=GENERATION_GEN2,
-        tx_delay_ms=0,
-        link_msg_type=0x11,
+        tx_delay_ms=GEN2_TX_DELAY_MS,
+        link_msg_type=GEN2_HANDLES.link_msg_type,
     ),
 }
 
@@ -44,7 +46,7 @@ def device_ble_profile(generation: str | None) -> DeviceBleProfile:
 
 
 def device_ble_profile_from_meta(meta: dict | None) -> DeviceBleProfile:
-    """Load profile from per-address metadata under ``CONF_DEVICES``."""
+    """Load profile from per-address metadata under CONF_DEVICES."""
     if not meta:
         return _PROFILES[GENERATION_GEN2]
     return device_ble_profile(meta.get(CONF_DEVICE_GENERATION))

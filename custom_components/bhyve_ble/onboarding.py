@@ -1,7 +1,7 @@
 """
 Post-provision verification for timers.
 
-Enable verbose onboarding logs in Home Assistant ``configuration.yaml``::
+Enable verbose onboarding logs in Home Assistant configuration.yaml:
 
     logger:
       logs:
@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from bleak_retry_connector import close_stale_connections_by_address
@@ -20,15 +21,23 @@ from bleak_retry_connector import close_stale_connections_by_address
 from .ble import BleProvisionOptions, async_provision_with_network_key
 from .const import GENERATION_GEN1
 from .device_profile import DeviceBleProfile, device_ble_profile
-from .gen1_codec import gen1_status_snapshot_verified
-from .gen1_runtime import Gen1BleSessionParams, async_gen1_onboard_session, async_read_gen1_status
+from .gen1_runtime import (
+    Gen1BleSessionParams,
+    Gen1RuntimeError,
+    async_gen1_onboard_session,
+    async_read_gen1_status,
+)
 from .logging import log_ble_rx, log_ble_rx_decode_failed, log_ble_tx
-from .orbit_codec import (
-    decode_orbit_ble_plaintext,
-    encode_get_device_info_plaintext,
-    encode_get_device_status_info_plaintext,
+from .pybhyve import gen1_ops
+from .pybhyve.gen2_ops import run_gen2_onboard_queries
+from .pybhyve.gen2_codec import (
+    decode_gen2_ble_plaintext,
 )
 from .transport import BhyveBleTransport, BhyveBleTransportError
+from .pybhyve.gen1_codec import gen1_status_snapshot_verified
+
+gen1_device_id = gen1_ops.gen1_device_id
+gen1_network_key = gen1_ops.gen1_network_key
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -36,127 +45,135 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+
 class BhyveOnboardingError(Exception):
     """Raised when we cannot confirm the device after GATT provisioning."""
+
+
+@dataclass(frozen=True, slots=True)
+class Gen1OnboardResult:
+    snapshot: dict[str, Any]
+    assigned_device_id: int
+
+
+def _gen1_profile(ble_profile: DeviceBleProfile | None) -> DeviceBleProfile:
+    profile = ble_profile or device_ble_profile(GENERATION_GEN1)
+    if profile.generation != GENERATION_GEN1:
+        msg = "async gen1 onboarding requires a gen1 BLE profile"
+        raise BhyveOnboardingError(msg)
+    return profile
 
 
 async def async_verify_gen1_device_communication(
     hass: HomeAssistant,
     address: str,
     network_key_16: bytes,
-    mesh_device_id: int,
+    device_id: int,
     *,
     ble_profile: DeviceBleProfile | None = None,
 ) -> dict[str, Any]:
     """
-    Verify existing gen1 credentials with a status-only session (no provision).
+    Confirm an already-provisioned gen1 timer responds with its stored credentials.
 
-    Skips ``network_char`` provisioning and onboard scripts.
+    Runs a read-only status session (no network_char write, no onboard). Raises
+    BhyveOnboardingError if the timer produces no decodable gen1 traffic.
     """
-    profile = ble_profile or device_ble_profile(GENERATION_GEN1)
-    mid = int(mesh_device_id)
-    _LOGGER.debug(
-        "[%s] gen1 verify start mesh_id=%s tx_delay_ms=%s link_type=0x%02x",
-        address,
-        mid,
-        profile.tx_delay_ms,
-        profile.link_msg_type,
-    )
-
+    profile = _gen1_profile(ble_profile)
     params = Gen1BleSessionParams(
         address=address,
         network_key_16=network_key_16,
-        mesh_device_id=mid,
+        device_id=int(device_id),
         ble_profile=profile,
     )
+    _LOGGER.debug("[%s] gen1 verify: status session device_id=%s", address, device_id)
     try:
-        snapshot = await async_read_gen1_status(hass, params)
-    except Exception as e:
+        result = await async_read_gen1_status(hass, params)
+    except Gen1RuntimeError as e:
         raise BhyveOnboardingError(str(e)) from e
-
-    if not gen1_status_snapshot_verified(snapshot):
-        _LOGGER.warning(
-            "[%s] gen1 verify failed mesh_id=%s snapshot_keys=%s",
-            address,
-            mid,
-            sorted(snapshot),
+    if not gen1_status_snapshot_verified(result.snapshot):
+        msg = (
+            "No usable gen1 status received from the timer. Check the device key and "
+            "device ID, or re-pair the timer."
         )
-        msg = "Timed out waiting for gen1 status from the timer (check mesh ID and network key)."
         raise BhyveOnboardingError(msg)
-
-    _LOGGER.debug("[%s] gen1 verify ok snapshot_keys=%s", address, sorted(snapshot))
-    return snapshot
+    return result.snapshot
 
 
 async def async_onboard_gen1_device(
     hass: HomeAssistant,
     address: str,
     network_key_16: bytes,
-    mesh_device_id: int,
+    device_id: int | None,
     *,
     ble_profile: DeviceBleProfile | None = None,
-) -> dict[str, Any]:
+) -> Gen1OnboardResult:
     """
-    First-time gen1 bind: provision with mesh prefix, onboard script, status read.
+    First-time gen1 bind: write network_char, then run the onboard mesh-register script.
 
-    Returns a gen1 ``status_snapshot`` dict (must include ``device_info``).
+    device_id is the proposed client-generated session magic; when None one is
+    generated. The device confirms its assigned BLE Device ID in the
+    0xc4 NOTIFY, returned as Gen1OnboardResult.assigned_device_id.
     """
-    profile = ble_profile or device_ble_profile(GENERATION_GEN1)
-    mid = int(mesh_device_id)
+    profile = _gen1_profile(ble_profile)
+    proposed = gen1_device_id(device_id)
+
     _LOGGER.debug(
-        "[%s] gen1 onboard start mesh_id=%s tx_delay_ms=%s link_type=0x%02x",
+        "[%s] gen1 onboard: provision network_char then register device_id=%s",
         address,
-        mid,
-        profile.tx_delay_ms,
-        profile.link_msg_type,
+        proposed,
     )
-
-    await async_provision_with_network_key(
-        hass,
-        address,
-        network_key_16,
-        BleProvisionOptions(tx_delay_ms=profile.tx_delay_ms, mesh_device_id=mid),
-    )
+    try:
+        await async_provision_with_network_key(
+            hass,
+            address,
+            network_key_16,
+            BleProvisionOptions(tx_delay_ms=profile.tx_delay_ms, device_id=proposed),
+        )
+    except Exception as e:  # noqa: BLE001
+        raise BhyveOnboardingError(str(e)) from e
 
     params = Gen1BleSessionParams(
         address=address,
         network_key_16=network_key_16,
-        mesh_device_id=mid,
+        device_id=proposed,
         ble_profile=profile,
     )
     try:
-        snapshot = await async_gen1_onboard_session(hass, params)
-    except Exception as e:
+        result = await async_gen1_onboard_session(hass, params)
+    except Gen1RuntimeError as e:
         raise BhyveOnboardingError(str(e)) from e
 
-    if "device_info" not in snapshot:
-        msg = "Timed out waiting for gen1 device_info from the timer."
+    assigned = result.assigned_device_id
+    if assigned is None and not gen1_status_snapshot_verified(result.snapshot):
+        msg = (
+            "Onboard finished but the timer did not confirm a device ID or send "
+            "status. Keep the timer in pairing mode and close to the adapter, then retry."
+        )
         raise BhyveOnboardingError(msg)
+    return Gen1OnboardResult(
+        snapshot=result.snapshot,
+        assigned_device_id=int(assigned if assigned is not None else proposed),
+    )
 
-    _LOGGER.debug("[%s] gen1 onboard ok snapshot_keys=%s", address, sorted(snapshot))
-    return snapshot
 
-
-def _orbit_onboard_notify_is_complete(decoded: dict) -> bool:
+def _gen2_onboard_notify_is_complete(decoded: dict) -> bool:
     msg = decoded.get("message") or {}
     return bool(msg.get("deviceInfo") or msg.get("deviceStatusInfo"))
 
 
-async def _async_send_orbit_onboard_queries(
+async def _async_send_gen2_onboard_queries(
     transport: BhyveBleTransport,
     address: str,
     link_msg_type: int,
 ) -> None:
-    info_plain = encode_get_device_info_plaintext()
-    log_ble_tx(address, link_msg_type, info_plain)
-    await transport.async_send_plaintext(link_msg_type, info_plain)
+    async def send(pt: bytes, *, label: str) -> None:
+        log_ble_tx(address, link_msg_type, pt)
+        await transport.async_send_plaintext(link_msg_type, pt)
 
-    status_plain = encode_get_device_status_info_plaintext()
-    log_ble_tx(address, link_msg_type, status_plain)
-    await transport.async_send_plaintext(link_msg_type, status_plain)
+    await run_gen2_onboard_queries(send)
 
 
-async def _async_orbit_verify_session(
+async def _async_gen2_verify_session(
     hass: HomeAssistant,
     address: str,
     network_key_16: bytes,
@@ -172,14 +189,14 @@ async def _async_orbit_verify_session(
         nonlocal last_msg, notify_count
         notify_count += 1
         try:
-            decoded = decode_orbit_ble_plaintext(plaintext)
+            decoded = decode_gen2_ble_plaintext(plaintext)
         except Exception as e:  # noqa: BLE001
             log_ble_rx_decode_failed(address, msg_type, plaintext, e)
             return
 
         log_ble_rx(address, msg_type, plaintext, decoded)
         oneof = (decoded.get("_framing") or {}).get("oneof") or "?"
-        if _orbit_onboard_notify_is_complete(decoded):
+        if _gen2_onboard_notify_is_complete(decoded):
             _LOGGER.debug(
                 "[%s] onboarding verify matched oneof=%s message_keys=%s (notify #%d)",
                 address,
@@ -203,7 +220,7 @@ async def _async_orbit_verify_session(
         _LOGGER.debug(
             "[%s] onboarding connected, sending getDeviceInfo + getDeviceStatusInfo", address
         )
-        await _async_send_orbit_onboard_queries(transport, address, profile.link_msg_type)
+        await _async_send_gen2_onboard_queries(transport, address, profile.link_msg_type)
         try:
             await asyncio.wait_for(done.wait(), timeout=timeout)
         except TimeoutError as e:
@@ -222,7 +239,7 @@ async def _async_orbit_verify_session(
         _LOGGER.debug("[%s] onboarding disconnected", address)
 
     if last_msg is None:
-        msg = "No usable Orbit message received from device."
+        msg = "No usable Gen 2 message received from device."
         raise BhyveOnboardingError(msg)
 
     framing = last_msg.get("_framing") or {}
@@ -243,18 +260,7 @@ async def async_verify_device_communication(
     timeout: float = 20.0,
     ble_profile: DeviceBleProfile | None = None,
 ) -> dict:
-    """
-    Connect (fresh AES session), request status/info, wait for a decoded Orbit message.
-
-    Gen1 timers must use :func:`async_onboard_gen1_device` or
-    :func:`async_verify_gen1_device_communication` instead.
-
-    Returns a ``decode_orbit_ble_plaintext``-style dict (includes ``message`` / ``_framing``).
-    """
     profile = ble_profile or device_ble_profile(None)
-    if profile.generation == GENERATION_GEN1:
-        msg = "gen1 timers use async_onboard_gen1_device, not Orbit verify"
-        raise ValueError(msg)
 
     _LOGGER.debug(
         "[%s] onboarding verify start timeout=%.1fs tx_delay_ms=%s link_msg_type=0x%02x",
@@ -263,4 +269,4 @@ async def async_verify_device_communication(
         profile.tx_delay_ms,
         profile.link_msg_type,
     )
-    return await _async_orbit_verify_session(hass, address, network_key_16, profile, timeout)
+    return await _async_gen2_verify_session(hass, address, network_key_16, profile, timeout)
