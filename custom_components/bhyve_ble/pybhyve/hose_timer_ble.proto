@@ -1,4 +1,4 @@
-// Gen 2 hose-timer BLE protobuf (capture-derived subset).
+// Gen 2 hose-timer BLE protobuf
 //
 // Regenerate (pin gencode to protobuf 6.32.x for Home Assistant):
 //   cd custom_components/bhyve_ble/pybhyve
