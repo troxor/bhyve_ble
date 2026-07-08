@@ -80,21 +80,22 @@ async def async_provision_with_network_key(
         raise BhyveBleProvisionError(msg) from e
 
     try:
-        net_payload = build_network_char_payload(network_key_16, opts.device_id)
-        log_ble_att_network_char(address, net_payload)
-        await client.write_gatt_char(NETWORK_CHAR_UUID, net_payload, response=True)
+        async with async_timeout.timeout(opts.timeout):
+            net_payload = build_network_char_payload(network_key_16, opts.device_id)
+            log_ble_att_network_char(address, net_payload)
+            await client.write_gatt_char(NETWORK_CHAR_UUID, net_payload, response=True)
 
-        try:
-            return await async_complete_aes_char_handshake(
-                client,
-                AES_CHAR_UUID,
-                tx_delay_ms=opts.tx_delay_ms,
-                trace_address=address,
-            )
-        except ValueError as e:
-            msg = str(e)
-            raise BhyveBleProvisionError(msg) from e
-    except (BleakError, OSError) as e:
+            try:
+                return await async_complete_aes_char_handshake(
+                    client,
+                    AES_CHAR_UUID,
+                    tx_delay_ms=opts.tx_delay_ms,
+                    trace_address=address,
+                )
+            except ValueError as e:
+                msg = str(e)
+                raise BhyveBleProvisionError(msg) from e
+    except (TimeoutError, BleakError, OSError) as e:
         raise BhyveBleProvisionError(str(e)) from e
     finally:
         try:
