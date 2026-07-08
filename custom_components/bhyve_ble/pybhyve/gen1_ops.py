@@ -145,10 +145,6 @@ async def run_gen1_manual_start(
     if not (
         "watering_status" in gen1.status_snapshot or "watering_idle" in gen1.status_snapshot
     ):
-        await gen1.send_and_wait(f"gen1 manual start confirm cmd=0x{cmd:02x}", pt)
-    if not (
-        "watering_status" in gen1.status_snapshot or "watering_idle" in gen1.status_snapshot
-    ):
         await run_gen1_passive_poll(gen1, device_id)
     return gen1.status_snapshot
 
@@ -193,7 +189,10 @@ async def run_gen1_onboard(
     tail: bytes = GEN1_DEFAULT_TIMESTAMP_TAIL,
 ) -> tuple[int | None, dict]:
     proposed, assigned = await run_gen1_pairing(gen1, device_id, tail=tail)
-    await run_gen1_status_session(gen1, proposed, tail=tail, passive_poll=False)
+    status_device_id = assigned if assigned is not None else proposed
+    await run_gen1_status_session(
+        gen1, status_device_id, tail=tail, passive_poll=False
+    )
     return assigned if assigned is not None else gen1.assigned_device_id, gen1.status_snapshot
 
 
