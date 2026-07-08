@@ -26,7 +26,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     hub: BhyveBleHub = hass.data[DOMAIN][entry.entry_id]
     entities: list[SensorEntity] = []
     for coordinator in hub.coordinators.values():
-        await coordinator.async_config_entry_first_refresh()
         n = coordinator.num_stations
         for sid in range(n):
             entities.append(BhyveBleStationStatusSensor(coordinator, sid))
