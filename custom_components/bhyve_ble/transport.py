@@ -10,13 +10,15 @@ from bleak.exc import BleakError
 from bleak_retry_connector import (
     BleakClientWithServiceCache,
     BleakNotFoundError,
+    close_stale_connections_by_address,
     establish_connection,
 )
 from homeassistant.components.bluetooth import async_ble_device_from_address
 
-from .const import AES_CHAR_UUID, READ_CHAR_UUID, WRITE_CHAR_UUID
-from .link_crypto import SessionKeys, build_data_frame, parse_data_frame
-from .provisioning import build_aes_char_write_payload, derive_from_aes_char_exchange
+from .aes_handshake import async_complete_aes_char_handshake
+from .logging import log_ble_att_notify, log_ble_att_write_f
+from .pybhyve.constants import AES_CHAR_UUID, NOTIFY_CHAR_UUID, WRITE_CHAR_UUID
+from .pybhyve.link_crypto import SessionKeys, build_data_frame, parse_inbound_data_frame
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -31,7 +33,12 @@ class BhyveBleTransportError(Exception):
 
 
 class BhyveBleTransport:
-    def __init__(self, hass: HomeAssistant, address: str, network_key16: bytes) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        address: str,
+        network_key16: bytes,
+    ) -> None:
         self.hass = hass
         self.address = address
         self.network_key16 = network_key16
@@ -69,6 +76,7 @@ class BhyveBleTransport:
             return d
 
         try:
+            await close_stale_connections_by_address(addr)
             async with async_timeout.timeout(timeout):
                 client = await establish_connection(
                     BleakClientWithServiceCache,
@@ -83,11 +91,15 @@ class BhyveBleTransport:
 
         self._client = client
 
-        # Session AES init: re-derive iv/counters on each connect.
-        write20 = build_aes_char_write_payload(tx_delay_ms)
-        await client.write_gatt_char(AES_CHAR_UUID, write20, response=True)
-        read20 = await client.read_gatt_char(AES_CHAR_UUID)
-        derived = derive_from_aes_char_exchange(write20, read20)
+        try:
+            derived = await async_complete_aes_char_handshake(
+                client,
+                AES_CHAR_UUID,
+                tx_delay_ms=tx_delay_ms,
+            )
+        except ValueError as e:
+            msg = str(e)
+            raise BhyveBleTransportError(msg) from e
         self._keys = SessionKeys(
             network_key16=self.network_key16,
             iv12=derived.iv12,
@@ -95,18 +107,18 @@ class BhyveBleTransport:
             dec_ctr=derived.dec_ctr,
         )
 
-        await client.start_notify(READ_CHAR_UUID, self._on_notify)
+        await client.start_notify(NOTIFY_CHAR_UUID, self._on_notify)
 
     async def async_disconnect(self) -> None:
         if not self._client:
             return
         try:
-            await self._client.stop_notify(READ_CHAR_UUID)
-        except Exception:  # noqa: BLE001
+            await self._client.stop_notify(NOTIFY_CHAR_UUID)
+        except Exception:
             pass
         try:
             await self._client.disconnect()
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
         self._client = None
         self._keys = None
@@ -129,21 +141,45 @@ class BhyveBleTransport:
                 enc_ctr=new_ctr,
                 dec_ctr=self._keys.dec_ctr,
             )
-            await self._client.write_gatt_char(WRITE_CHAR_UUID, frame, response=False)
+            log_ble_att_write_f(self.address, frame, plaintext=plaintext)
+            await self._write_gatt_frame(frame)
+
+    async def _write_gatt_frame(self, frame: bytes) -> None:
+        if not self._client:
+            msg = "not connected"
+            raise BhyveBleTransportError(msg)
+        try:
+            await self._client.write_gatt_char(WRITE_CHAR_UUID, frame, response=True)
+        except BleakError as e:
+            raise BhyveBleTransportError(str(e)) from e
 
     def _on_notify(self, _handle: int, data: bytearray) -> None:
         if not self._keys:
             return
         frame = bytes(data)
+        if len(frame) < 4:
+            return
         try:
-            msg_type, plaintext, new_ctr = parse_data_frame(
+            msg_type, plaintext, new_ctr, _skipped = parse_inbound_data_frame(
                 frame,
                 key16=self._keys.network_key16,
                 iv12=self._keys.iv12,
                 dec_ctr=self._keys.dec_ctr,
+                accept_plaintext=None,
             )
-        except Exception as e:  # noqa: BLE001
-            _LOGGER.debug("notify parse failed (%d bytes): %s", len(frame), e)
+        except Exception as e:
+            log_ble_att_notify(
+                self.address,
+                frame,
+                detail=f"parse failed: {e}",
+            )
+            _LOGGER.debug(
+                "[%s] notify parse failed (%d bytes): %s frame_hex=%s",
+                self.address,
+                len(frame),
+                e,
+                frame.hex(),
+            )
             return
 
         self._keys = SessionKeys(
@@ -152,6 +188,8 @@ class BhyveBleTransport:
             enc_ctr=self._keys.enc_ctr,
             dec_ctr=new_ctr,
         )
+
+        log_ble_att_notify(self.address, frame, plaintext=plaintext)
 
         if self._notify_cb:
             task = asyncio.create_task(self._notify_cb(msg_type, plaintext))

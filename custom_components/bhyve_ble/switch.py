@@ -6,7 +6,7 @@ from homeassistant.components.switch import SwitchEntity
 
 from .const import DOMAIN
 from .entity import BhyveBleEntity
-from .orbit_codec import encode_timer_mode_plaintext, station_is_actively_watering
+from .pybhyve.gen2_codec import station_is_actively_watering
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -28,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 
 class BhyveBleStationManualWateringSwitch(BhyveBleEntity, SwitchEntity):
-    """Manual watering for one station (port); ``turn_off`` stops all stations (off mode)."""
+    """Start manual watering on one port for the configured run time; turn_off stops all ports."""
 
     _attr_has_entity_name = True
     _attr_icon = "mdi:sprinkler"
@@ -45,24 +45,26 @@ class BhyveBleStationManualWateringSwitch(BhyveBleEntity, SwitchEntity):
         self._attr_name = f"Port {station_id + 1}"
 
     @property
-    def is_on(self) -> bool | None:
+    def is_on(self) -> bool:
+        if self.coordinator.is_gen1:
+            return self.coordinator.gen1_station_status(self._station_id).get("state") == "watering"
         lm = (self.coordinator.data or {}).get("last_message")
-        return station_is_actively_watering(
+        active = station_is_actively_watering(
             lm,
             self._station_id,
             num_stations=self.coordinator.num_stations,
         )
+        return bool(active)
 
     async def async_turn_on(self, **kwargs) -> None:
-        pt = encode_timer_mode_plaintext(
-            "manualMode",
-            run_time_sec=600,
-            station_id=self._station_id,
-        )
-        await self.coordinator.async_send_orbit_plaintext(pt)
-        await self.coordinator.async_request_refresh()
+        run_sec = self.coordinator.station_manual_run_seconds(self._station_id)
+        if self.coordinator.is_gen1:
+            await self.coordinator.async_gen1_start_watering(run_sec)
+            return
+        await self.coordinator.async_gen2_start_watering(run_sec, station_id=self._station_id)
 
     async def async_turn_off(self, **kwargs) -> None:
-        pt = encode_timer_mode_plaintext("offMode")
-        await self.coordinator.async_send_orbit_plaintext(pt)
-        await self.coordinator.async_request_refresh()
+        if self.coordinator.is_gen1:
+            await self.coordinator.async_gen1_stop_watering()
+            return
+        await self.coordinator.async_gen2_stop_watering()

@@ -10,17 +10,44 @@
   "config": {
     "step": {
       "user": {
-        "title": "Network key",
-        "description": "Set the shared BLE network key used for all timers. Leave empty to generate a random key, or paste an existing key consisting of 32 hex characters."
+        "title": "Add timer",
+        "description": "Choose the Bluetooth address that matches the MAC# on the barcode sticker of your device.",
+        "data": {
+          "address": "BLE address"
+        }
+      },
+      "device_generation": {
+        "title": "Timer generation",
+        "description": "Select the generation of the physical timer you are adding. 1st Gen devices are light grey in color, and 2nd Gen devices are darker grey with 'GEN 2' printed above the button.",
+        "data": {
+          "generation": "Generation"
+        }
+      },
+      "network_key": {
+        "title": "Gen 2 credentials",
+        "description": "If the timer already has the integration's network key, uncheck pairing and enter the key below. To pair a fresh timer, leave pairing enabled and leave the key empty to generate one.",
+        "data": {
+          "gen2_run_pairing": "Pair timer (press button 5x until LED blinks red)",
+          "network_key_input": "Network key (optional)"
+        }
+      },
+      "gen1_mesh": {
+        "title": "Gen 1 credentials",
+        "description": "If the timer already has credentials, uncheck pairing below and enter them. To pair a fresh or factory-reset timer, leave pairing enabled and leave the fields empty to generate new credentials.",
+        "data": {
+          "gen1_run_pairing": "Pair timer (press button 5x until LED blinks red)",
+          "device_id": "Device ID (optional)",
+          "network_key_input": "Network key (optional)"
+        }
       }
     },
     "error": {
-      "invalid_key": "Invalid key. Use 32 hex characters.",
+      "invalid_key": "Invalid key. Enter a valid 32 character hex string and try again.",
+      "invalid_device_id": "Enter the device ID as a decimal number (0–65535).",
+      "credentials_required": "Enter both device ID and network key when pairing is disabled.",
       "cannot_connect": "Could not connect or provision the timer. Put it in pairing mode and try again.",
-      "verify_failed": "Handshake worked but the timer did not return device information. Try again."
-    },
-    "abort": {
-      "device_added": "Hose Watering Timer added successfully."
+      "verify_failed": "Handshake worked but the timer did not return device information. Try again.",
+      "already_configured": "This address is already added."
     }
   },
   "options": {
@@ -42,14 +69,44 @@
       },
       "add_device": {
         "title": "Add timer",
-        "description": "Put the timer in pairing mode. The address field lists connectable Bluetooth devices Home Assistant sees. The integration provisions with your saved network key and confirms pairing."
+        "description": "Choose the Bluetooth address that matches the MAC# on the barcode sticker of your device.",
+        "data": {
+          "address": "BLE address"
+        }
+      },
+      "device_generation": {
+        "title": "Timer generation",
+        "description": "Select the generation of the physical timer you are adding. 1st Gen devices are light grey in color, and 2nd Gen devices are darker grey with 'GEN 2' printed above the button.",
+        "data": {
+          "generation": "Generation"
+        }
+      },
+      "gen1_mesh": {
+        "title": "Gen 1 credentials",
+        "description": "If the timer already has credentials, uncheck pairing below and enter them. To pair a fresh or factory-reset timer, leave pairing enabled and leave the fields empty to generate new credentials.",
+        "data": {
+          "gen1_run_pairing": "Pair timer (press button 5x until LED blinks red)",
+          "device_id": "Device ID (optional)",
+          "network_key_input": "Network key (optional)"
+        }
+      },
+      "network_key": {
+        "title": "Gen 2 credentials",
+        "description": "If the timer already has the integration's network key, uncheck pairing and enter the key below. To pair a fresh timer, leave pairing enabled and leave the key empty to generate one.",
+        "data": {
+          "gen2_run_pairing": "Pair timer (press button 5x until LED blinks red)",
+          "network_key_input": "Network key (optional)"
+        }
       }
     },
     "error": {
       "cannot_connect": "Could not connect or provision the timer. Put it in pairing mode and try again.",
       "verify_failed": "Handshake worked but the timer did not return device information. Try again.",
       "already_configured": "This address is already added.",
-      "invalid_interval": "Enter a valid number of hours."
+      "invalid_interval": "Enter a valid number of hours.",
+      "invalid_device_id": "Enter the device ID as a decimal number (0–65535).",
+      "invalid_key": "Invalid key. Enter a valid 32 character hex string and try again.",
+      "credentials_required": "Enter both device ID and network key when pairing is disabled."
     },
     "abort": {
       "device_added": "Hose Watering Timer added successfully."

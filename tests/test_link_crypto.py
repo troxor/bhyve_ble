@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from bhyve_ble.link_crypto import build_data_frame, parse_data_frame
+from bhyve_ble.pybhyve.link_crypto import build_data_frame, parse_data_frame
 
 
 def test_link_crypto_roundtrip() -> None:

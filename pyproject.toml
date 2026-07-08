@@ -1,0 +1,2 @@
+[tool.uv.workspace]
+members = ["custom_components/bhyve_ble"]

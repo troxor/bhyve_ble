@@ -18,12 +18,12 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.device_registry import DeviceEntry
 
-PLATFORMS: list[str] = ["button", "sensor", "switch"]
+PLATFORMS: list[str] = ["button", "number", "sensor", "switch"]
 
 
-def _import_orbit_codec() -> None:
-    """Load orbit_codec in a worker thread; protobuf triggers C-extension imports."""
-    from . import orbit_codec  # noqa: F401
+def _import_gen2_codec() -> None:
+    """Load gen2_codec in a worker thread; protobuf triggers C-extension imports."""
+    from .pybhyve import gen2_codec  # noqa: F401
 
 
 def _sync_default_device_names_to_registry_impl(hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -68,7 +68,7 @@ async def _async_reload_on_entry_update(hass: HomeAssistant, entry: ConfigEntry)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     from homeassistant.core import callback
 
-    await hass.async_add_executor_job(_import_orbit_codec)
+    await hass.async_add_executor_job(_import_gen2_codec)
 
     from .hub import BhyveBleHub
 
