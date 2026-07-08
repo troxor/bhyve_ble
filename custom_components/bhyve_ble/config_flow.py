@@ -60,6 +60,14 @@ _CTX_GEN1_RUN_PAIRING = "gen1_run_pairing"
 _CTX_GEN2_RUN_PAIRING = "gen2_run_pairing"
 
 
+def _configured_device_addresses(hass: HomeAssistant) -> set[str]:
+    return {
+        normalize_ble_address(device_address)
+        for entry in hass.config_entries.async_entries(DOMAIN)
+        for device_address in (entry.data.get(CONF_DEVICES) or {})
+    }
+
+
 def _gen1_credentials_schema() -> vol.Schema:
     return vol.Schema(
         {
@@ -216,8 +224,11 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             address = normalize_ble_address(user_input[CONF_ADDRESS].strip())
-            self.context[_CTX_ADDRESS] = address
-            return await self.async_step_device_generation()
+            if address in _configured_device_addresses(self.hass):
+                errors["base"] = "already_configured"
+            else:
+                self.context[_CTX_ADDRESS] = address
+                return await self.async_step_device_generation()
 
         return self.async_show_form(
             step_id="user",
@@ -473,10 +484,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
 
         if user_input is not None:
             address = normalize_ble_address(user_input[CONF_ADDRESS].strip())
-            existing = {
-                normalize_ble_address(a) for a in (self.config_entry.data.get(CONF_DEVICES) or {})
-            }
-            if address in existing:
+            if address in _configured_device_addresses(self.hass):
                 errors["base"] = "already_configured"
             else:
                 self.context[_CTX_ADDRESS] = address
@@ -547,14 +555,6 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
                 raw_key = explicit_key or secrets.token_bytes(16)
                 self.context[_CTX_GEN2_RUN_PAIRING] = run_pairing
                 self.context[_CTX_NETWORK_KEY_RAW] = raw_key
-                if not entry_gen2_pairing_locked(entry_data):
-                    self.hass.config_entries.async_update_entry(
-                        self.config_entry,
-                        data={
-                            **self.config_entry.data,
-                            CONF_NETWORK_KEY_B64: base64.b64encode(raw_key).decode("ascii"),
-                        },
-                    )
                 try:
                     return await self._async_complete_gen2_onboard(address, generation, profile)
                 except BhyveBleProvisionError as e:
@@ -619,9 +619,12 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         )
         devices = dict(self.config_entry.data.get(CONF_DEVICES) or {})
         devices[address] = {CONF_DEVICE_GENERATION: generation}
+        data = {**self.config_entry.data, CONF_DEVICES: devices}
+        if not entry_gen2_pairing_locked(self._entry_data()):
+            data[CONF_NETWORK_KEY_B64] = base64.b64encode(key).decode("ascii")
         self.hass.config_entries.async_update_entry(
             self.config_entry,
-            data={**self.config_entry.data, CONF_DEVICES: devices},
+            data=data,
         )
         return self.async_abort(reason="device_added")
 
