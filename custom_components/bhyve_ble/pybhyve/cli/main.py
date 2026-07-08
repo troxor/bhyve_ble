@@ -59,7 +59,6 @@ from ..gen2_ops import (
 from ..gen2_codec import (
     MANUAL_WATER_RUN_SEC_MAX,
     MANUAL_WATER_RUN_SEC_MIN,
-    gen2_notify_store_port_state,
     ingest_gen2_notify,
 )
 from .display import (
