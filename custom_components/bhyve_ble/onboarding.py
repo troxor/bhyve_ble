@@ -45,7 +45,6 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-
 class BhyveOnboardingError(Exception):
     """Raised when we cannot confirm the device after GATT provisioning."""
 

@@ -85,7 +85,9 @@ def build_data_frame(
     L = len(plaintext)
     chk = checksum_16(msg_type, L, plaintext)
     if chk != (msg_type + L + sum(plaintext)):
-        raise ValueError("checksum overflow > 16 bits; shorten payload or match device wrapping rules")
+        raise ValueError(
+            "checksum overflow > 16 bits; shorten payload or match device wrapping rules"
+        )
 
     ciphertext, new_ctr = perform_crypto(k, iv12, enc_ctr, plaintext)
     frame = bytearray()
@@ -124,7 +126,9 @@ def parse_data_frame(
 
     calc = checksum_16(T, L, plaintext)
     if calc != S:
-        raise ValueError(f"checksum mismatch: wire={S} calc={calc} (raw sum={T + L + sum(plaintext)})")
+        raise ValueError(
+            f"checksum mismatch: wire={S} calc={calc} (raw sum={T + L + sum(plaintext)})"
+        )
     return T, plaintext, new_ctr
 
 

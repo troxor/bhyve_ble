@@ -44,16 +44,12 @@ def _ha_top_level_import_errors() -> list[str]:
             target = parts[0]
             if target == _PYBHYVE_PKG:
                 if len(parts) > 1 and not _pybhyve_module_exists(".".join(parts[1:])):
-                    errors.append(
-                        f"{py.name}: missing pybhyve submodule .{'.'.join(parts[1:])}"
-                    )
+                    errors.append(f"{py.name}: missing pybhyve submodule .{'.'.join(parts[1:])}")
                 for alias in node.names:
                     if alias.name == "*":
                         continue
                     if len(parts) == 1 and not _pybhyve_module_exists(alias.name):
-                        errors.append(
-                            f"{py.name}: missing pybhyve submodule .{alias.name}"
-                        )
+                        errors.append(f"{py.name}: missing pybhyve submodule .{alias.name}")
                 continue
             if target not in defined:
                 errors.append(f"{py.name}: missing module .{target}")
@@ -67,7 +63,9 @@ def _ha_top_level_import_errors() -> list[str]:
 def _pybhyve_import_errors() -> list[str]:
     pybhyve = _PKG / _PYBHYVE_PKG
     py_mods = {p.stem for p in pybhyve.glob("*.py")}
-    cli_mods = {p.stem for p in (pybhyve / "cli").glob("*.py")} if (pybhyve / "cli").is_dir() else set()
+    cli_mods = (
+        {p.stem for p in (pybhyve / "cli").glob("*.py")} if (pybhyve / "cli").is_dir() else set()
+    )
     errors: list[str] = []
     for py in sorted(pybhyve.rglob("*.py")):
         rel = py.relative_to(pybhyve)

@@ -36,8 +36,7 @@ def format_gen1_inner_status(status: dict[str, Any]) -> str:
         )
     if kind == "watering_status":
         return (
-            f"watering active: remaining={status['remaining_sec']}s"
-            f"  total={status['total_sec']}s"
+            f"watering active: remaining={status['remaining_sec']}s  total={status['total_sec']}s"
         )
     if kind == "watering_idle":
         return "watering idle (not running)"
@@ -373,9 +372,7 @@ def _gen2_append_decode_block(pt: bytes, lines: list[str]) -> None:
     proto_id = msg.get("id")
     if isinstance(proto_id, (bytes, bytearray)) and len(proto_id) == 6:
         mac_s = ":".join(f"{b:02x}" for b in bytes(proto_id))
-        lines.append(
-            f"   proto id:     {mac_s}  (BleEnvelope field 1 `id`, 6 B)"
-        )
+        lines.append(f"   proto id:     {mac_s}  (BleEnvelope field 1 `id`, 6 B)")
     ts = msg.get("timestampSecEpochUTC")
     if ts not in (None, 0, ""):
         lines.append(f"   timestampSecEpochUTC: {ts}  (protobuf field 7)")
@@ -533,7 +530,7 @@ def format_plaintext_readable(pt: bytes) -> str:
         lines.append("   ---")
         return "\n".join(lines)
     if pt[:4] != MAGIC_BYTES:
-        lines.append(f"   lead_in:      {pt[:min(8, len(pt))].hex()}...  (not aa775a0f)")
+        lines.append(f"   lead_in:      {pt[: min(8, len(pt))].hex()}...  (not aa775a0f)")
         lines.append("   ---")
         return "\n".join(lines)
     lines.append("   magic:        aa775a0f")

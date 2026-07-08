@@ -349,9 +349,7 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> FlowResult:
         raw_key: bytes = self.context.get(_CTX_NETWORK_KEY_RAW) or secrets.token_bytes(16)
         run_pairing = bool(self.context.get(_CTX_GEN2_RUN_PAIRING, True))
-        await _async_run_gen2_setup(
-            self.hass, address, raw_key, profile, run_pairing=run_pairing
-        )
+        await _async_run_gen2_setup(self.hass, address, raw_key, profile, run_pairing=run_pairing)
         await self._async_set_unique_id_from_key(raw_key)
         self._abort_if_unique_id_configured()
         return self.async_create_entry(
@@ -387,9 +385,7 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 run_pairing=run_pairing,
             ),
         )
-        saved_device_id = int(
-            assigned_device_id if assigned_device_id is not None else device_id
-        )
+        saved_device_id = int(assigned_device_id if assigned_device_id is not None else device_id)
         await self._async_set_unique_id_from_key(entry_key)
         self._abort_if_unique_id_configured()
         return self.async_create_entry(
@@ -448,7 +444,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 hours = float(user_input[CONF_POLL_INTERVAL_HOURS])
-            except (TypeError, ValueError):
+            except (TypeError, ValueError):  # fmt: skip
                 errors["base"] = "invalid_interval"
             else:
                 hours = max(MIN_POLL_INTERVAL_HOURS, min(hours, MAX_POLL_INTERVAL_HOURS))
@@ -608,9 +604,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         key = self._resolve_gen2_network_key()
         run_pairing = bool(self.context.get(_CTX_GEN2_RUN_PAIRING, True))
-        await _async_run_gen2_setup(
-            self.hass, address, key, profile, run_pairing=run_pairing
-        )
+        await _async_run_gen2_setup(self.hass, address, key, profile, run_pairing=run_pairing)
         devices = dict(self.config_entry.data.get(CONF_DEVICES) or {})
         devices[address] = {CONF_DEVICE_GENERATION: generation}
         data = {**self.config_entry.data, CONF_DEVICES: devices}
@@ -646,9 +640,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
                 run_pairing=run_pairing,
             ),
         )
-        saved_device_id = int(
-            assigned_device_id if assigned_device_id is not None else device_id
-        )
+        saved_device_id = int(assigned_device_id if assigned_device_id is not None else device_id)
 
         devices = dict(self.config_entry.data.get(CONF_DEVICES) or {})
         devices[address] = {

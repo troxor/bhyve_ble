@@ -260,14 +260,14 @@ def parse_battery_percent_mv_from_decoded(decoded: dict | None) -> tuple[int | N
         try:
             p = int(pct_raw)
             pct = max(0, min(100, p))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             pct = None
 
     mv: int | None = None
     if mv_raw is not None:
         try:
             mv = int(mv_raw)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             mv = None
 
     return pct, mv
@@ -305,7 +305,7 @@ def normalize_num_stations(raw: int | None) -> int:
         return 1
     try:
         n = int(raw)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError):  # fmt: skip
         return 1
     if n in VALID_TIMER_PORT_COUNTS:
         return n
@@ -327,7 +327,7 @@ def parse_num_stations_from_decoded(decoded: dict | None) -> int | None:
         return None
     try:
         return normalize_num_stations(int(n))
-    except (TypeError, ValueError):
+    except (TypeError, ValueError):  # fmt: skip
         return None
 
 
@@ -367,7 +367,7 @@ def parse_station_faults(decoded: dict | None, station_id: int) -> list[str]:
             continue
         try:
             sid = int(entry.get("stationId", -1))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             continue
         if sid != station_id:
             continue
@@ -388,7 +388,7 @@ def _legacy_watering_applies_to_station(
     if cur is not None:
         try:
             return int(cur) == station_id
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             return False
     return num_stations == 1 and station_id == 0
 
@@ -403,7 +403,7 @@ def _timer_mode_run_time_sec(dsi: dict[str, Any], station_id: int) -> int | None
             continue
         try:
             sid = int(st.get("stationId", -1))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             continue
         if sid != station_id:
             continue
@@ -412,7 +412,7 @@ def _timer_mode_run_time_sec(dsi: dict[str, Any], station_id: int) -> int | None
             return None
         try:
             return int(raw)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             return None
     return None
 
@@ -431,7 +431,7 @@ def _manual_mode_targets_station(dsi: dict[str, Any], station_id: int) -> bool:
         try:
             if int(st.get("stationId", -1)) == station_id:
                 return True
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             continue
     return False
 
@@ -462,7 +462,7 @@ def _session_from_device_status_watering(
         if raw is not None:
             try:
                 rem = int(raw)
-            except (TypeError, ValueError):
+            except (TypeError, ValueError):  # fmt: skip
                 rem = None
     if rem is None:
         rem = _timer_mode_run_time_sec(dsi, station_id)
@@ -488,7 +488,7 @@ def _resolve_watering_session(
             continue
         try:
             cur = int(sess.get("currentStationId", -1))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             continue
         if cur == station_id:
             return sess
@@ -502,9 +502,7 @@ def _resolve_watering_session(
                 "currentTimeRemainingSec": ws.get("currentTimeRemainingSec"),
             }
 
-    sess = _session_from_device_status_watering(
-        dsi, station_id, num_stations=num_stations
-    )
+    sess = _session_from_device_status_watering(dsi, station_id, num_stations=num_stations)
     if sess:
         return sess
 
@@ -530,9 +528,7 @@ def parse_station_status(
         out["state"] = "unknown"
         return out
 
-    sess = _resolve_watering_session(
-        decoded, station_id, num_stations=num_stations
-    )
+    sess = _resolve_watering_session(decoded, station_id, num_stations=num_stations)
 
     if sess:
         st_name = short_gen2_enum_name(sess.get("status"))
@@ -541,7 +537,7 @@ def parse_station_status(
         if rem is not None:
             try:
                 out["remaining_sec"] = int(rem)
-            except (TypeError, ValueError):
+            except (TypeError, ValueError):  # fmt: skip
                 out["remaining_sec"] = None
         if st_name in _ACTIVE_WATERING_STATUSES:
             out["state"] = "watering" if st_name == "wateringInProgress" else "delay"
@@ -565,9 +561,7 @@ def station_is_actively_watering(
     dsi = m.get("deviceStatusInfo") or {}
     has_summary = "wateringStatusSummary" in dsi
 
-    sess = _resolve_watering_session(
-        decoded, station_id, num_stations=num_stations
-    )
+    sess = _resolve_watering_session(decoded, station_id, num_stations=num_stations)
     if sess:
         st_name = short_gen2_enum_name(sess.get("status"))
         if not st_name:
@@ -576,9 +570,7 @@ def station_is_actively_watering(
 
     ds_name = short_gen2_enum_name(dsi.get("deviceStatus"))
     if ds_name == "wateringInProgress":
-        fallback = _session_from_device_status_watering(
-            dsi, station_id, num_stations=num_stations
-        )
+        fallback = _session_from_device_status_watering(dsi, station_id, num_stations=num_stations)
         if fallback:
             return True
 
@@ -614,7 +606,7 @@ def gen2_notify_store_port_state(store: dict[str, Any], station_id: int) -> str:
             continue
         try:
             cur = int(sess.get("currentStationId", -1))
-        except (TypeError, ValueError):
+        except (TypeError, ValueError):  # fmt: skip
             continue
         if cur == station_id:
             return str(sess.get("status") or "active")
@@ -626,7 +618,7 @@ def gen2_notify_store_port_state(store: dict[str, Any], station_id: int) -> str:
         if cur is not None:
             try:
                 applies = int(cur) == station_id
-            except (TypeError, ValueError):
+            except (TypeError, ValueError):  # fmt: skip
                 applies = False
         elif station_id == 0:
             applies = True
@@ -642,7 +634,7 @@ def gen2_notify_store_port_state(store: dict[str, Any], station_id: int) -> str:
                 try:
                     if int(st.get("stationId", -1)) == station_id:
                         return "wateringInProgress"
-                except (TypeError, ValueError):
+                except (TypeError, ValueError):  # fmt: skip
                     continue
         if station_id == 0:
             return "wateringInProgress"

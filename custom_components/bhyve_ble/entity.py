@@ -19,7 +19,5 @@ class BhyveBleEntity(CoordinatorEntity[BhyveBleCoordinator]):
             address=self.coordinator.address,
             name=self.coordinator.name,
             device_info=self.coordinator.gen2_device_info,
-            generation=(
-                GENERATION_GEN1 if self.coordinator.is_gen1 else GENERATION_GEN2
-            ),
+            generation=(GENERATION_GEN1 if self.coordinator.is_gen1 else GENERATION_GEN2),
         )

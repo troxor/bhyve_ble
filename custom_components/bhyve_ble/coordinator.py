@@ -132,7 +132,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
         if self._device_info and self._device_info.get("numStations") is not None:
             try:
                 return normalize_num_stations(int(self._device_info["numStations"]))
-            except (TypeError, ValueError):
+            except (TypeError, ValueError):  # fmt: skip
                 pass
         n = parse_num_stations_from_decoded(self._last_message)
         if n is not None:
@@ -207,9 +207,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
     async def async_shutdown(self) -> None:
         self._cancel_deferred_refresh_callbacks()
 
-    async def async_gen2_start_watering(
-        self, duration_sec: int, *, station_id: int = 0
-    ) -> None:
+    async def async_gen2_start_watering(self, duration_sec: int, *, station_id: int = 0) -> None:
         """Start manual watering on one gen2 port, then refresh state."""
         async with self._session_lock:
             try:
@@ -229,9 +227,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
         """Stop watering on the gen2 timer, then refresh state."""
         async with self._session_lock:
             try:
-                result = await async_gen2_stop_watering(
-                    self.hass, self._gen2_session_params()
-                )
+                result = await async_gen2_stop_watering(self.hass, self._gen2_session_params())
             except Gen2RuntimeError as e:
                 raise UpdateFailed(str(e)) from e
         self._apply_gen2_result(result)
@@ -254,9 +250,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
         """Stop watering on the gen1 timer, then refresh state."""
         async with self._session_lock:
             try:
-                result = await async_gen1_stop_watering(
-                    self.hass, self._gen1_session_params()
-                )
+                result = await async_gen1_stop_watering(self.hass, self._gen1_session_params())
             except Gen1RuntimeError as e:
                 raise UpdateFailed(str(e)) from e
         self._apply_gen1_result(result)
@@ -265,9 +259,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
     async def _async_update_gen1(self) -> dict:
         async with self._session_lock:
             try:
-                result = await async_read_gen1_status(
-                    self.hass, self._gen1_session_params()
-                )
+                result = await async_read_gen1_status(self.hass, self._gen1_session_params())
             except Gen1RuntimeError as e:
                 raise UpdateFailed(str(e)) from e
         self._apply_gen1_result(result)
@@ -276,9 +268,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
     async def _async_update_gen2(self) -> dict:
         async with self._session_lock:
             try:
-                result = await async_read_gen2_status(
-                    self.hass, self._gen2_session_params()
-                )
+                result = await async_read_gen2_status(self.hass, self._gen2_session_params())
             except Gen2RuntimeError as e:
                 raise UpdateFailed(str(e)) from e
         self._apply_gen2_result(result)

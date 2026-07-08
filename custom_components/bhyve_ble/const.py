@@ -67,7 +67,7 @@ def poll_interval_timedelta(entry: ConfigEntry) -> timedelta:
         return timedelta(hours=DEFAULT_POLL_INTERVAL_HOURS)
     try:
         hours = float(raw)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError):  # fmt: skip
         return timedelta(hours=DEFAULT_POLL_INTERVAL_HOURS)
     hours = max(MIN_POLL_INTERVAL_HOURS, min(hours, MAX_POLL_INTERVAL_HOURS))
     return timedelta(seconds=round(hours * 3600))

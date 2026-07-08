@@ -61,9 +61,7 @@ class BhyveBleStationManualWateringSwitch(BhyveBleEntity, SwitchEntity):
         if self.coordinator.is_gen1:
             await self.coordinator.async_gen1_start_watering(run_sec)
             return
-        await self.coordinator.async_gen2_start_watering(
-            run_sec, station_id=self._station_id
-        )
+        await self.coordinator.async_gen2_start_watering(run_sec, station_id=self._station_id)
 
     async def async_turn_off(self, **kwargs) -> None:
         if self.coordinator.is_gen1:

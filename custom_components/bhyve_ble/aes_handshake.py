@@ -40,7 +40,9 @@ async def async_complete_aes_char_handshake(
     if trace_address is not None:
         from .logging import log_ble_att_read_rsp, log_ble_att_write_req
 
-        log_ble_att_write_req(trace_address, "aes_char", write20, detail=f"tx_delay_ms={tx_delay_ms}")
+        log_ble_att_write_req(
+            trace_address, "aes_char", write20, detail=f"tx_delay_ms={tx_delay_ms}"
+        )
     await client.write_gatt_char(aes_char_uuid, write20, response=True)
 
     last_error: ValueError | None = None

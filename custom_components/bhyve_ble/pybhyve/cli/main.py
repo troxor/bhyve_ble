@@ -158,7 +158,6 @@ def _resolve_profile(args: argparse.Namespace) -> ClientProfile:
     )
 
 
-
 def _apply_learned_gen1_device_id(
     profile: ClientProfile,
     gen1_session: Gen1Session,
@@ -199,7 +198,15 @@ def _apply_learned_gen1_device_id(
 
 def _resolve_post_action_plan(args: argparse.Namespace, profile: ClientProfile) -> PostActionPlan:
     cmd = getattr(args, "command", None)
-    mode = "start" if cmd == "start" else "stop" if cmd == "stop" else "status" if cmd == "status" else "none"
+    mode = (
+        "start"
+        if cmd == "start"
+        else "stop"
+        if cmd == "stop"
+        else "status"
+        if cmd == "status"
+        else "none"
+    )
     if cmd == "start":
         run_sec = float(args.seconds)
         if getattr(args, "foreground", False):
@@ -259,10 +266,7 @@ async def ble_session(args: argparse.Namespace) -> None:
         device_id = format_device_id(address, "gen2")
     if device_id is not None:
         if profile.generation == "gen1":
-            print(
-                f"Device ID: {device_id} "
-                f"(hex={struct.pack('<H', profile.device_id).hex()})"
-            )
+            print(f"Device ID: {device_id} (hex={struct.pack('<H', profile.device_id).hex()})")
         else:
             print(f"Device ID: {device_id}")
 
@@ -328,9 +332,14 @@ async def ble_session(args: argparse.Namespace) -> None:
             except Exception as ex:
                 from bleak.exc import BleakGATTProtocolError, BleakGATTProtocolErrorCode
 
-                if isinstance(ex, BleakGATTProtocolError) and ex.args and ex.args[0] in (
-                    BleakGATTProtocolErrorCode.WRITE_NOT_PERMITTED,
-                    BleakGATTProtocolErrorCode.INSUFFICIENT_AUTHORIZATION,
+                if (
+                    isinstance(ex, BleakGATTProtocolError)
+                    and ex.args
+                    and ex.args[0]
+                    in (
+                        BleakGATTProtocolErrorCode.WRITE_NOT_PERMITTED,
+                        BleakGATTProtocolErrorCode.INSUFFICIENT_AUTHORIZATION,
+                    )
                 ):
                     raise SystemExit(
                         "Unable to write to network_char, is the device already paired?"
@@ -362,15 +371,15 @@ async def ble_session(args: argparse.Namespace) -> None:
         if trace:
             trace.read_rsp("aes_char", aes_r)
         d = derive_from_aes_char_exchange(aes_w, aes_r)
-        print(f"Session Started: iv12={d.iv12.hex()} enc_ctr=0x{d.enc_ctr:08x} dec_ctr=0x{d.dec_ctr:08x}")
+        print(
+            f"Session Started: iv12={d.iv12.hex()} enc_ctr=0x{d.enc_ctr:08x} dec_ctr=0x{d.dec_ctr:08x}"
+        )
 
         state: dict[str, int] = {"enc": d.enc_ctr, "dec": d.dec_ctr}
         link_t = profile.link_msg_type
         gen2_status: dict[str, Any] = {}
         session_magic = (
-            struct.pack("<H", profile.device_id)
-            if profile.device_id is not None
-            else b""
+            struct.pack("<H", profile.device_id) if profile.device_id is not None else b""
         )
         loop = asyncio.get_running_loop()
         gen1_session: Gen1Session | None = None
@@ -629,9 +638,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--verbose",
         action="count",
         default=0,
-        help=(
-            "Increase log detail"
-        ),
+        help=("Increase log detail"),
     )
     sub = p.add_subparsers(dest="command")
     scan = sub.add_parser(

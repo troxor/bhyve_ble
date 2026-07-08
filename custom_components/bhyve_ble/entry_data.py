@@ -26,7 +26,7 @@ def entry_has_network_key(data: dict[str, Any]) -> bool:
         return False
     try:
         return len(base64.b64decode(b64)) == 16
-    except (TypeError, ValueError, binascii.Error):
+    except (TypeError, ValueError, binascii.Error):  # fmt: skip
         return False
 
 
@@ -56,7 +56,7 @@ def entry_network_key_bytes(data: dict[str, Any] | None) -> bytes | None:
         return None
     try:
         key = base64.b64decode(b64)
-    except (TypeError, ValueError, binascii.Error):
+    except (TypeError, ValueError, binascii.Error):  # fmt: skip
         return None
     if len(key) != 16:
         return None
@@ -112,7 +112,7 @@ def parse_gen1_credentials_submission(
         else:
             try:
                 device_id = int(raw_device_id, 10)
-            except (TypeError, ValueError):
+            except (TypeError, ValueError):  # fmt: skip
                 errors["base"] = "invalid_device_id"
         if device_id is not None and not 0 <= device_id <= 0xFFFF:
             errors["base"] = "invalid_device_id"

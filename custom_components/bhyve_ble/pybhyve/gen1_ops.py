@@ -35,9 +35,7 @@ def gen1_device_id(device_id: int | None = None) -> int:
     if device_id is not None:
         mid = int(device_id)
         if not _GEN1_DEVICE_ID_MIN <= mid <= _GEN1_DEVICE_ID_MAX:
-            msg = (
-                f"device_id must be in [{_GEN1_DEVICE_ID_MIN}, {_GEN1_DEVICE_ID_MAX}], got {mid}"
-            )
+            msg = f"device_id must be in [{_GEN1_DEVICE_ID_MIN}, {_GEN1_DEVICE_ID_MAX}], got {mid}"
             raise Gen1PairingError(msg)
         return mid
     span = _GEN1_DEVICE_ID_MAX - _GEN1_DEVICE_ID_MIN + 1
@@ -140,9 +138,7 @@ async def run_gen1_manual_start(
     await gen1.send_only(f"gen1 manual start {duration_sec}s cmd=0x{cmd:02x}", pt)
     if confirm_delay_s > 0:
         await asyncio.sleep(confirm_delay_s)
-    if not (
-        "watering_status" in gen1.status_snapshot or "watering_idle" in gen1.status_snapshot
-    ):
+    if not ("watering_status" in gen1.status_snapshot or "watering_idle" in gen1.status_snapshot):
         await run_gen1_passive_poll(gen1, device_id)
     return gen1.status_snapshot
 
@@ -188,9 +184,7 @@ async def run_gen1_onboard(
 ) -> tuple[int | None, dict]:
     proposed, assigned = await run_gen1_pairing(gen1, device_id, tail=tail)
     status_device_id = assigned if assigned is not None else proposed
-    await run_gen1_status_session(
-        gen1, status_device_id, tail=tail, passive_poll=False
-    )
+    await run_gen1_status_session(gen1, status_device_id, tail=tail, passive_poll=False)
     return assigned if assigned is not None else gen1.assigned_device_id, gen1.status_snapshot
 
 

@@ -21,20 +21,27 @@ _HEX_KEY = "0123456789abcdef0123456789abcdef"
 def test_entry_gen2_pairing_locked_requires_gen2_device_and_key() -> None:
     assert entry_gen2_pairing_locked(None) is False
     assert entry_gen2_pairing_locked({}) is False
-    assert entry_gen2_pairing_locked(
-        {CONF_NETWORK_KEY_B64: base64.b64encode(b"\x01" * 16).decode()}
-    ) is False
-    assert entry_gen2_pairing_locked(
-        {
-            CONF_DEVICES: {"AA:BB:CC:DD:EE:FF": {CONF_DEVICE_GENERATION: GENERATION_GEN2}},
-        }
-    ) is False
-    assert entry_gen2_pairing_locked(
-        {
-            CONF_NETWORK_KEY_B64: base64.b64encode(b"\x01" * 16).decode(),
-            CONF_DEVICES: {"AA:BB:CC:DD:EE:FF": {CONF_DEVICE_GENERATION: GENERATION_GEN2}},
-        }
-    ) is True
+    assert (
+        entry_gen2_pairing_locked({CONF_NETWORK_KEY_B64: base64.b64encode(b"\x01" * 16).decode()})
+        is False
+    )
+    assert (
+        entry_gen2_pairing_locked(
+            {
+                CONF_DEVICES: {"AA:BB:CC:DD:EE:FF": {CONF_DEVICE_GENERATION: GENERATION_GEN2}},
+            }
+        )
+        is False
+    )
+    assert (
+        entry_gen2_pairing_locked(
+            {
+                CONF_NETWORK_KEY_B64: base64.b64encode(b"\x01" * 16).decode(),
+                CONF_DEVICES: {"AA:BB:CC:DD:EE:FF": {CONF_DEVICE_GENERATION: GENERATION_GEN2}},
+            }
+        )
+        is True
+    )
 
 
 def test_parse_gen2_pairing_default_generates_key() -> None:

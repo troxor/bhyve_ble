@@ -244,9 +244,7 @@ def test_manual_start_op_sends_run_record() -> None:
     async def scenario() -> list[bytes]:
         sender = _FakeSender()
         session = _build_session(sender)
-        await run_gen1_manual_start(
-            session, DEVICE_ID, 60, reconnect=False, confirm_delay_s=0.0
-        )
+        await run_gen1_manual_start(session, DEVICE_ID, 60, reconnect=False, confirm_delay_s=0.0)
         return [pt for _l, pt in sender.sent]
 
     sent = asyncio.run(scenario())

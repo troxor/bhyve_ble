@@ -36,15 +36,8 @@ def format_att_trace_line(
     plaintext: bytes | None = None,
     detail: str = "",
 ) -> list[str]:
-    wire_hex = (
-        network_char_wire_hex_for_trace(wire)
-        if char_role == "network_char"
-        else wire.hex()
-    )
-    head = (
-        f"[{mac.upper()}] {att_op:<9} {char_role:<13} @{handle}  "
-        f"hex: {wire_hex}"
-    )
+    wire_hex = network_char_wire_hex_for_trace(wire) if char_role == "network_char" else wire.hex()
+    head = f"[{mac.upper()}] {att_op:<9} {char_role:<13} @{handle}  hex: {wire_hex}"
     lines = [head]
     if plaintext is not None:
         tail = f"  pt={plaintext.hex()}"

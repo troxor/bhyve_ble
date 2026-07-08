@@ -46,6 +46,7 @@ WRITE_CHAR_UUID = "00006c72-fe32-4f58-8b78-98e42b2c047f"
 NOTIFY_CHAR_UUID = "00006c73-fe32-4f58-8b78-98e42b2c047f"
 READ_CHAR_UUID = NOTIFY_CHAR_UUID
 
+
 # GATT handle layouts (ATT handle strings from pairing captures).
 @dataclass(frozen=True, slots=True)
 class PairingHandleProfile:

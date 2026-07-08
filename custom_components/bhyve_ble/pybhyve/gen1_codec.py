@@ -20,9 +20,7 @@ GEN1_DEFAULT_TIMESTAMP_TAIL = bytes([0xD4, 0xFE])
 # Device async notifies (client ACK = cmd | 0x40). Onboard/reconnect often 0xa4-0xac;
 # during manual watering also 0x87-0x8c (status/fault); faults 0x88.
 GEN1_ASYNC_NOTIFY_CMDS = (
-    frozenset(range(0xA4, 0xAD))
-    | frozenset(range(0xB1, 0xC0))
-    | frozenset(range(0x87, 0x8D))
+    frozenset(range(0xA4, 0xAD)) | frozenset(range(0xB1, 0xC0)) | frozenset(range(0x87, 0x8D))
 )
 
 # First application cmd after reconnect/onboard handshake (0x81-0x86).
@@ -101,7 +99,10 @@ def gen1_onboard_write_plaintexts(
     return [
         ("gen1 onboard: ping 0x81", encode_gen1_plaintext(magic, 0x81, ts_ping)),
         ("gen1 onboard: 0x02", encode_gen1_plaintext(magic, 0x02, bytes.fromhex("0140000000"))),
-        ("gen1 onboard: 0x03", encode_gen1_plaintext(magic, 0x03, bytes.fromhex("034000000000000000"))),
+        (
+            "gen1 onboard: 0x03",
+            encode_gen1_plaintext(magic, 0x03, bytes.fromhex("034000000000000000")),
+        ),
         ("gen1 onboard: register mesh 0x84", encode_gen1_plaintext(magic, 0x84, reg)),
         ("gen1 onboard: 0x05", encode_gen1_plaintext(magic, 0x05, bytes.fromhex("0140000000"))),
         ("gen1 onboard: commit 0x86", encode_gen1_plaintext(magic, 0x86, ts_commit)),
@@ -127,7 +128,10 @@ def gen1_mesh_attach_plaintexts(
     steps: list[tuple[str, bytes]] = [
         (f"{label_prefix}: ping 0x81", encode_gen1_plaintext(magic, 0x81, ts_ping)),
         (f"{label_prefix}: poll 0x02", encode_gen1_plaintext(magic, 0x02, bytes.fromhex("024000"))),
-        (f"{label_prefix}: 0x03", encode_gen1_plaintext(magic, 0x03, bytes.fromhex("034000000000000000"))),
+        (
+            f"{label_prefix}: 0x03",
+            encode_gen1_plaintext(magic, 0x03, bytes.fromhex("034000000000000000")),
+        ),
         (
             f"{label_prefix}: device_info 0x04",
             encode_gen1_plaintext(magic, 0x04, bytes.fromhex("0140000000")),
@@ -143,7 +147,10 @@ def gen1_mesh_attach_plaintexts(
         )
     steps.extend(
         [
-            (f"{label_prefix}: 0x85 tail", encode_gen1_plaintext(magic, 0x85, bytes.fromhex("094000"))),
+            (
+                f"{label_prefix}: 0x85 tail",
+                encode_gen1_plaintext(magic, 0x85, bytes.fromhex("094000")),
+            ),
             (f"{label_prefix}: commit 0x86", encode_gen1_plaintext(magic, 0x86, ts_commit)),
         ]
     )
@@ -158,14 +165,10 @@ def build_gen1_manual_start_payload(duration_sec: int) -> bytes:
     """
     sec = int(duration_sec)
     if not MANUAL_WATER_RUN_SEC_MIN <= sec <= MANUAL_WATER_RUN_SEC_MAX:
-        msg = (
-            f"duration_sec must be in [{MANUAL_WATER_RUN_SEC_MIN}, {MANUAL_WATER_RUN_SEC_MAX}], got {sec}"
-        )
+        msg = f"duration_sec must be in [{MANUAL_WATER_RUN_SEC_MIN}, {MANUAL_WATER_RUN_SEC_MAX}], got {sec}"
         raise ValueError(msg)
     return (
-        bytes([0x0D, GEN1_INNER_RECORD_MARKER, 0x04])
-        + struct.pack("<I", sec)
-        + bytes([0x00, 0x00])
+        bytes([0x0D, GEN1_INNER_RECORD_MARKER, 0x04]) + struct.pack("<I", sec) + bytes([0x00, 0x00])
     )
 
 
