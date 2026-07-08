@@ -6,13 +6,12 @@ import struct
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from .logging import log_ble_rx, log_ble_rx_decode_failed, log_ble_tx
 from .pybhyve.constants import (
     COMMAND_LISTEN_S,
     GEN1_STATUS_LISTEN_S,
     START_CONFIRM_LISTEN_S,
 )
-from .logging import log_ble_rx, log_ble_rx_decode_failed, log_ble_tx
-from .transport import BhyveBleTransport, BhyveBleTransportError
 from .pybhyve.gen1_codec import decode_gen1_plaintext
 from .pybhyve.gen1_ops import (
     run_gen1_manual_start,
@@ -21,6 +20,7 @@ from .pybhyve.gen1_ops import (
     run_gen1_stop_watering,
 )
 from .pybhyve.gen1_session import Gen1Session
+from .transport import BhyveBleTransport, BhyveBleTransportError
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -76,7 +76,7 @@ async def _async_run_gen1_ble_session(
             return
         try:
             dec = decode_gen1_plaintext(plaintext)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             log_ble_rx_decode_failed(params.address, msg_type, plaintext, e)
             return
         log_ble_rx(params.address, msg_type, plaintext, dec)

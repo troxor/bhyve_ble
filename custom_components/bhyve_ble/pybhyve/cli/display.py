@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from ..constants import Generation
 from ..gen1_codec import (
     GEN1_ASYNC_NOTIFY_CMDS,
     GEN1_MODEL,
@@ -22,7 +23,6 @@ from ..gen2_codec import (
     gen2_notify_store_port_state,
     resolve_battery_percent_display,
 )
-from ..constants import Generation
 
 
 def format_gen1_inner_status(status: dict[str, Any]) -> str:
@@ -495,7 +495,7 @@ def print_gatt_plaintext(
     print(f"  {brief}")
 
 
-def format_gen1_verbose(pt: bytes, verbose: int, *, skip_hex: bool = False) -> str:
+def format_gen1_verbose(pt: bytes, _verbose: int, *, skip_hex: bool = False) -> str:
     lines = ["   --- gen1 plaintext ---"]
     try:
         dec = decode_gen1_plaintext(pt)

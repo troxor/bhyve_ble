@@ -14,7 +14,7 @@ from .const import (
     DOMAIN,
     GENERATION_GEN1,
 )
-from .device_credentials import device_meta, device_network_key, device_id
+from .device_credentials import device_id, device_meta, device_network_key
 from .device_profile import DeviceBleProfile, device_ble_profile_from_meta
 from .gen1_runtime import (
     Gen1BleSessionParams,

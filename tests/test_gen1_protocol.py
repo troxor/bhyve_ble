@@ -11,17 +11,16 @@ import asyncio
 import struct
 
 import pytest
-
 from pybhyve.gen1_codec import (
     assigned_device_id_from_register_response,
     build_gen1_manual_start_payload,
     build_gen1_stop_payload,
     decode_gen1_inner_payload,
     decode_gen1_plaintext,
+    device_id_from_plaintext,
     encode_gen1_plaintext,
     gen1_mesh_attach_plaintexts,
     gen1_onboard_write_plaintexts,
-    device_id_from_plaintext,
 )
 from pybhyve.gen1_ops import Gen1PairingError, gen1_device_id, run_gen1_pairing
 from pybhyve.gen1_session import Gen1Session
@@ -109,7 +108,7 @@ def test_watering_status_remaining_quarters() -> None:
 
 
 def test_status_session_omits_clear_step() -> None:
-    """status session must not send the 0x85 clear (cancels an active run)."""
+    """Status session must not send the 0x85 clear (cancels an active run)."""
     cmds = [
         pt
         for _l, pt in gen1_mesh_attach_plaintexts(

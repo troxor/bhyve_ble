@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Any
 
 from .const import (
     CONF_DEVICE_GENERATION,
+    CONF_DEVICE_ID,
     CONF_DEVICE_NETWORK_KEY_B64,
     CONF_DEVICES,
-    CONF_DEVICE_ID,
     CONF_NETWORK_KEY_B64,
     GENERATION_GEN1,
     normalize_ble_address,

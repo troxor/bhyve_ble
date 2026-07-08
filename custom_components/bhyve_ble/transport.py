@@ -16,8 +16,8 @@ from bleak_retry_connector import (
 from homeassistant.components.bluetooth import async_ble_device_from_address
 
 from .aes_handshake import async_complete_aes_char_handshake
-from .pybhyve.constants import AES_CHAR_UUID, NOTIFY_CHAR_UUID, WRITE_CHAR_UUID
 from .logging import log_ble_att_notify, log_ble_att_write_f
+from .pybhyve.constants import AES_CHAR_UUID, NOTIFY_CHAR_UUID, WRITE_CHAR_UUID
 from .pybhyve.link_crypto import SessionKeys, build_data_frame, parse_inbound_data_frame
 
 if TYPE_CHECKING:
@@ -114,11 +114,11 @@ class BhyveBleTransport:
             return
         try:
             await self._client.stop_notify(NOTIFY_CHAR_UUID)
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
         try:
             await self._client.disconnect()
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
         self._client = None
         self._keys = None
@@ -167,7 +167,7 @@ class BhyveBleTransport:
                 dec_ctr=self._keys.dec_ctr,
                 accept_plaintext=None,
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             log_ble_att_notify(
                 self.address,
                 frame,

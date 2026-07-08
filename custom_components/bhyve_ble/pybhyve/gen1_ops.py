@@ -1,6 +1,4 @@
-"""
-Gen1 session orchestration
-"""
+"""Gen1 session orchestration."""
 
 from __future__ import annotations
 

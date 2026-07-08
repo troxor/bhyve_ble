@@ -15,7 +15,6 @@ from typing import Any
 
 from .pybhyve.ble_trace import BleTraceReporter, network_char_detail
 from .pybhyve.constants import GEN1_HANDLES
-
 from .pybhyve.gen2_codec import decode_gen2_ble_plaintext
 
 _LOG = logging.getLogger(__name__)
@@ -88,7 +87,7 @@ def log_ble_att_network_char(address: str, wire: bytes) -> None:
 def _oneof_from_plaintext(plaintext: bytes) -> str | None:
     try:
         decoded = decode_gen2_ble_plaintext(plaintext)
-    except Exception:  # noqa: BLE001
+    except Exception:
         return None
     return (decoded.get("_framing") or {}).get("oneof")
 

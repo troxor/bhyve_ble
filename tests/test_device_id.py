@@ -1,7 +1,6 @@
 """Display-only device_id helper (gen1 device id vs gen2 MAC suffix)."""
 
 import pytest
-
 from bhyve_ble.pybhyve.constants import format_device_id, normalize_ble_address
 
 

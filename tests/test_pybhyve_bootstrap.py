@@ -22,8 +22,8 @@ def test_pybhyve_imports_as_subpackage() -> None:
 
     sys.path.insert(0, components)
 
-    from bhyve_ble.pybhyve.link_crypto import build_data_frame
     from bhyve_ble.pybhyve.gen2_codec import decode_gen2_ble_plaintext
+    from bhyve_ble.pybhyve.link_crypto import build_data_frame
 
     key16 = bytes(range(16))
     iv12 = bytes(range(12))

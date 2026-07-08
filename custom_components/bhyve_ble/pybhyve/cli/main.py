@@ -7,33 +7,35 @@ import asyncio
 import secrets
 import struct
 import sys
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable
+from typing import Any
 
 from ..ble_trace import BleTraceReporter, network_char_detail
-from ..link_crypto import (
-    build_aes_char_write_payload,
-    build_data_frame,
-    build_network_char_payload,
-    derive_from_aes_char_exchange,
-    parse_inbound_data_frame,
-)
-from ..constants import GEN1_HANDLES, GEN2_HANDLES, Generation
 from ..constants import (
     AES_CHAR_UUID,
     DEFAULT_ATT_MTU,
     GEN1_ACK_DELAY_S,
+    GEN1_HANDLES,
     GEN1_RESPONSE_TIMEOUT_S,
     GEN1_STATUS_LISTEN_S,
     GEN1_STEP_DELAY_S,
     GEN1_TX_DELAY_MS,
     GEN1_WRITE_SETTLE_S,
+    GEN2_HANDLES,
     GEN2_STATUS_LISTEN_S,
     GEN2_TX_DELAY_MS,
     NETWORK_CHAR_UUID,
     NOTIFY_CHAR_UUID,
     WRITE_CHAR_UUID,
+    Generation,
     format_device_id,
+)
+from ..gen1_codec import (
+    GEN1_DEFAULT_TIMESTAMP_TAIL,
+    gen1_link_plaintext_acceptable,
+    gen1_mesh_attach_plaintexts,
+    gen1_status_snapshot_verified,
 )
 from ..gen1_ops import (
     Gen1PairingError,
@@ -45,21 +47,22 @@ from ..gen1_ops import (
     run_gen1_stop_watering,
 )
 from ..gen1_session import Gen1Session, run_gen1_session
-from ..gen1_codec import (
-    GEN1_DEFAULT_TIMESTAMP_TAIL,
-    gen1_mesh_attach_plaintexts,
-    gen1_status_snapshot_verified,
-    gen1_link_plaintext_acceptable,
+from ..gen2_codec import (
+    MANUAL_WATER_RUN_SEC_MAX,
+    MANUAL_WATER_RUN_SEC_MIN,
+    ingest_gen2_notify,
 )
 from ..gen2_ops import (
     run_gen2_manual_start,
     run_gen2_status_queries,
     run_gen2_stop_watering,
 )
-from ..gen2_codec import (
-    MANUAL_WATER_RUN_SEC_MAX,
-    MANUAL_WATER_RUN_SEC_MIN,
-    ingest_gen2_notify,
+from ..link_crypto import (
+    build_aes_char_write_payload,
+    build_data_frame,
+    build_network_char_payload,
+    derive_from_aes_char_exchange,
+    parse_inbound_data_frame,
 )
 from .display import (
     brief_gen1_plaintext,
@@ -165,16 +168,15 @@ def _apply_learned_gen1_device_id(
 ) -> ClientProfile:
     assigned = gen1_session.assigned_device_id
     if assigned is None:
-        if connect:
-            if not gen1_session.received_any_notify:
-                # No inbound frames at all: the timer never processed our writes.
-                raise SystemExit(
-                    "The timer never acknowledged our writes. Check that it is:\n"
-                    "  - in pairing mode (blinking blue),\n"
-                    "  - within ~1 m of the Bluetooth adapter,\n"
-                    "  - not already connected to any other app or integration,\n"
-                    "then reset the timer and retry."
-                )
+        if connect and not gen1_session.received_any_notify:
+            # No inbound frames at all: the timer never processed our writes.
+            raise SystemExit(
+                "The timer never acknowledged our writes. Check that it is:\n"
+                "  - in pairing mode (blinking blue),\n"
+                "  - within ~1 m of the Bluetooth adapter,\n"
+                "  - not already connected to any other app or integration,\n"
+                "then reset the timer and retry."
+            )
         return profile
     if profile.device_id == assigned:
         return profile
@@ -672,9 +674,9 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Keep the session open for the given watering interval",
     )
-    stop = sub.add_parser("stop", parents=[common], help="Stop manual watering")
-    status = sub.add_parser("status", parents=[common], help="Read device status")
-    connect = sub.add_parser(
+    sub.add_parser("stop", parents=[common], help="Stop manual watering")
+    sub.add_parser("status", parents=[common], help="Read device status")
+    sub.add_parser(
         "connect",
         parents=[common],
         help="Connection test (handshake only)",

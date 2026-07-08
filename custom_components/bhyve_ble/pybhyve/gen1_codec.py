@@ -1,4 +1,4 @@
-"""Legacy command protocol"""
+"""Legacy command protocol."""
 
 from __future__ import annotations
 
@@ -81,9 +81,7 @@ def gen1_link_plaintext_acceptable(plaintext: bytes, *, magic: bytes | None = No
         return False
     if plaintext[2] == 0x00:
         return False
-    if magic is not None and plaintext[0:2] != magic:
-        return False
-    return True
+    return magic is None or plaintext[0:2] == magic
 
 
 def gen1_onboard_write_plaintexts(
@@ -187,6 +185,8 @@ def build_gen1_stop_payload(
 
 def decode_gen1_plaintext(plaintext: bytes) -> dict[str, Any]:
     """
+    Decode a Gen1 plaintext frame.
+
     Layout: [magic:2][cmd:1][payload...]
     Device responses set bit 0x40 on cmd (request 0x81 -> response 0xc1).
     """
@@ -344,9 +344,7 @@ def parse_gen1_station_status(
     snapshot: dict[str, dict[str, Any]] | None,
     station_id: int,
 ) -> dict[str, Any]:
-    """
-    Per-station status for HA sensors
-    """
+    """Per-station status for HA sensors."""
     out: dict[str, Any] = {
         "state": "off",
         "faults": [],
@@ -429,6 +427,7 @@ __all__ = [
     "build_gen1_stop_payload",
     "decode_gen1_inner_payload",
     "decode_gen1_plaintext",
+    "device_id_from_plaintext",
     "encode_gen1_plaintext",
     "gen1_device_info_for_registry",
     "gen1_link_plaintext_acceptable",
@@ -436,7 +435,6 @@ __all__ = [
     "gen1_onboard_write_plaintexts",
     "gen1_status_snapshot_verified",
     "merge_gen1_status_record",
-    "device_id_from_plaintext",
     "parse_gen1_battery_percent_mv",
     "parse_gen1_station_status",
 ]

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import base64
+import binascii
 from types import SimpleNamespace
 
 import pytest
-
 from bhyve_ble.const import (
     CONF_DEVICE_GENERATION,
     CONF_DEVICE_NETWORK_KEY_B64,
@@ -51,5 +51,5 @@ def test_device_network_key_gen1_rejects_loose_base64() -> None:
             }
         },
     )
-    with pytest.raises(Exception):
+    with pytest.raises((binascii.Error, ValueError)):
         device_network_key(entry, "AA:BB:CC:DD:EE:FF")

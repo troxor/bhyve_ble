@@ -15,8 +15,8 @@ from bleak_retry_connector import (
 from homeassistant.components.bluetooth import async_ble_device_from_address
 
 from .aes_handshake import async_complete_aes_char_handshake
-from .pybhyve.constants import AES_CHAR_UUID, NETWORK_CHAR_UUID
 from .logging import log_ble_att_network_char
+from .pybhyve.constants import AES_CHAR_UUID, NETWORK_CHAR_UUID
 from .pybhyve.link_crypto import (
     AesHandshakeDerived,
     build_network_char_payload,
@@ -100,5 +100,5 @@ async def async_provision_with_network_key(
     finally:
         try:
             await client.disconnect()
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass

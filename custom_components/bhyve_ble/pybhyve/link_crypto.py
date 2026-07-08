@@ -1,15 +1,14 @@
-#!/usr/bin/env python3
-"""
-Reference implementation of b-hyve BLE link-layer crypto + framing.
-"""
+"""Reference implementation of b-hyve BLE link-layer crypto + framing."""
 
 from __future__ import annotations
 
 import secrets
 import struct
-from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Tuple
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 try:
     from Crypto.Cipher import AES
@@ -19,7 +18,7 @@ except ImportError as e:  # pragma: no cover
 # Matches lib.ble.service.common / perform_crypto (bundle ~962789, ~964273)
 ENCRYPTION_FRAME_SIZE = 16
 
-# inc_ctr: (n + 1) % 4294967295  (~964091–964099)
+# inc_ctr wraps at 4294967295 (bytecode refs ~964091-964099)
 _CTR_MOD = 4294967295
 
 # Gen1 NOTIFY bursts can lag tens of thousands of counter steps behind the client
@@ -47,7 +46,7 @@ def perform_crypto(
     iv12: bytes,
     counter: int,
     data: bytes,
-) -> Tuple[bytes, int]:
+) -> tuple[bytes, int]:
     out = bytearray(len(data))
     ctr = int(counter)
     pos = 0
@@ -74,7 +73,7 @@ def build_data_frame(
     enc_ctr: int | None = None,
     *,
     key: bytes | None = None,
-) -> Tuple[bytes, int]:
+) -> tuple[bytes, int]:
     k = key16 if key16 is not None else key
     if k is None or iv12 is None or enc_ctr is None:
         msg = "build_data_frame requires key16, iv12, and enc_ctr"
@@ -104,7 +103,7 @@ def parse_data_frame(
     dec_ctr: int | None = None,
     *,
     key: bytes | None = None,
-) -> Tuple[int, bytes, int]:
+) -> tuple[int, bytes, int]:
     k = key16 if key16 is not None else key
     if k is None or iv12 is None or dec_ctr is None:
         msg = "parse_data_frame requires key16, iv12, and dec_ctr"
@@ -159,10 +158,12 @@ def parse_data_frame_resync(
         if accept_plaintext is not None and not accept_plaintext(plaintext):
             ctr = inc_ctr(ctr)
             continue
-        if expected_magic is not None:
-            if len(plaintext) < len(expected_magic) or plaintext[: len(expected_magic)] != expected_magic:
-                ctr = inc_ctr(ctr)
-                continue
+        if expected_magic is not None and (
+            len(plaintext) < len(expected_magic)
+            or plaintext[: len(expected_magic)] != expected_magic
+        ):
+            ctr = inc_ctr(ctr)
+            continue
         return msg_type, plaintext, new_ctr, skip
     msg = "could not decrypt data frame (counter resync exhausted)"
     if last_err is not None:
@@ -257,6 +258,8 @@ def build_aes_char_write_payload(tx_delay_ms: int = 0) -> bytes:
 
 def derive_from_aes_char_exchange(write20: bytes, read20: bytes) -> AesHandshakeDerived:
     """
+    Derive session keys from the aes_char write/read exchange.
+
     Device read: first 4 bytes non-zero, bytes 4..19 zero.
     composite = read[0:4] + write[4:20]
     """
@@ -285,7 +288,8 @@ if __name__ == "__main__":  # pragma: no cover
     # On the device, RX decrypts with dec_ctr from aes_char; this test uses the same counter to
     # verify framing + checksum + stream cipher only.
     T2, pt2, _ = parse_data_frame(frame, key, iv, enc)
-    assert T2 == 0x42 and pt2 == pt
+    assert T2 == 0x42
+    assert pt2 == pt
 
     # Stream XOR round-trip (counter advances per 16-byte chunk):
     ct, _ = perform_crypto(key, iv, enc, pt)
@@ -293,7 +297,8 @@ if __name__ == "__main__":  # pragma: no cover
     assert pt3 == pt
 
     prov = build_network_char_payload(key)
-    assert len(prov) == 18 and prov[0:2] == b"\x01\x00"
+    assert len(prov) == 18
+    assert prov[0:2] == b"\x01\x00"
 
     w = build_aes_char_write_payload(0)
     r = b"\xab\xcd\xef\x00" + b"\x00" * 16

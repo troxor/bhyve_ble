@@ -8,8 +8,8 @@ from typing import Any
 
 from .const import (
     CONF_DEVICE_GENERATION,
-    CONF_DEVICES,
     CONF_DEVICE_ID,
+    CONF_DEVICES,
     CONF_GEN1_RUN_PAIRING,
     CONF_GEN2_RUN_PAIRING,
     CONF_NETWORK_KEY_B64,
@@ -64,7 +64,7 @@ def entry_network_key_bytes(data: dict[str, Any] | None) -> bytes | None:
 
 
 def entry_gen2_pairing_locked(data: dict[str, Any] | None) -> bool:
-    """True when the integration already has Gen 2 device(s) and a shared network key."""
+    """Return True when the integration already has Gen 2 device(s) and a shared network key."""
     if not data:
         return False
     return entry_has_gen2_device(data) and entry_network_key_bytes(data) is not None
@@ -107,12 +107,13 @@ def parse_gen1_credentials_submission(
     if not raw_device_id:
         device_id = None
     else:
-        try:
-            if str(raw_device_id).strip().lower().startswith("0x"):
-                raise ValueError("hex not accepted")
-            device_id = int(raw_device_id, 10)
-        except (TypeError, ValueError):
+        if str(raw_device_id).strip().lower().startswith("0x"):
             errors["base"] = "invalid_device_id"
+        else:
+            try:
+                device_id = int(raw_device_id, 10)
+            except (TypeError, ValueError):
+                errors["base"] = "invalid_device_id"
         if device_id is not None and not 0 <= device_id <= 0xFFFF:
             errors["base"] = "invalid_device_id"
 

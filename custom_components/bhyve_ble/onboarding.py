@@ -29,12 +29,12 @@ from .gen1_runtime import (
 )
 from .logging import log_ble_rx, log_ble_rx_decode_failed, log_ble_tx
 from .pybhyve import gen1_ops
-from .pybhyve.gen2_ops import run_gen2_onboard_queries
+from .pybhyve.gen1_codec import gen1_status_snapshot_verified
 from .pybhyve.gen2_codec import (
     decode_gen2_ble_plaintext,
 )
+from .pybhyve.gen2_ops import run_gen2_onboard_queries
 from .transport import BhyveBleTransport, BhyveBleTransportError
-from .pybhyve.gen1_codec import gen1_status_snapshot_verified
 
 gen1_device_id = gen1_ops.gen1_device_id
 gen1_network_key = gen1_ops.gen1_network_key
@@ -129,7 +129,7 @@ async def async_onboard_gen1_device(
             network_key_16,
             BleProvisionOptions(tx_delay_ms=profile.tx_delay_ms, device_id=proposed),
         )
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         raise BhyveOnboardingError(str(e)) from e
 
     params = Gen1BleSessionParams(
@@ -166,7 +166,7 @@ async def _async_send_gen2_onboard_queries(
     address: str,
     link_msg_type: int,
 ) -> None:
-    async def send(pt: bytes, *, label: str) -> None:
+    async def send(pt: bytes, *, label: str) -> None:  # noqa: ARG001
         log_ble_tx(address, link_msg_type, pt)
         await transport.async_send_plaintext(link_msg_type, pt)
 
@@ -190,7 +190,7 @@ async def _async_gen2_verify_session(
         notify_count += 1
         try:
             decoded = decode_gen2_ble_plaintext(plaintext)
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             log_ble_rx_decode_failed(address, msg_type, plaintext, e)
             return
 

@@ -443,12 +443,15 @@ def _session_from_device_status_watering(
     if short_gen2_enum_name(dsi.get("deviceStatus")) != "wateringInProgress":
         return None
     ws = dsi.get("wateringStatus") or {}
-    if isinstance(ws, dict) and ws:
-        if _legacy_watering_applies_to_station(ws, station_id, num_stations=num_stations):
-            return {
-                "status": ws.get("status") or "wateringInProgress",
-                "currentTimeRemainingSec": ws.get("currentTimeRemainingSec"),
-            }
+    if (
+        isinstance(ws, dict)
+        and ws
+        and _legacy_watering_applies_to_station(ws, station_id, num_stations=num_stations)
+    ):
+        return {
+            "status": ws.get("status") or "wateringInProgress",
+            "currentTimeRemainingSec": ws.get("currentTimeRemainingSec"),
+        }
     if not _manual_mode_targets_station(dsi, station_id) and not (
         num_stations == 1 and station_id == 0
     ):

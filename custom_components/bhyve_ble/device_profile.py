@@ -6,8 +6,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from .const import CONF_DEVICE_GENERATION, GENERATION_GEN1, GENERATION_GEN2
-from .pybhyve.constants import GEN1_TX_DELAY_MS, GEN2_TX_DELAY_MS
-from .pybhyve.constants import GEN1_HANDLES, GEN2_HANDLES
+from .pybhyve.constants import GEN1_HANDLES, GEN1_TX_DELAY_MS, GEN2_HANDLES, GEN2_TX_DELAY_MS
 
 GENERATION_CHOICES: Final[tuple[tuple[str, str], ...]] = (
     (GENERATION_GEN2, "Gen 2 (newer, e.g. HT25G2)"),

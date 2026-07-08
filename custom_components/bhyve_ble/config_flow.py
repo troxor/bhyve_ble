@@ -24,9 +24,9 @@ from homeassistant.helpers.selector import (
 from .const import (
     CONF_ADDRESS,
     CONF_DEVICE_GENERATION,
+    CONF_DEVICE_ID,
     CONF_DEVICE_NETWORK_KEY_B64,
     CONF_DEVICES,
-    CONF_DEVICE_ID,
     CONF_GEN1_RUN_PAIRING,
     CONF_GEN2_RUN_PAIRING,
     CONF_NETWORK_KEY_B64,
@@ -130,7 +130,7 @@ def _gen2_credentials_schema(
 ) -> vol.Schema:
     locked = entry_gen2_pairing_locked(entry_data)
     fields: dict = {
-        vol.Required(CONF_GEN2_RUN_PAIRING, default=True): BooleanSelector(
+        vol.Required(CONF_GEN2_RUN_PAIRING, default=pairing_default): BooleanSelector(
             BooleanSelectorConfig(read_only=locked)
         ),
     }
@@ -237,8 +237,6 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_device_generation(self, user_input: dict | None = None) -> FlowResult:
-        from .ble import BhyveBleProvisionError
-        from .onboarding import BhyveOnboardingError
 
         errors: dict[str, str] = {}
         address = self.context.get(_CTX_ADDRESS)
@@ -248,7 +246,6 @@ class BhyveBleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             generation = user_input[CONF_DEVICE_GENERATION]
             self.context[_CTX_GENERATION] = generation
-            profile = device_ble_profile(generation)
 
             if generation == GENERATION_GEN1:
                 return await self.async_step_gen1_mesh()
@@ -497,8 +494,6 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         )
 
     async def async_step_device_generation(self, user_input: dict | None = None) -> FlowResult:
-        from .ble import BhyveBleProvisionError
-        from .onboarding import BhyveOnboardingError
 
         errors: dict[str, str] = {}
         address = self.context.get(_CTX_ADDRESS)
@@ -508,7 +503,6 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             generation = user_input[CONF_DEVICE_GENERATION]
             self.context[_CTX_GENERATION] = generation
-            profile = device_ble_profile(generation)
 
             if generation == GENERATION_GEN1:
                 return await self.async_step_gen1_mesh()
