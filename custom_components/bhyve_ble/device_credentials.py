@@ -36,12 +36,20 @@ def device_network_key(entry: ConfigEntry | Any, address: str) -> bytes:
         if not b64:
             msg = f"gen1 timer {address} is missing device_network_key_b64"
             raise ValueError(msg)
-        key = base64.b64decode(b64)
+        key = base64.b64decode(b64, validate=True)
         if len(key) != 16:
             msg = f"gen1 device key for {address} must be 16 bytes"
             raise ValueError(msg)
         return key
-    return base64.b64decode(entry.data[CONF_NETWORK_KEY_B64])
+    b64 = entry.data.get(CONF_NETWORK_KEY_B64)
+    if not b64:
+        msg = "integration is missing network_key_b64"
+        raise ValueError(msg)
+    key = base64.b64decode(b64, validate=True)
+    if len(key) != 16:
+        msg = "integration network key must be 16 bytes"
+        raise ValueError(msg)
+    return key
 
 
 def device_id(entry: ConfigEntry | Any, address: str) -> int | None:
