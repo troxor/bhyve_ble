@@ -53,8 +53,6 @@ def _to_jsonable(obj: Any) -> Any:
         return [_to_jsonable(v) for v in obj]
     if isinstance(obj, bytes):
         return base64.b64encode(obj).decode("ascii")
-    if isinstance(obj, str):
-        return short_gen2_enum_name(obj)
     return obj
 
 

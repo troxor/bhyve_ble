@@ -17,6 +17,13 @@ _CHAR_HANDLE: dict[str, Callable[[PairingHandleProfile], str]] = {
 }
 
 
+def network_char_wire_hex_for_trace(wire: bytes) -> str:
+    """Redact the 16-byte network key from ATT trace hex dumps."""
+    if len(wire) < 18:
+        return wire.hex()
+    return f"{wire[0:2].hex()}<key redacted>"
+
+
 def format_att_trace_line(
     mac: str,
     att_op: AttOp,
@@ -27,9 +34,14 @@ def format_att_trace_line(
     plaintext: bytes | None = None,
     detail: str = "",
 ) -> list[str]:
+    wire_hex = (
+        network_char_wire_hex_for_trace(wire)
+        if char_role == "network_char"
+        else wire.hex()
+    )
     head = (
         f"[{mac.upper()}] {att_op:<9} {char_role:<13} @{handle}  "
-        f"hex: {wire.hex()}"
+        f"hex: {wire_hex}"
     )
     lines = [head]
     if plaintext is not None:
@@ -43,11 +55,11 @@ def format_att_trace_line(
 
 
 def network_char_detail(wire: bytes) -> str:
-    """Human hint for the 18-byte network_char provision blob."""
-    if len(wire) < 18:
+    """Human hint for the 18-byte network_char provision blob (key redacted)."""
+    if len(wire) < 2:
         return ""
     device_id_val = int.from_bytes(wire[0:2], "little")
-    return f"prefix={wire[0:2].hex()} (device_id {device_id_val})  key={wire[2:18].hex()}"
+    return f"prefix={wire[0:2].hex()} (device_id {device_id_val})  key=<redacted>"
 
 
 class BleTraceReporter:

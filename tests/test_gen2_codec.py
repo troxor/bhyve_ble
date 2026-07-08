@@ -25,6 +25,13 @@ def test_gen2_codec_roundtrip_decode_smoke() -> None:
     assert "message" in decoded
 
 
+def test_to_jsonable_preserves_plain_strings_with_underscores() -> None:
+    from bhyve_ble.pybhyve.gen2_codec import _to_jsonable
+
+    payload = {"hwVersion": "GEN2_HT25", "timestampIso8601": "2026-01-01T00:00:00Z"}
+    assert _to_jsonable(payload) == payload
+
+
 def test_parse_battery_nested_preferred_over_legacy() -> None:
     decoded = {
         "message": {

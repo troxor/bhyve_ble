@@ -46,7 +46,8 @@
       "invalid_device_id": "Enter the device ID as a decimal number (0–65535).",
       "credentials_required": "Enter both device ID and network key when pairing is disabled.",
       "cannot_connect": "Could not connect or provision the timer. Put it in pairing mode and try again.",
-      "verify_failed": "Handshake worked but the timer did not return device information. Try again."
+      "verify_failed": "Handshake worked but the timer did not return device information. Try again.",
+      "already_configured": "This address is already added."
     }
   },
   "options": {

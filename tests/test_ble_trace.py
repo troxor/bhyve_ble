@@ -26,4 +26,12 @@ def test_network_char_detail() -> None:
     wire = bytes.fromhex("0680") + bytes(16)
     detail = network_char_detail(wire)
     assert "prefix=0680 (device_id 32774)" in detail
-    assert "key=" in detail
+    assert "key=<redacted>" in detail
+    assert "key=" not in detail.replace("key=<redacted>", "")
+
+
+def test_network_char_wire_hex_for_trace_redacts_key() -> None:
+    from pybhyve.ble_trace import network_char_wire_hex_for_trace
+
+    wire = bytes.fromhex("0680") + bytes.fromhex("ab" * 16)
+    assert network_char_wire_hex_for_trace(wire) == "0680<key redacted>"
