@@ -1,6 +1,6 @@
 [project]
 name = "pybhyve"
-version = "0.1.0"
+version = "0.2.0"
 description = "Orbit B-hyve hose timer BLE library and CLI"
 readme = "pybhyve/README.md"
 requires-python = ">=3.11"
