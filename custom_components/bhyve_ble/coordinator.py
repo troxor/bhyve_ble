@@ -10,9 +10,9 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .const import (
     CONF_DEVICE_GENERATION,
-    DEFAULT_MANUAL_WATER_RUN_SEC,
     DOMAIN,
     GENERATION_GEN1,
+    default_manual_water_run_seconds,
 )
 from .device_credentials import device_id, device_meta, device_network_key
 from .device_profile import DeviceBleProfile, device_ble_profile_from_meta
@@ -89,7 +89,7 @@ class BhyveBleCoordinator(DataUpdateCoordinator[dict]):
 
     def station_manual_run_seconds(self, station_id: int) -> int:
         """Manual watering duration for station_id (seconds)."""
-        raw = self._station_run_sec.get(station_id, DEFAULT_MANUAL_WATER_RUN_SEC)
+        raw = self._station_run_sec.get(station_id, default_manual_water_run_seconds(self.entry))
         return max(MANUAL_WATER_RUN_SEC_MIN, min(int(raw), MANUAL_WATER_RUN_SEC_MAX))
 
     def set_station_manual_run_seconds(self, station_id: int, seconds: int) -> None:

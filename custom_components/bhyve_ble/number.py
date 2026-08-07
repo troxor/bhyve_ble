@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from homeassistant.components.number import NumberEntity, NumberMode
+from homeassistant.components.number import NumberEntity, NumberMode, RestoreNumber
 from homeassistant.const import UnitOfTime
 
 from .const import DOMAIN
@@ -27,7 +27,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     async_add_entities(entities)
 
 
-class BhyveBleStationRunTimeNumber(BhyveBleEntity, NumberEntity):
+class BhyveBleStationRunTimeNumber(BhyveBleEntity, RestoreNumber):
     """Manual watering duration (seconds) used when the port switch is turned on."""
 
     _attr_has_entity_name = True
@@ -49,7 +49,16 @@ class BhyveBleStationRunTimeNumber(BhyveBleEntity, NumberEntity):
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
-        if self.native_value is not None:
+        if (
+            last := await self.async_get_last_number_data()
+        ) is not None and last.native_value is not None:
+            self.coordinator.set_station_manual_run_seconds(
+                self._station_id, int(last.native_value)
+            )
+            self._attr_native_value = float(
+                self.coordinator.station_manual_run_seconds(self._station_id)
+            )
+        elif self.native_value is not None:
             self.coordinator.set_station_manual_run_seconds(
                 self._station_id, int(self.native_value)
             )

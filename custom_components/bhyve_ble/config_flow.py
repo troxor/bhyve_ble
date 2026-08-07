@@ -23,6 +23,7 @@ from homeassistant.helpers.selector import (
 
 from .const import (
     CONF_ADDRESS,
+    CONF_DEFAULT_MANUAL_WATER_RUN_SEC,
     CONF_DEVICE_GENERATION,
     CONF_DEVICE_ID,
     CONF_DEVICE_NETWORK_KEY_B64,
@@ -36,8 +37,11 @@ from .const import (
     DOMAIN,
     GENERATION_GEN1,
     GENERATION_GEN2,
+    MANUAL_WATER_RUN_SEC_MAX,
+    MANUAL_WATER_RUN_SEC_MIN,
     MAX_POLL_INTERVAL_HOURS,
     MIN_POLL_INTERVAL_HOURS,
+    default_manual_water_run_seconds,
     normalize_ble_address,
 )
 from .device_profile import GENERATION_CHOICES, DeviceBleProfile, device_ble_profile
@@ -430,10 +434,14 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
             return base64.b64decode(b64)
         return secrets.token_bytes(16)
 
+    def _merged_options(self, **updates: Any) -> dict[str, Any]:
+        """Replace options without dropping unrelated keys."""
+        return {**dict(self.config_entry.options), **updates}
+
     async def async_step_init(self, user_input: dict | None = None) -> FlowResult:
         return self.async_show_menu(
             step_id="init",
-            menu_options=["add_device", "poll_interval"],
+            menu_options=["add_device", "poll_interval", "default_run_time"],
         )
 
     async def async_step_poll_interval(self, user_input: dict | None = None) -> FlowResult:
@@ -450,7 +458,7 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
                 hours = max(MIN_POLL_INTERVAL_HOURS, min(hours, MAX_POLL_INTERVAL_HOURS))
                 return self.async_create_entry(
                     title="",
-                    data={CONF_POLL_INTERVAL_HOURS: hours},
+                    data=self._merged_options(**{CONF_POLL_INTERVAL_HOURS: hours}),
                 )
 
         schema = vol.Schema(
@@ -468,6 +476,40 @@ class BhyveBleOptionsFlow(config_entries.OptionsFlow):
         )
         return self.async_show_form(
             step_id="poll_interval",
+            data_schema=schema,
+            errors=errors,
+        )
+
+    async def async_step_default_run_time(self, user_input: dict | None = None) -> FlowResult:
+        errors: dict[str, str] = {}
+        current = default_manual_water_run_seconds(self.config_entry)
+        if user_input is not None:
+            try:
+                seconds = int(user_input[CONF_DEFAULT_MANUAL_WATER_RUN_SEC])
+            except (TypeError, ValueError):  # fmt: skip
+                errors["base"] = "invalid_run_time"
+            else:
+                seconds = max(MANUAL_WATER_RUN_SEC_MIN, min(seconds, MANUAL_WATER_RUN_SEC_MAX))
+                return self.async_create_entry(
+                    title="",
+                    data=self._merged_options(**{CONF_DEFAULT_MANUAL_WATER_RUN_SEC: seconds}),
+                )
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_DEFAULT_MANUAL_WATER_RUN_SEC, default=current): NumberSelector(
+                    NumberSelectorConfig(
+                        min=MANUAL_WATER_RUN_SEC_MIN,
+                        max=MANUAL_WATER_RUN_SEC_MAX,
+                        step=1,
+                        mode=NumberSelectorMode.BOX,
+                        unit_of_measurement="s",
+                    )
+                ),
+            }
+        )
+        return self.async_show_form(
+            step_id="default_run_time",
             data_schema=schema,
             errors=errors,
         )

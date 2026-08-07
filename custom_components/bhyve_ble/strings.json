@@ -54,10 +54,11 @@
     "step": {
       "init": {
         "title": "Orbit B-hyve",
-        "description": "Add a timer or change Bluetooth status polling.",
+        "description": "Add a timer or change integration defaults.",
         "menu_options": {
           "add_device": "Add timer",
-          "poll_interval": "Status polling interval"
+          "poll_interval": "Status polling interval",
+          "default_run_time": "Default watering run time"
         }
       },
       "poll_interval": {
@@ -65,6 +66,13 @@
         "description": "How often Home Assistant reads battery and station status from each timer over Bluetooth. Longer intervals reduce battery use. Turning a station on or off still triggers an immediate update.",
         "data": {
           "poll_interval_hours": "Interval (hours)"
+        }
+      },
+      "default_run_time": {
+        "title": "Default watering run time",
+        "description": "Default watering time for newly-added timers.",
+        "data": {
+          "default_manual_water_run_sec": "Duration (seconds)"
         }
       },
       "add_device": {
@@ -104,6 +112,7 @@
       "verify_failed": "Handshake worked but the timer did not return device information. Try again.",
       "already_configured": "This address is already added.",
       "invalid_interval": "Enter a valid number of hours.",
+      "invalid_run_time": "Enter a valid run time in seconds.",
       "invalid_device_id": "Enter the device ID as a decimal number (0–65535).",
       "invalid_key": "Invalid key. Enter a valid 32 character hex string and try again.",
       "credentials_required": "Enter both device ID and network key when pairing is disabled."

@@ -56,8 +56,11 @@ DEFAULT_POLL_INTERVAL_HOURS = 24.0
 MIN_POLL_INTERVAL_HOURS = 1 / 60
 MAX_POLL_INTERVAL_HOURS = 24 * 14  # 14 days
 
-# Default manual run when turning a station on (seconds); per-station Number entity overrides.
+# Options: default manual run when turning a station on (in seconds); per-port Number overrides this after pairing.
+CONF_DEFAULT_MANUAL_WATER_RUN_SEC = "default_manual_water_run_sec"
 DEFAULT_MANUAL_WATER_RUN_SEC = 600
+MANUAL_WATER_RUN_SEC_MIN = _ble_constants.MANUAL_WATER_RUN_SEC_MIN
+MANUAL_WATER_RUN_SEC_MAX = _ble_constants.MANUAL_WATER_RUN_SEC_MAX
 
 
 def poll_interval_timedelta(entry: ConfigEntry) -> timedelta:
@@ -71,6 +74,18 @@ def poll_interval_timedelta(entry: ConfigEntry) -> timedelta:
         return timedelta(hours=DEFAULT_POLL_INTERVAL_HOURS)
     hours = max(MIN_POLL_INTERVAL_HOURS, min(hours, MAX_POLL_INTERVAL_HOURS))
     return timedelta(seconds=round(hours * 3600))
+
+
+def default_manual_water_run_seconds(entry: ConfigEntry) -> int:
+    """Integration-wide manual watering default from options (clamped)."""
+    raw = entry.options.get(CONF_DEFAULT_MANUAL_WATER_RUN_SEC)
+    if raw is None:
+        return DEFAULT_MANUAL_WATER_RUN_SEC
+    try:
+        seconds = int(raw)
+    except (TypeError, ValueError):  # fmt: skip
+        return DEFAULT_MANUAL_WATER_RUN_SEC
+    return max(MANUAL_WATER_RUN_SEC_MIN, min(seconds, MANUAL_WATER_RUN_SEC_MAX))
 
 
 # Deprecated (v1 single-device entry); kept for migration only.
