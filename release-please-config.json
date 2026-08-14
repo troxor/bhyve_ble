@@ -22,6 +22,10 @@
         {
           "type": "generic",
           "path": "custom_components/bhyve_ble/pybhyve/__init__.py"
+        },
+        {
+          "type": "generic",
+          "path": ".github/ISSUE_TEMPLATE/bug.yml"
         }
       ]
     }

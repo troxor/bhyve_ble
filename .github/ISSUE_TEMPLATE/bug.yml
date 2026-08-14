@@ -1,0 +1,53 @@
+name: Bug report
+description: Unexpected behavior or crashes?
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to help make the integration better. Issues work best when the problem can be identified and reproduced. Please keep usage and support questions in [Discussions](https://github.com/troxor/bhyve_ble/discussions).
+  - type: input
+    id: integration_version
+    attributes:
+      label: Integration version
+      placeholder: "0.4.0"  # x-release-please-version
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant version
+      placeholder: "2026.8.0"
+    validations:
+      required: true
+  - type: input
+    id: hardware
+    attributes:
+      label: Timer model / FCC ID
+      placeholder: "21005 / ML6HT25"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Expected behavior vs actual behavior. One problem per issue.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: HA Debug Logs and/or CLI output
+      description: Home Assistant logs, or `uv run bhyve` / `bhyve` output. Redact keys if you want; keep device ID and error text.
+      render: text
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Already tried
+      options:
+        - label: Factory reset with new device ID / network key
+          required: true
+        - label: Same failure via CLI, not only the HA UI
+          required: false
